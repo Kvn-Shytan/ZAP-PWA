@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  internalCode  String        @unique
+  description   String
+  unit          String // "kg", "un", "mt", etc.
+  priceUSD      Float?
+  priceARS      Float?
+  stock         Float         @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  categoryId    Int?
+  
+  supplier      Supplier?     @relation(fields: [supplierId], references: [id])
+  supplierId    Int?
+  
+  movements     InventoryMovement[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement()) 
+  name      String    @unique
+  products  Product[]
+}
+
+model Supplier {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+  contactInfo   String?
+  products      Product[]
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  name          String?
+  password      String    // Se guardará hasheada
+  role          Role      @default(EMPLOYEE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  movements     InventoryMovement[]
+}
+
+model InventoryMovement {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Float    // Positivo para entradas, negativo para salidas
+  reason    String   // "Compra", "Venta", "Ajuste", "Uso en producción"
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  timestamp DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
