@@ -32,10 +32,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Implementar y verificar la visualización de productos en el frontend.
     -   [x] Implementar y verificar la visualización de categorías en el frontend.
     -   [x] Implementar y verificar la visualización de proveedores en el frontend.
-    -   [ ] Implementar lógica de control de stock (aumentar/disminuir).
+    -   [ ] Implementar lógica de control de stock (aumentar/disminuir). **(Se abordará después de la gestión de usuarios)**
 
--   **Fase 3: Módulo de Personal**
-    -   [ ] Crear API para la gestión de colaboradores (usuarios).
+-   **Fase 3: Módulo de Personal (En Progreso)**
+    -   [ ] Crear API para la gestión de colaboradores (usuarios). **(Próxima tarea)**
     -   [ ] Implementar sistema de autenticación y roles.
     -   [ ] Desarrollar interfaz para la gestión de personal.
 
@@ -52,9 +52,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 ## 2. Changelog (Registro de Cambios)
 
 -   **2025-09-15:**
+    -   Se actualizó el roadmap para priorizar la gestión de usuarios antes de la lógica de stock.
+    -   Se completó la importación inicial de datos (productos y categorías) a través del script de seeding de Prisma.
+    -   Se verificó la visualización de productos y categorías en el frontend.
     -   Se implementó y verificó la visualización de proveedores en el frontend.
-    -   Se implementó y verificó la visualización de categorías en el frontend.
-    -   Se implementó y verificó la visualización de productos en el frontend.
     -   Se corrigió el problema de CORS para permitir la comunicación entre el frontend y el backend.
     -   Se corrigió el análisis de IDs enteros en los endpoints de la API para Categorías y Proveedores.
     -   Se completaron los endpoints de la API para proveedores (CRUD).

@@ -18,8 +18,17 @@
     "cors": "^2.8.5",
     "express": "^5.1.0"
   },
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "csv-parser": "^3.0.0"
+  },
   "devDependencies": {
     "nodemon": "^3.1.10",
     "prisma": "^6.16.1"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
