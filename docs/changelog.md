@@ -1,5 +1,15 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-17 (Continuación)
+
+-   **Frontend (Autenticación):**
+    -   Implementado `AuthContext` para gestión global de sesión.
+    -   Desarrollada `LoginPage` para inicio de sesión.
+    -   Creado `ProtectedRoute` para proteger rutas en el frontend.
+    -   Integrado el flujo de autenticación en `main.jsx` y `App.jsx`.
+    -   Corregidos componentes de listado (`ProductList`, `CategoryList`, `SupplierList`) para enviar token de autenticación.
+    -   Corregido error de visualización de `priceARS` en `ProductList` para `ADMIN`.
+
 ## 2025-09-17
 
 -   **Seguridad y Roles (Backend):**

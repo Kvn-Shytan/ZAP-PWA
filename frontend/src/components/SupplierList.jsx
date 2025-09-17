@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 function SupplierList() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { token } = useAuth();
 
   useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const fetchSuppliers = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('http://localhost:3001/suppliers');
+        const response = await fetch('http://localhost:3001/suppliers', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          throw new Error('No autorizado. La sesión puede haber expirado.');
+        }
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -22,14 +38,14 @@ function SupplierList() {
     };
 
     fetchSuppliers();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return <div>Cargando proveedores...</div>;
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error al cargar proveedores: {error.message}</div>;
   }
 
   return (
@@ -41,7 +57,7 @@ function SupplierList() {
         <ul>
           {suppliers.map((supplier) => (
             <li key={supplier.id}>
-              {supplier.name} ({supplier.contactInfo})
+              {supplier.name} {supplier.contactInfo ? `(${supplier.contactInfo})` : ''}
             </li>
           ))}
         </ul>

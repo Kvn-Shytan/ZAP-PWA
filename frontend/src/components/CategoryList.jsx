@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { token } = useAuth();
 
   useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const fetchCategories = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('http://localhost:3001/categories');
+        const response = await fetch('http://localhost:3001/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          throw new Error('No autorizado. La sesión puede haber expirado.');
+        }
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -22,14 +38,14 @@ function CategoryList() {
     };
 
     fetchCategories();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return <div>Cargando categorías...</div>;
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error al cargar categorías: {error.message}</div>;
   }
 
   return (

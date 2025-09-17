@@ -38,7 +38,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Crear API para la gestión de colaboradores (usuarios) (CRUD).
     -   [x] Implementar sistema de autenticación y roles (JWT).
     -   [x] Definir y aplicar matriz de permisos granulares para todos los endpoints.
-    -   [ ] Desarrollar interfaz para la gestión de personal.
+    -   [x] Desarrollar interfaz para la gestión de personal (Login y Protección de Rutas).
 
 -   **Fase 4: Funcionalidad Offline y PWA**
     -   [ ] Implementar Service Workers para el funcionamiento offline.
