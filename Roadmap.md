@@ -34,9 +34,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Implementar y verificar la visualización de proveedores en el frontend.
     -   [ ] Implementar lógica de control de stock (aumentar/disminuir). **(Se abordará después de la gestión de usuarios)**
 
--   **Fase 3: Módulo de Personal (En Progreso)**
-    -   [ ] Crear API para la gestión de colaboradores (usuarios). **(Próxima tarea)**
-    -   [ ] Implementar sistema de autenticación y roles.
+-   **Fase 3: Módulo de Personal y Seguridad (Completada)**
+    -   [x] Crear API para la gestión de colaboradores (usuarios) (CRUD).
+    -   [x] Implementar sistema de autenticación y roles (JWT).
+    -   [x] Definir y aplicar matriz de permisos granulares para todos los endpoints.
     -   [ ] Desarrollar interfaz para la gestión de personal.
 
 -   **Fase 4: Funcionalidad Offline y PWA**
@@ -46,6 +47,11 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 -   **Fase 5: Despliegue y Pruebas**
     -   [ ] Desplegar la aplicación en un entorno de producción.
     -   [ ] Realizar pruebas con los colaboradores y recoger feedback.
+
+-   **Fase 6: Mejoras Futuras y Escalabilidad**
+    -   [ ] Implementar Módulo de "Armadores" (gestión de envíos, recepciones y pagos).
+    -   [ ] Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
+    -   [ ] Opcional: Desarrollar UI para la gestión dinámica de permisos por rol.
 
 ---
 

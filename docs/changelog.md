@@ -1,5 +1,18 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-17
+
+-   **Seguridad y Roles (Backend):**
+    -   Implementado sistema de autenticación completo basado en JWT (`/login`).
+    -   Añadido nuevo rol de usuario `SUPERVISOR`.
+    -   Implementado un sistema de autorización granular y a nivel de campo para todos los endpoints de la API, definiendo permisos específicos para los roles `ADMIN`, `SUPERVISOR` y `EMPLOYEE`.
+    -   Asegurado que la edición de `stock` es de solo lectura y que la visibilidad/edición de precios está restringida al `ADMIN`.
+-   **Entorno y Depuración:**
+    -   Solucionados múltiples problemas de configuración de Docker, incluyendo conflictos de puertos, volúmenes duplicados y estados inconsistentes del motor de Docker.
+    -   Refactorizada la configuración de `docker-compose.yml` para consistencia y limpieza.
+    -   Depurado y corregido error de inicialización en `index.js` (`ReferenceError`) moviendo los middlewares a la parte superior del archivo.
+    -   Reemplazado `nodemon` por `node` en el comando de inicio del contenedor del backend para mayor estabilidad.
+
 ## 2025-09-15
 
 -   **Backend API:**

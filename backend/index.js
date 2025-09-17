@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors'); // Import cors
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -9,41 +11,66 @@ const port = 3001;
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:5173' })); // Use cors middleware
 
+// --- AUTH MIDDLEWARE ---
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (token == null) {
+    return res.sendStatus(401); // Unauthorized
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.sendStatus(403); // Forbidden (invalid token)
+    }
+    req.user = user;
+    next();
+  });
+};
+
+const authorizeRole = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.sendStatus(403); // Forbidden
+    }
+
+    const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+
+    if (rolesArray.includes(req.user.role)) {
+      next(); // Role is allowed, proceed
+    } else {
+      res.sendStatus(403); // Forbidden
+    }
+  };
+};
+
 app.get('/', (req, res) => {
   res.send('¡El Backend de ZAP PWA está funcionando!');
 });
 
-// Endpoint de ejemplo para obtener todos los usuarios
-app.get('/users', async (req, res) => {
-  try {
-    const users = await prisma.user.findMany();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'No se pudo conectar a la base de datos' });
-  }
-});
+
 
 // --- NUEVO ENDPOINT ---
 // Crear un nuevo producto
-app.post('/products', async (req, res) => {
+app.post('/products', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { user } = req;
+  let dataToCreate = { ...req.body };
+
+  // Rule: Only ADMIN can set prices
+  if (user.role !== 'ADMIN') {
+    delete dataToCreate.priceUSD;
+    delete dataToCreate.priceARS;
+  }
+
+  // Basic validation
+  if (!dataToCreate.internalCode || !dataToCreate.description || !dataToCreate.unit) {
+    return res.status(400).json({ error: 'internalCode, description, and unit are required' });
+  }
+
   try {
-    const { internalCode, description, unit, priceUSD, priceARS, stock, categoryId, supplierId } = req.body;
-
-    if (!internalCode || !description || !unit) {
-      return res.status(400).json({ error: 'internalCode, description, and unit are required' });
-    }
-
     const newProduct = await prisma.product.create({
-      data: {
-        internalCode,
-        description,
-        unit,
-        priceUSD,
-        priceARS,
-        stock,
-        categoryId,
-        supplierId,
-      },
+      data: dataToCreate,
     });
     res.status(201).json(newProduct);
   } catch (error) {
@@ -58,7 +85,7 @@ app.post('/products', async (req, res) => {
 
 // --- CATEGORY ENDPOINTS ---
 // Crear una nueva categoría
-app.post('/categories', async (req, res) => {
+app.post('/categories', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
@@ -78,7 +105,7 @@ app.post('/categories', async (req, res) => {
 });
 
 // Obtener todas las categorías
-app.get('/categories', async (req, res) => {
+app.get('/categories', authenticateToken, async (req, res) => {
   try {
     const categories = await prisma.category.findMany();
     res.json(categories);
@@ -89,7 +116,7 @@ app.get('/categories', async (req, res) => {
 });
 
 // Obtener una categoría por ID
-app.get('/categories/:id', async (req, res) => {
+app.get('/categories/:id', authenticateToken, async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -110,7 +137,7 @@ app.get('/categories/:id', async (req, res) => {
 });
 
 // Actualizar una categoría por ID
-app.put('/categories/:id', async (req, res) => {
+app.put('/categories/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -135,7 +162,7 @@ app.put('/categories/:id', async (req, res) => {
 });
 
 // Eliminar una categoría por ID
-app.delete('/categories/:id', async (req, res) => {
+app.delete('/categories/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -156,7 +183,7 @@ app.delete('/categories/:id', async (req, res) => {
 
 // --- SUPPLIER ENDPOINTS ---
 // Crear un nuevo proveedor
-app.post('/suppliers', async (req, res) => {
+app.post('/suppliers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const { name, contactInfo } = req.body;
     if (!name) {
@@ -176,7 +203,7 @@ app.post('/suppliers', async (req, res) => {
 });
 
 // Obtener todos los proveedores
-app.get('/suppliers', async (req, res) => {
+app.get('/suppliers', authenticateToken, async (req, res) => {
   try {
     const suppliers = await prisma.supplier.findMany();
     res.json(suppliers);
@@ -187,7 +214,7 @@ app.get('/suppliers', async (req, res) => {
 });
 
 // Obtener un proveedor por ID
-app.get('/suppliers/:id', async (req, res) => {
+app.get('/suppliers/:id', authenticateToken, async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -208,7 +235,7 @@ app.get('/suppliers/:id', async (req, res) => {
 });
 
 // Actualizar un proveedor por ID
-app.put('/suppliers/:id', async (req, res) => {
+app.put('/suppliers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -233,7 +260,7 @@ app.put('/suppliers/:id', async (req, res) => {
 });
 
 // Eliminar un proveedor por ID
-app.delete('/suppliers/:id', async (req, res) => {
+app.delete('/suppliers/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -252,10 +279,210 @@ app.delete('/suppliers/:id', async (req, res) => {
   }
 });
 
-// Obtener todos los productos
-app.get('/products', async (req, res) => {
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined.");
+  process.exit(1);
+}
+
+// --- AUTH ENDPOINTS ---
+app.post('/login', async (req, res) => {
   try {
-    const products = await prisma.product.findMany();
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' } // 8-hour expiration
+    );
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.json({ token, user: userWithoutPassword });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Login failed.' });
+  }
+});
+
+
+
+// --- USER ENDPOINTS ---
+const saltRounds = 10;
+
+// Crear un nuevo usuario
+app.post('/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  try {
+    const { email, name, password, role } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        role, // Defaults to EMPLOYEE if not provided
+      },
+    });
+    // No devolver el password hasheado
+    const { password: _, ...userWithoutPassword } = newUser;
+    res.status(201).json(userWithoutPassword);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'A user with this email already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create user.' });
+  }
+});
+
+// Obtener todos los usuarios (sin passwords)
+app.get('/users', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch users.' });
+  }
+});
+
+// Obtener un usuario por ID (sin password)
+app.get('/users/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch user.' });
+  }
+});
+
+// Actualizar un usuario por ID
+app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  const { email, name, password, role } = req.body;
+  
+  const dataToUpdate = { email, name, role };
+
+  if (password) {
+    dataToUpdate.password = await bcrypt.hash(password, saltRounds);
+  }
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'A user with this email already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update user.' });
+  }
+});
+
+// Eliminar un usuario por ID
+app.delete('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete user.' });
+  }
+});
+
+// Obtener todos los productos
+app.get('/products', authenticateToken, async (req, res) => {
+  const { user } = req;
+  
+  let selectFields = {
+    id: true,
+    internalCode: true,
+    description: true,
+    unit: true,
+    stock: true,
+    createdAt: true,
+    updatedAt: true,
+    categoryId: true,
+    supplierId: true,
+    category: true, // Include related data if needed
+    supplier: true, // Include related data if needed
+  };
+
+  // Rule: Only ADMIN can see prices
+  if (user.role === 'ADMIN') {
+    selectFields.priceUSD = true;
+    selectFields.priceARS = true;
+  }
+
+  try {
+    const products = await prisma.product.findMany({
+      select: selectFields,
+    });
     res.json(products);
   } catch (error) {
     console.error(error);
@@ -264,11 +491,34 @@ app.get('/products', async (req, res) => {
 });
 
 // Obtener un producto por ID
-app.get('/products/:id', async (req, res) => {
+app.get('/products/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
+  const { user } = req;
+
+  let selectFields = {
+    id: true,
+    internalCode: true,
+    description: true,
+    unit: true,
+    stock: true,
+    createdAt: true,
+    updatedAt: true,
+    categoryId: true,
+    supplierId: true,
+    category: true,
+    supplier: true,
+  };
+
+  // Rule: Only ADMIN can see prices
+  if (user.role === 'ADMIN') {
+    selectFields.priceUSD = true;
+    selectFields.priceARS = true;
+  }
+
   try {
     const product = await prisma.product.findUnique({
       where: { id },
+      select: selectFields,
     });
     if (product) {
       res.json(product);
@@ -282,22 +532,32 @@ app.get('/products/:id', async (req, res) => {
 });
 
 // Actualizar un producto por ID
-app.put('/products/:id', async (req, res) => {
+app.put('/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
-  const { internalCode, description, unit, priceUSD, priceARS, stock, categoryId, supplierId } = req.body;
+  const { user } = req; // User from token
+
+  // Make a copy of the body to modify
+  let dataToUpdate = { ...req.body };
+
+  // Rule: stock is always read-only in this endpoint for everyone
+  if (dataToUpdate.stock !== undefined) {
+    delete dataToUpdate.stock;
+  }
+
+  // Rule: Only ADMIN can update prices
+  if (user.role !== 'ADMIN') {
+    if (dataToUpdate.priceUSD !== undefined) {
+      delete dataToUpdate.priceUSD;
+    }
+    if (dataToUpdate.priceARS !== undefined) {
+      delete dataToUpdate.priceARS;
+    }
+  }
+
   try {
     const updatedProduct = await prisma.product.update({
       where: { id },
-      data: {
-        internalCode,
-        description,
-        unit,
-        priceUSD,
-        priceARS,
-        stock,
-        categoryId,
-        supplierId,
-      },
+      data: dataToUpdate,
     });
     res.json(updatedProduct);
   } catch (error) {
@@ -312,7 +572,7 @@ app.put('/products/:id', async (req, res) => {
 
 
 // Eliminar un producto por ID
-app.delete('/products/:id', async (req, res) => {
+app.delete('/products/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.product.delete({
