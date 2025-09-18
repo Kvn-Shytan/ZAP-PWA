@@ -5,6 +5,7 @@ import SupplierList from './components/SupplierList';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
+import UserManagementPage from './pages/UserManagementPage';
 import './App.css';
 
 // The main application layout for authenticated users
@@ -25,6 +26,9 @@ function AppLayout() {
           <li><Link to="/products">Productos</Link></li>
           <li><Link to="/categories">Categorías</Link></li>
           <li><Link to="/suppliers">Proveedores</Link></li>
+          {(user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) && (
+            <li><Link to="/users">Usuarios</Link></li>
+          )}
         </ul>
         <div className="user-info">
           {user && (
@@ -42,6 +46,9 @@ function AppLayout() {
           <Route path="/products" element={<div><h2>Gestión de Productos</h2><ProductList /></div>} />
           <Route path="/categories" element={<div><h2>Gestión de Categorías</h2><CategoryList /></div>} />
           <Route path="/suppliers" element={<div><h2>Gestión de Proveedores</h2><SupplierList /></div>} />
+          {(user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) && (
+            <Route path="/users" element={<div><h2>Gestión de Usuarios</h2><UserManagementPage /></div>} />
+          )}
         </Routes>
       </main>
     </div>

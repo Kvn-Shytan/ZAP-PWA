@@ -1,5 +1,16 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-18
+-   **UI/UX - Página de Login:**
+    -   Se movió la carpeta `assets` a `frontend/src/assets` para una mejor organización.
+    -   Se actualizó la ruta de importación del logo en `LoginPage.jsx`.
+    -   Se implementó la imagen de fondo (`Fondo login PWA.png`) y el nuevo logo (`LogoZap - login PWA.png`) en la página de Login.
+    -   Se corrigió el nombre del archivo del logo para coincidir con la importación.
+    -   Se ajustó el tamaño del logo para que sea adaptable y mantenga su proporción (`width: 80%, maxWidth: 450px, height: auto`).
+    -   Se refactorizó el layout de `LoginPage.jsx` utilizando la técnica del espaciador flexible (`flex-grow: 1`) para asegurar que todo el contenido (logo, título, formulario) sea visible en pantalla sin scroll, adaptándose a diferentes tamaños de pantalla.
+    -   Se movió la leyenda "Iniciar Sesión" para que quede justo encima del formulario.
+    -   Se neutralizó la regla `#root` en `App.css` para evitar conflictos de layout globales, asegurando que la aplicación ocupe el 100% del ancho y alto disponible sin padding ni márgenes externos.
+
 ## 2025-09-17 (Continuación)
 
 -   **Frontend (Autenticación):**
@@ -7,6 +18,19 @@
     -   Desarrollada `LoginPage` para inicio de sesión.
     -   Creado `ProtectedRoute` para proteger rutas en el frontend.
     -   Integrado el flujo de autenticación en `main.jsx` y `App.jsx`.
+    -   Corregidos componentes de listado (`ProductList`, `CategoryList`, `SupplierList`) para enviar token de autenticación.
+    -   Corregido error de visualización de `priceARS` en `ProductList` para `ADMIN`.
+-   **UI/UX y Diseño del Sistema:**
+    -   Análisis de activos de marca ZAP (PDF de bolsas, logos JPG) para definir la estética.
+    -   Implementación de variables CSS para la paleta de colores y escala de espaciado en `frontend/src/index.css`.
+    -   Aplicación de estilos iniciales y logo ZAP en `frontend/src/pages/LoginPage.jsx`.
+    -   **PENDIENTE:** Verificación de la nueva UI de la página de Login.
+-   **Gestión de Usuarios (Frontend):**
+    -   Se añadió el enlace de navegación "Usuarios" en `App.jsx`, visible para roles `ADMIN` y `SUPERVISOR`.
+    -   Se creó la ruta `/users` en `App.jsx` para la página de gestión de usuarios.
+    -   Se creó un componente placeholder `UserManagementPage.jsx` para la gestión de usuarios.
+
+## 2025-09-17
     -   Corregidos componentes de listado (`ProductList`, `CategoryList`, `SupplierList`) para enviar token de autenticación.
     -   Corregido error de visualización de `priceARS` en `ProductList` para `ADMIN`.
 

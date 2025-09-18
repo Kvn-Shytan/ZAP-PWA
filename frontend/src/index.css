@@ -1,4 +1,28 @@
 :root {
+  /* ZAP Brand Colors */
+  --color-primary-cyan: #00BFFF; /* Vibrant Cyan */
+  --color-primary-magenta: #FF00FF; /* Vibrant Magenta */
+
+  /* Neutral Colors */
+  --color-neutral-black: #1A1A1A;
+  --color-neutral-white: #FFFFFF;
+  --color-neutral-gray-light: #F0F0F0;
+  --color-neutral-gray-dark: #666666;
+
+  /* Semantic Colors */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --color-info: #17a2b8;
+
+  /* Spacing Scale (8-point grid) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -24,8 +48,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
