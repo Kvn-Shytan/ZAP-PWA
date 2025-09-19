@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import ProductList from './components/ProductList';
 import CategoryList from './components/CategoryList';
 import SupplierList from './components/SupplierList';
@@ -6,73 +6,61 @@ import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import UserManagementPage from './pages/UserManagementPage';
+import ChangePasswordPage from './pages/ChangePasswordPage'; // Import the new page
 import './App.css';
 
-// The main application layout for authenticated users
-function AppLayout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login'); // Redirect to login after logout
-  };
-
-  return (
-    <div>
-      <nav>
-        <ul>
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/products">Productos</Link></li>
-          <li><Link to="/categories">Categorías</Link></li>
-          <li><Link to="/suppliers">Proveedores</Link></li>
-          {(user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) && (
-            <li><Link to="/users">Usuarios</Link></li>
-          )}
-        </ul>
-        <div className="user-info">
-          {user && (
-            <>
-              <span>Bienvenido, {user.name || user.email} ({user.role})</span>
-              <button onClick={handleLogout}>Cerrar Sesión</button>
-            </>
-          )}
-        </div>
-      </nav>
-      <hr />
-      <main>
-        <Routes>
-          <Route path="/" element={<h2>Página de Inicio</h2>} />
-          <Route path="/products" element={<div><h2>Gestión de Productos</h2><ProductList /></div>} />
-          <Route path="/categories" element={<div><h2>Gestión de Categorías</h2><CategoryList /></div>} />
-          <Route path="/suppliers" element={<div><h2>Gestión de Proveedores</h2><SupplierList /></div>} />
-          {(user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) && (
-            <Route path="/users" element={<div><h2>Gestión de Usuarios</h2><UserManagementPage /></div>} />
-          )}
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
-// The main App component that handles routing logic
 function App() {
-  return (
-    <Routes>
-      {/* Public route */}
-      <Route path="/login" element={<LoginPage />} />
+  const { user, logout } = useAuth();
+  const location = useLocation(); // Get current location
 
-      {/* Protected routes */}
-      <Route 
-        path="/*" 
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        } 
-      />
-    </Routes>
+  return (
+    <> 
+      {/* Navigation bar - visible only if user is logged in AND not on the login page */}
+      {user && location.pathname !== '/login' && (
+        <nav>
+          <Link to="/">Inicio</Link>
+          {user && <Link to="/products">Productos</Link>}
+          {user && <Link to="/categories">Categorías</Link>}
+          {user && <Link to="/suppliers">Proveedores</Link>}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/users">Usuarios</Link>
+          )}
+          {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
+          {user ? (
+            <button onClick={logout}>Cerrar Sesión</button>
+          ) : (
+            <Link to="/login">Iniciar Sesión</Link>
+          )}
+        </nav>
+      )}
+
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        {/* Default route - if user is logged in, show welcome, otherwise redirect to login */}
+        <Route path="/" element={user ? <div>Bienvenido, {user.name || user.email}!</div> : <LoginPage />} />
+        
+        <Route
+          path="/products"
+          element={<ProtectedRoute element={<ProductList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
+        />
+        <Route
+          path="/categories"
+          element={<ProtectedRoute element={<CategoryList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
+        />
+        <Route
+          path="/suppliers"
+          element={<ProtectedRoute element={<SupplierList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
+        />
+        <Route
+          path="/users"
+          element={<ProtectedRoute element={<UserManagementPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/change-password"
+          element={<ProtectedRoute element={<ChangePasswordPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />} 
+        />
+      </Routes>
+    </>
   );
 }
-
 export default App;

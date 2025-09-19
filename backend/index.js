@@ -20,12 +20,21 @@ const authenticateToken = (req, res, next) => {
     return res.sendStatus(401); // Unauthorized
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.sendStatus(403); // Forbidden (invalid token)
-    }
+  // Wrap jwt.verify in a Promise to use async/await pattern
+  new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(user);
+    });
+  })
+  .then(user => {
     req.user = user;
     next();
+  })
+  .catch(err => {
+    return res.sendStatus(403); // Forbidden (invalid token)
   });
 };
 
@@ -326,7 +335,9 @@ const saltRounds = 10;
 // Crear un nuevo usuario
 app.post('/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   try {
-    const { email, name, password, role } = req.body;
+    const { email, name, password } = req.body;
+    let { role } = req.body; // Make role optional
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
@@ -338,7 +349,7 @@ app.post('/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) =
         email,
         name,
         password: hashedPassword,
-        role, // Defaults to EMPLOYEE if not provided
+        role: role || undefined, // Use provided role or let Prisma use default (NO_ROLE)
       },
     });
     // No devolver el password hasheado
@@ -402,6 +413,44 @@ app.get('/users/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']),
   }
 });
 
+app.put('/users/change-password', authenticateToken, async (req, res) => {
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  const userId = req.user.userId; // ID del usuario logueado desde el token
+
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    return res.status(400).json({ error: 'Todos los campos de contraseña son requeridos.' });
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: 'La nueva contraseña y su confirmación no coinciden.' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Contraseña actual incorrecta.' });
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: newHashedPassword },
+    });
+
+    res.json({ message: 'Contraseña cambiada exitosamente.' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al cambiar la contraseña.' });
+  }
+});
+
 // Actualizar un usuario por ID
 app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id);
@@ -432,26 +481,6 @@ app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
     }
     console.error(error);
     res.status(500).json({ error: 'Failed to update user.' });
-  }
-});
-
-// Eliminar un usuario por ID
-app.delete('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
-  const id = parseInt(req.params.id);
-  if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid user ID' });
-  }
-  try {
-    await prisma.user.delete({
-      where: { id },
-    });
-    res.status(204).send();
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete user.' });
   }
 });
 

@@ -38,7 +38,8 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Crear API para la gestión de colaboradores (usuarios) (CRUD).
     -   [x] Implementar sistema de autenticación y roles (JWT).
     -   [x] Definir y aplicar matriz de permisos granulares para todos los endpoints.
-    -   [x] Desarrollar interfaz para la gestión de personal (Login y Protección de Rutas).
+    -   [x] Desarrollar interfaz para la gestión de personal (Login, Protección de Rutas, Gestión de Usuarios, Cambio de Contraseña).
+    -   [x] Implementar gestión completa de usuarios (CRUD, reinicio de contraseña por Admin, cambio de contraseña por usuario).
 
 -   **Fase 3.5: Mejora de UI/UX y Diseño del Sistema (Completada)**
     -   [x] Análisis de activos de marca ZAP (PDF de bolsas, logos JPG).
@@ -46,6 +47,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Implementación de variables CSS para el sistema de diseño.
     -   [x] Aplicación de estilos iniciales y logo ZAP en la página de Login.
     -   [x] Verificación de la nueva UI de la página de Login.
+    -   [x] Corregir regresiones de UI en página de Login y navegación.
 
 -   **Fase 4: Funcionalidad Offline y PWA**
     -   [ ] Implementar Service Workers para el funcionamiento offline.

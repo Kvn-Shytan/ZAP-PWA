@@ -1,5 +1,19 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-19
+-   **Funcionalidades de Usuario:**
+    -   Implementada gestión completa de usuarios (CRUD) en el frontend y backend.
+    -   Corregida la creación de usuarios sin rol (ahora por defecto `NO_ROLE`).
+    -   Implementada funcionalidad de reinicio de contraseña por Admin (`zap123` por defecto).
+    -   Implementada funcionalidad de cambio de contraseña por el propio usuario.
+-   **Estabilidad y Corrección de Errores:**
+    -   Solucionado el error `JWT_SECRET not defined` en el backend (configuración de `.env` y `docker-compose`).
+    -   Corregido el error de `Router` anidado en el frontend (`App.jsx`).
+    -   Solucionado el problema de pantalla en blanco y contenido no mostrado (corrección de `ProtectedRoute.jsx`).
+    -   Corregida regresión de UI en página de Login (eliminación de cabecera no deseada).
+    -   Optimizada la carga de variables de entorno en Docker Compose.
+    -   Mejorada la fiabilidad del middleware de autenticación (`authenticateToken`).
+
 ## 2025-09-18
 -   **UI/UX - Página de Login:**
     -   Se movió la carpeta `assets` a `frontend/src/assets` para una mejor organización.
