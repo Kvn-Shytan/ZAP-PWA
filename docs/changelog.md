@@ -1,6 +1,28 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-21
+-   **Gestión de Lista de Materiales (Recetas):**
+    -   Añadida nueva sección "Lista de componentes" en la página de edición de productos, visible solo para productos pre-ensamblados o finales.
+    -   Implementada la funcionalidad completa (Backend y Frontend) para añadir y quitar componentes de la lista, respetando los permisos por rol.
+    -   Corregido un error en el campo de cantidad para que solo acepte números enteros.
+
+## 2025-09-20
+-   **Gestión de Productos y Filtros (UI):**
+    -   Implementada una interfaz de usuario completa para la gestión de productos (CRUD).
+    -   Añadido formulario para crear y editar productos, incluyendo los nuevos campos `type` y `lowStockThreshold`.
+    -   Añadida la funcionalidad para eliminar productos (restringido a `ADMIN`) desde la página de edición.
+    -   Incorporados filtros dinámicos por texto (código/descripción) y por categoría en la lista de productos.
+    -   Refactorizado el componente `ProductList` para un código más limpio y mantenible.
+
 ## 2025-09-19
+-   **Módulo de Inventario Avanzado (Backend):**
+    -   Actualizado el esquema de la base de datos para soportar tipos de producto, listas de materiales y movimientos de inventario detallados.
+    -   Implementado endpoint `POST /inventory/production` para registrar órdenes de producción de forma atómica.
+    -   Implementado endpoint `POST /inventory/purchase` para registrar compras a proveedores.
+    -   Implementado endpoint `POST /inventory/sale` para registrar ventas.
+    -   Implementado endpoint `POST /inventory/reversal` para anular movimientos mediante contra-asientos.
+    -   Implementado endpoint `GET /inventory/low-stock` para obtener productos con bajo stock.
+    -   Implementado endpoint `PUT /inventory/low-stock-threshold` para configurar umbrales de alerta.
 -   **Funcionalidades de Usuario:**
     -   Implementada gestión completa de usuarios (CRUD) en el frontend y backend.
     -   Corregida la creación de usuarios sin rol (ahora por defecto `NO_ROLE`).

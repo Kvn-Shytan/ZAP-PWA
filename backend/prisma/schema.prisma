@@ -12,59 +12,80 @@ datasource db {
 }
 
 model Product {
-  id            String        @id @default(cuid())
-  internalCode  String        @unique
-  description   String
-  unit          String // "kg", "un", "mt", etc.
-  priceUSD      Float?
-  priceARS      Float?
-  stock         Float         @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String    @id @default(cuid())
+  internalCode      String    @unique
+  description       String
+  unit              String // "kg", "un", "mt", etc.
+  priceUSD          Float?
+  priceARS          Float?
+  stock             Float     @default(0)
+  lowStockThreshold Float     @default(0)
+  type              ProductType @default(RAW_MATERIAL)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId Int?
+
+  movements      InventoryMovement[]
   
-  category      Category?     @relation(fields: [categoryId], references: [id])
-  categoryId    Int?
-  
-  supplier      Supplier?     @relation(fields: [supplierId], references: [id])
-  supplierId    Int?
-  
-  movements     InventoryMovement[]
+  // Relaciones para la Lista de Materiales (BOM)
+  components     ProductComponent[] @relation("isComponentFor") // Productos de los que este producto es componente
+  componentOf    ProductComponent[] @relation("componentOf")    // Componentes que conforman este producto
+}
+
+model ProductComponent {
+  product     Product @relation("isComponentFor", fields: [productId], references: [id])
+  productId   String
+  component   Product @relation("componentOf", fields: [componentId], references: [id])
+  componentId String
+  quantity    Float // Cantidad del componente necesaria para 1 unidad del producto
+
+  @@id([productId, componentId])
 }
 
 model Category {
-  id        Int       @id @default(autoincrement()) 
-  name      String    @unique
-  products  Product[]
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
 }
 
 model Supplier {
-  id            Int       @id @default(autoincrement())
-  name          String    @unique
-  contactInfo   String?
-  products      Product[]
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  contactInfo String?
+  products    Product[]
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  name          String?
-  password      String    // Se guardará hasheada
-  role          Role
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  movements     InventoryMovement[]
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String // Se guardará hasheada
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movements InventoryMovement[]
 }
 
 model InventoryMovement {
-  id        Int      @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id])
+  id        Int          @id @default(autoincrement())
   productId String
-  quantity  Float    // Positivo para entradas, negativo para salidas
-  reason    String   // "Compra", "Venta", "Ajuste", "Uso en producción"
-  user      User     @relation(fields: [userId], references: [id])
+  type      MovementType
+  quantity  Float
   userId    Int
-  timestamp DateTime @default(now())
+  notes     String?
+  createdAt DateTime     @default(now())
+  eventId   String?      // Para agrupar movimientos de una misma transacción (ej. Producción)
+
+  product   Product      @relation(fields: [productId], references: [id])
+  user      User         @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
 }
 
 enum Role {
@@ -72,4 +93,21 @@ enum Role {
   SUPERVISOR
   EMPLOYEE
   NO_ROLE
+}
+
+enum ProductType {
+  RAW_MATERIAL
+  PRE_ASSEMBLED
+  FINISHED
+}
+
+enum MovementType {
+  PURCHASE
+  PRODUCTION_IN
+  CUSTOMER_RETURN
+  ADJUSTMENT_IN
+  PRODUCTION_OUT
+  SALE
+  WASTAGE
+  ADJUSTMENT_OUT
 }

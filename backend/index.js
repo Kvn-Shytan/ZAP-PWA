@@ -3,6 +3,7 @@ const cors = require('cors'); // Import cors
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto'); // Import crypto module
 
 const prisma = new PrismaClient();
 const app = express();
@@ -484,45 +485,33 @@ app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
   }
 });
 
-// Obtener todos los productos
+// Obtener todos los productos con filtros
 app.get('/products', authenticateToken, async (req, res) => {
   const { user } = req;
-  
-  let selectFields = {
-    id: true,
-    internalCode: true,
-    description: true,
-    unit: true,
-    stock: true,
-    createdAt: true,
-    updatedAt: true,
-    categoryId: true,
-    supplierId: true,
-    category: true, // Include related data if needed
-    supplier: true, // Include related data if needed
-  };
+  const { search, categoryId } = req.query;
 
-  // Rule: Only ADMIN can see prices
-  if (user.role === 'ADMIN') {
-    selectFields.priceUSD = true;
-    selectFields.priceARS = true;
+  const where = {};
+
+  if (search) {
+    where.OR = [
+      {
+        description: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        internalCode: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+    ];
   }
 
-  try {
-    const products = await prisma.product.findMany({
-      select: selectFields,
-    });
-    res.json(products);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch products.' });
+  if (categoryId) {
+    where.categoryId = parseInt(categoryId);
   }
-});
-
-// Obtener un producto por ID
-app.get('/products/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { user } = req;
 
   let selectFields = {
     id: true,
@@ -538,25 +527,155 @@ app.get('/products/:id', authenticateToken, async (req, res) => {
     supplier: true,
   };
 
-  // Rule: Only ADMIN can see prices
   if (user.role === 'ADMIN') {
     selectFields.priceUSD = true;
     selectFields.priceARS = true;
   }
 
   try {
+    const products = await prisma.product.findMany({
+      where,
+      select: selectFields,
+      orderBy: { description: 'asc' },
+    });
+    res.json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch products.' });
+  }
+});
+
+// Obtener un producto por ID
+app.get('/products/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+
+  try {
     const product = await prisma.product.findUnique({
       where: { id },
-      select: selectFields,
+      include: {
+        category: true,
+        supplier: true,
+        components: { // Incluir los componentes de la lista de materiales
+          include: {
+            component: { // Para cada entrada en la lista, incluir los detalles del producto componente
+              select: {
+                id: true,
+                description: true,
+                internalCode: true,
+                unit: true,
+              }
+            }
+          }
+        }
+      },
     });
-    if (product) {
-      res.json(product);
-    } else {
-      res.status(404).json({ error: 'Product not found' });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
     }
+
+    // Si el usuario no es ADMIN, eliminar los campos de precio antes de enviar la respuesta
+    if (user.role !== 'ADMIN') {
+      delete product.priceUSD;
+      delete product.priceARS;
+    }
+
+    res.json(product);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch product.' });
+  }
+});
+
+// --- PRODUCT COMPONENTS (BILL OF MATERIALS) ENDPOINTS ---
+
+// Añadir un componente a un producto
+app.post('/products/:productId/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId } = req.params;
+  const { componentId, quantity } = req.body;
+
+  if (!componentId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'componentId and a positive quantity are required.' });
+  }
+
+  if (productId === componentId) {
+    return res.status(400).json({ error: 'Un producto no puede ser componente de sí mismo.' });
+  }
+
+  try {
+    const newComponent = await prisma.productComponent.create({
+      data: {
+        productId,
+        componentId,
+        quantity,
+      },
+    });
+    res.status(201).json(newComponent);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Este componente ya existe en la lista.' });
+    }
+    if (error.code === 'P2003') {
+      return res.status(404).json({ error: 'El producto o el componente no existen.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add component.' });
+  }
+});
+
+// Actualizar la cantidad de un componente
+app.put('/products/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, componentId } = req.params;
+  const { quantity } = req.body;
+
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'A positive quantity is required.' });
+  }
+
+  try {
+    const updatedComponent = await prisma.productComponent.update({
+      where: {
+        productId_componentId: {
+          productId,
+          componentId,
+        },
+      },
+      data: {
+        quantity,
+      },
+    });
+    res.json(updatedComponent);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Component not found in the list.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update component.' });
+  }
+});
+
+// Eliminar un componente de un producto
+app.delete('/products/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, componentId } = req.params;
+
+  try {
+    await prisma.productComponent.delete({
+      where: {
+        productId_componentId: {
+          productId,
+          componentId,
+        },
+      },
+    });
+    res.status(204).send(); // No Content
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Component not found in the list.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete component.' });
   }
 });
 
@@ -617,6 +736,397 @@ app.delete('/products/:id', authenticateToken, authorizeRole('ADMIN'), async (re
     res.status(500).json({ error: 'Failed to delete product.' });
   }
 });
+
+// --- INVENTORY MOVEMENT ENDPOINTS ---
+
+// Registrar una Orden de Producción
+app.post('/inventory/production', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { productId, quantity } = req.body;
+  const userId = req.user.userId;
+
+  if (!productId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'productId and a positive quantity are required.' });
+  }
+
+  try {
+    const eventId = crypto.randomUUID(); // Generate a unique ID for this event
+
+    // Iniciar una transacción
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Encontrar los componentes del producto (su "receta")
+      const components = await tx.productComponent.findMany({
+        where: { productId: productId },
+        include: { component: true }, // Incluir datos del componente para verificar stock
+      });
+
+      if (components.length === 0) {
+        throw new Error('Este producto no tiene componentes definidos y no puede ser producido de esta forma.');
+      }
+
+      // 2. Verificar si hay suficiente stock de CADA componente
+      for (const item of components) {
+        const requiredStock = item.quantity * quantity;
+        if (item.component.stock < requiredStock) {
+          throw new Error(`Stock insuficiente para el componente: ${item.component.description}. Necesario: ${requiredStock}, Disponible: ${item.component.stock}`);
+        }
+      }
+
+      // 3. Crear el movimiento de entrada para el producto fabricado (PRODUCTION_IN)
+      const productionIn = await tx.inventoryMovement.create({
+        data: {
+          productId: productId,
+          type: 'PRODUCTION_IN',
+          quantity: quantity,
+          userId: userId,
+          notes: `Producción de ${quantity} unidades.`,
+          eventId: eventId, // Assign event ID
+        }
+      });
+
+      // 4. Actualizar el stock del producto fabricado
+      const finalProductUpdate = await tx.product.update({
+        where: { id: productId },
+        data: { stock: { increment: quantity } },
+      });
+
+      // 5. Crear los movimientos de salida para cada componente (PRODUCTION_OUT)
+      const componentMovements = [];
+      for (const item of components) {
+        const requiredStock = item.quantity * quantity;
+
+        const productionOut = await tx.inventoryMovement.create({
+          data: {
+            productId: item.componentId,
+            type: 'PRODUCTION_OUT',
+            quantity: requiredStock,
+            userId: userId,
+            notes: `Uso para producción de ${quantity} x ${finalProductUpdate.description}`,
+            eventId: eventId, // Assign the same event ID
+          }
+        });
+        componentMovements.push(productionOut);
+
+        await tx.product.update({
+          where: { id: item.componentId },
+          data: { stock: { decrement: requiredStock } },
+        });
+      }
+      
+      return { productionIn, componentMovements };
+    });
+
+    res.status(201).json(result);
+
+  } catch (error) {
+    // Si el error es por stock insuficiente o cualquier otra cosa, la transacción hará rollback
+    console.error("Error en la transacción de producción:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Registrar una Compra
+app.post('/inventory/purchase', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, quantity, notes } = req.body;
+  const userId = req.user.userId;
+
+  if (!productId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'productId and a positive quantity are required.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Opcional: Verificar que el producto es de tipo RAW_MATERIAL
+      const product = await tx.product.findUnique({ where: { id: productId } });
+      if (!product) {
+        throw new Error('Producto no encontrado.');
+      }
+      if (product.type !== 'RAW_MATERIAL') {
+        // O se podría permitir comprar cualquier cosa, a definir.
+        throw new Error('Solo se pueden registrar compras de productos tipo RAW_MATERIAL.');
+      }
+
+      // Crear el movimiento de entrada
+      const purchaseMovement = await tx.inventoryMovement.create({
+        data: {
+          productId: productId,
+          type: 'PURCHASE',
+          quantity: quantity,
+          userId: userId,
+          notes: notes || `Compra de ${quantity} unidades.`
+        }
+      });
+
+      // Actualizar el stock del producto
+      await tx.product.update({
+        where: { id: productId },
+        data: { stock: { increment: quantity } },
+      });
+
+      return purchaseMovement;
+    });
+
+    res.status(201).json(result);
+
+  } catch (error) {
+    console.error("Error en la transacción de compra:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Registrar una Venta
+app.post('/inventory/sale', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, quantity, notes } = req.body;
+  const userId = req.user.userId;
+
+  if (!productId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'productId and a positive quantity are required.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const product = await tx.product.findUnique({ where: { id: productId } });
+      if (!product) {
+        throw new Error('Producto no encontrado.');
+      }
+      // Opcional: verificar que sea un producto FINISHED
+      if (product.type !== 'FINISHED') {
+        throw new Error('Solo se pueden vender productos de tipo FINISHED.');
+      }
+
+      // Verificar stock
+      if (product.stock < quantity) {
+        throw new Error(`Stock insuficiente. Disponible: ${product.stock}, Requerido: ${quantity}`);
+      }
+
+      // Crear el movimiento de salida
+      const saleMovement = await tx.inventoryMovement.create({
+        data: {
+          productId: productId,
+          type: 'SALE',
+          quantity: quantity,
+          userId: userId,
+          notes: notes || `Venta de ${quantity} unidades.`
+        }
+      });
+
+      // Actualizar el stock del producto
+      await tx.product.update({
+        where: { id: productId },
+        data: { stock: { decrement: quantity } },
+      });
+
+      return saleMovement;
+    });
+
+    res.status(201).json(result);
+
+  } catch (error) {
+    console.error("Error en la transacción de venta:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Anular un Movimiento de Inventario (Contra-asiento)
+app.post('/inventory/reversal', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { movementId } = req.body;
+  const userPerformingReversalId = req.user.userId;
+
+  if (!movementId) {
+    return res.status(400).json({ error: 'movementId is required.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const originalMovement = await tx.inventoryMovement.findUnique({ where: { id: movementId } });
+
+      if (!originalMovement) throw new Error('Movimiento original no encontrado.');
+      if (originalMovement.notes?.startsWith('Anulación')) throw new Error('No se puede anular un movimiento que ya es una anulación.');
+
+      let movementsToReverse = [];
+
+      if (originalMovement.eventId) {
+        // Si tiene un eventId, buscar todos los movimientos del evento
+        const eventMovements = await tx.inventoryMovement.findMany({ where: { eventId: originalMovement.eventId } });
+        // Verificar que ninguno haya sido anulado ya
+        for (const mov of eventMovements) {
+            const existingReversal = await tx.inventoryMovement.findFirst({ where: { notes: `Anulación del mov. #${mov.id}` } });
+            if (existingReversal) throw new Error(`El evento #${originalMovement.eventId} ya ha sido anulado (movimiento #${mov.id} ya fue revertido).`);
+        }
+        movementsToReverse = eventMovements;
+      } else {
+        // Si no, solo anular el movimiento individual
+        const existingReversal = await tx.inventoryMovement.findFirst({ where: { notes: `Anulación del mov. #${movementId}` } });
+        if (existingReversal) throw new Error('Este movimiento ya ha sido anulado previamente.');
+        movementsToReverse.push(originalMovement);
+      }
+
+      const reversalMovements = [];
+      for (const mov of movementsToReverse) {
+        let reversalType;
+        let stockChange;
+        const isIncome = ['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type);
+
+        if (isIncome) {
+          reversalType = 'ADJUSTMENT_OUT';
+          stockChange = { decrement: mov.quantity };
+        } else {
+          reversalType = 'ADJUSTMENT_IN';
+          stockChange = { increment: mov.quantity };
+        }
+
+        const reversal = await tx.inventoryMovement.create({
+          data: {
+            productId: mov.productId,
+            type: reversalType,
+            quantity: mov.quantity,
+            userId: userPerformingReversalId,
+            notes: `Anulación del mov. #${mov.id}`,
+          },
+        });
+        reversalMovements.push(reversal);
+
+        await tx.product.update({
+          where: { id: mov.productId },
+          data: { stock: stockChange },
+        });
+      }
+
+      return reversalMovements;
+    });
+
+    res.status(201).json(result);
+
+  } catch (error) {
+    console.error("Error en la anulación de movimiento:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Obtener productos con bajo stock
+app.get('/inventory/low-stock', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  try {
+    const lowStockProducts = await prisma.product.findMany({
+      where: {
+        // Usamos `expr` para poder comparar dos campos del mismo modelo
+        stock: {
+          lt: prisma.product.fields.lowStockThreshold,
+        },
+        // Opcional: filtrar para que solo muestre productos que tienen un umbral definido > 0
+        lowStockThreshold: {
+          gt: 0,
+        },
+      },
+      orderBy: {
+        description: 'asc',
+      },
+    });
+    res.json(lowStockProducts);
+  } catch (error) {
+    console.error("Error al obtener productos con bajo stock:", error.message);
+    res.status(500).json({ error: 'Failed to fetch low stock products.' });
+  }
+});
+
+// Actualizar el umbral de bajo stock para un producto
+app.put('/inventory/low-stock-threshold', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { productId, newThreshold } = req.body;
+
+  if (!productId || newThreshold === undefined || newThreshold < 0) {
+    return res.status(400).json({ error: 'productId and a non-negative newThreshold are required.' });
+  }
+
+  try {
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: { lowStockThreshold: newThreshold },
+    });
+    res.json(updatedProduct);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    console.error("Error al actualizar el umbral de bajo stock:", error.message);
+    res.status(500).json({ error: 'Failed to update low stock threshold.' });
+  }
+});
+
+// Obtener historial de movimientos con filtros y paginación
+app.get('/inventory/movements', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const {
+    page = 1,
+    pageSize = 20,
+    productId,
+    userId,
+    type,
+    startDate,
+    endDate,
+    isCorrection
+  } = req.query;
+
+  const pageNum = parseInt(page);
+  const pageSizeNum = parseInt(pageSize);
+
+  const where = {};
+
+  if (productId) {
+    where.productId = productId;
+  }
+  if (userId) {
+    where.userId = parseInt(userId);
+  }
+  if (type) {
+    where.type = type;
+  }
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) {
+      where.createdAt.gte = new Date(startDate);
+    }
+    if (endDate) {
+      where.createdAt.lte = new Date(endDate);
+    }
+  }
+  if (isCorrection === 'true') {
+    where.OR = [
+      { type: 'ADJUSTMENT_IN' },
+      { type: 'ADJUSTMENT_OUT' },
+      { type: 'WASTAGE' },
+    ];
+  }
+
+  try {
+    const movements = await prisma.inventoryMovement.findMany({
+      where,
+      skip: (pageNum - 1) * pageSizeNum,
+      take: pageSizeNum,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        product: {
+          select: { description: true, internalCode: true },
+        },
+        user: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+
+    const totalMovements = await prisma.inventoryMovement.count({ where });
+
+    res.json({
+      movements,
+      totalMovements,
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalMovements / pageSizeNum),
+    });
+
+  } catch (error) {
+    console.error("Error al obtener historial de movimientos:", error.message);
+    res.status(500).json({ error: 'Failed to fetch inventory movements.' });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Backend escuchando en http://localhost:${port}`);

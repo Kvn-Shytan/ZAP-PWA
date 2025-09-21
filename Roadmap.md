@@ -32,7 +32,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Implementar y verificar la visualización de productos en el frontend.
     -   [x] Implementar y verificar la visualización de categorías en el frontend.
     -   [x] Implementar y verificar la visualización de proveedores en el frontend.
-    -   [ ] Implementar lógica de control de stock (aumentar/disminuir). **(Se abordará después de la gestión de usuarios)**
+    -   [x] Lógica de control de stock definida y planificada.
 
 -   **Fase 3: Módulo de Personal y Seguridad (Completada)**
     -   [x] Crear API para la gestión de colaboradores (usuarios) (CRUD).
@@ -49,16 +49,44 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] Verificación de la nueva UI de la página de Login.
     -   [x] Corregir regresiones de UI en página de Login y navegación.
 
--   **Fase 4: Funcionalidad Offline y PWA**
+-   **Fase 4: Módulo de Inventario Avanzado y Alertas (En Progreso)**
+    -   **4.1. Actualización del Modelo de Datos (Backend)**
+        -   [x] En `schema.prisma`, añadir el campo `type` (RAW_MATERIAL, PRE_ASSEMBLED, FINISHED) al modelo `Product`.
+        -   [x] En `schema.prisma`, añadir el campo `lowStockThreshold` al modelo `Product`.
+        -   [x] En `schema.prisma`, crear el modelo `ProductComponent` para la "Lista de Materiales".
+        -   [x] En `schema.prisma`, refinar el modelo `InventoryMovement` con un `enum MovementType`.
+        -   [x] Ejecutar la migración de la base de datos para aplicar los cambios.
+        -   [ ] **(Nuevo)** Crear una herramienta o script para asignar masivamente el `ProductType` a los productos existentes.
+    -   **4.2. Lógica de Negocio y API (Backend)**
+        -   [x] Crear endpoint para registrar "Órdenes de Producción" (gestionando `PRODUCTION_IN` y `PRODUCTION_OUT`).
+        -   [x] Crear endpoints para registrar `COMPRAS` y `VENTAS` (restringidos por rol).
+        -   [x] Crear endpoint para "Anular" movimientos (lógica de contra-asiento).
+        -   [x] Crear endpoint para obtener la lista de productos con bajo stock.
+        -   [x] Crear endpoint para que el Admin actualice el `lowStockThreshold` de un producto.
+        -   [x] **(Nuevo)** Crear endpoints para gestionar la Lista de Materiales (Añadir, Actualizar, Quitar).
+    -   **4.3. Interfaz de Usuario (Frontend)**
+        -   [x] **(Nuevo)** Crear página "Historial de Movimientos" para ver, filtrar y buscar en todos los movimientos de inventario.
+        -   [x] **(Nuevo)** En el historial, implementar el botón "Anular" (visible según rol).
+        -   [x] **(Nuevo)** En el historial, resaltar en rojo los movimientos de anulación/corrección.
+        -   [x] **(Nuevo)** Añadir filtros por búsqueda y categoría a la lista de productos.
+        -   [x] Actualizar UI de creación/edición de Productos para incluir `type` y `lowStockThreshold`.
+        -   [x] **(Nuevo)** Implementar la funcionalidad de Eliminar un producto en la UI (restringido a ADMIN).
+        -   [x] **(Nuevo)** Desarrollar UI para gestionar la "Lista de Materiales" de un producto (añadir/quitar componentes).
+        -   [ ] Crear UI para registrar una "Orden de Producción".
+
+-   **Fase 5: Módulo de Armadores (Pendiente)**
+    -   [ ] Diseñar modelo de datos para Armadores, envíos y recepciones.
+    -   [ ] Implementar API y UI para la gestión de Armadores.
+
+-   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   [ ] Implementar Service Workers para el funcionamiento offline.
     -   [ ] Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio.
 
--   **Fase 5: Despliegue y Pruebas**
+-   **Fase 7: Despliegue y Pruebas (Pendiente)**
     -   [ ] Desplegar la aplicación en un entorno de producción.
     -   [ ] Realizar pruebas con los colaboradores y recoger feedback.
 
--   **Fase 6: Mejoras Futuras y Escalabilidad**
-    -   [ ] Implementar Módulo de "Armadores" (gestión de envíos, recepciones y pagos).
+-   **Fase 8: Mejoras Futuras y Escalabilidad (Pendiente)**
     -   [ ] Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
     -   [ ] Opcional: Desarrollar UI para la gestión dinámica de permisos por rol.
 

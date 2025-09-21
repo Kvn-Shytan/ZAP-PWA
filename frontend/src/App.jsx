@@ -6,7 +6,9 @@ import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import UserManagementPage from './pages/UserManagementPage';
-import ChangePasswordPage from './pages/ChangePasswordPage'; // Import the new page
+import ChangePasswordPage from './pages/ChangePasswordPage';
+import InventoryHistoryPage from './pages/InventoryHistoryPage';
+import ProductEditPage from './pages/ProductEditPage'; // Import the new page
 import './App.css';
 
 function App() {
@@ -24,6 +26,9 @@ function App() {
           {user && <Link to="/suppliers">Proveedores</Link>}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/inventory-history">Historial</Link>
           )}
           {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
           {user ? (
@@ -44,6 +49,14 @@ function App() {
           element={<ProtectedRoute element={<ProductList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
         />
         <Route
+          path="/products/new"
+          element={<ProtectedRoute element={<ProductEditPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/products/edit/:id"
+          element={<ProtectedRoute element={<ProductEditPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
           path="/categories"
           element={<ProtectedRoute element={<CategoryList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
         />
@@ -54,6 +67,10 @@ function App() {
         <Route
           path="/users"
           element={<ProtectedRoute element={<UserManagementPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/inventory-history"
+          element={<ProtectedRoute element={<InventoryHistoryPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/change-password"
