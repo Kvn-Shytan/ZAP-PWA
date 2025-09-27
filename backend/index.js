@@ -509,6 +509,10 @@ app.get('/api/products', authenticateToken, async (req, res) => {
     ];
   }
 
+  if (categoryId) {
+    where.categoryId = parseInt(categoryId);
+  }
+
   if (type) {
     if (type.includes(',')) {
       where.type = { in: type.split(',') };

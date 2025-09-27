@@ -1,5 +1,18 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-27
+-   **[FEAT] Nueva Página de Registro de Compras:**
+    -   Creada la nueva sección "Registrar Compra" (`/purchase-order`), accesible para roles `ADMIN` y `SUPERVISOR`.
+    -   La página permite registrar el ingreso de materia prima, actualizando el stock del producto correspondiente de forma atómica.
+-   **[FIX] Corrección General de Llamadas a la API:**
+    -   Refactorizadas las páginas `PurchaseOrderPage` y `ProductComponentsPage` para usar el hook centralizado `authFetch`, solucionando errores de carga de datos.
+    -   Corregido el filtro por categoría en la lista de productos, que no se estaba aplicando en el backend.
+    -   Arreglado un error en el texto del diálogo de confirmación de compra que mostraba `undefined` en lugar del código del producto.
+-   **[UX] Mejoras en la Página de Compras:**
+    -   El botón "Registrar Compra" ahora cambia de color a verde cuando está habilitado, mejorando la retroalimentación visual.
+    -   Se añadió un diálogo de confirmación para prevenir registros accidentales.
+    -   Al seleccionar un producto, ahora se muestra su unidad de medida (ej: "unidades", "mts") junto al campo de cantidad.
+
 ## 2025-09-26
 -   **[FIX] Estabilización de la Aplicación:**
     -   Resolución de errores de duplicación de rutas `/api/api/` en llamadas del frontend (`ProductList.jsx`, `InventoryHistoryPage.jsx`, `ProductEditPage.jsx`, `ProductionOrderPage.jsx`).

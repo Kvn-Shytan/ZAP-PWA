@@ -75,7 +75,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
     -   **4.4. Interfaces de Gestión de Inventario (Nuevo)**
         -   [x] **Prioridad 1:** Crear UI para registrar "Órdenes de Producción Interna" (con verificación dinámica de stock de componentes, alertas de insuficiencia y validación de disponibilidad).
-        -   [ ] **Prioridad 2:** Crear UI para registrar "Compras a Proveedores" (Ingreso de Materia Prima).
+        -   [x] **Prioridad 2:** Crear UI para registrar "Compras a Proveedores" (Ingreso de Materia Prima).
 
 -   **Fase 5: Módulo de Armadores (Pendiente)**
     -   [ ] **Prioridad 3:** Diseñar e implementar el flujo completo de "Producción Externa" (modelos de datos, API y UI para Envíos y Recepciones).

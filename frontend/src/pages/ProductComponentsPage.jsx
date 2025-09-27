@@ -29,7 +29,8 @@ const ProductComponentsPage = () => {
       setProduct(productData);
       setComponents(componentsData || []);
       
-      setAllPossibleComponents(allProductsData.filter(p => p.id !== productId) || []);
+      // Correctly access the .products array from the paginated response
+      setAllPossibleComponents(allProductsData.products.filter(p => p.id !== productId) || []);
 
     } catch (err) {
       setError('Error al cargar los datos de componentes.');

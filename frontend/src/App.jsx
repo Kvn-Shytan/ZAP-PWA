@@ -11,6 +11,7 @@ import InventoryHistoryPage from './pages/InventoryHistoryPage';
 import ProductEditPage from './pages/ProductEditPage'; // Import the new page
 import ProductionOrderPage from './pages/ProductionOrderPage';
 import ProductComponentsPage from './pages/ProductComponentsPage';
+import PurchaseOrderPage from './pages/PurchaseOrderPage'; // Import the new page
 import './App.css';
 
 function App() {
@@ -31,6 +32,9 @@ function App() {
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/production-orders">Producción</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/purchase-order">Registrar Compra</Link>
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
@@ -84,6 +88,10 @@ function App() {
         <Route
           path="/production-orders"
           element={<ProtectedRoute element={<ProductionOrderPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/purchase-order"
+          element={<ProtectedRoute element={<PurchaseOrderPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/change-password"
