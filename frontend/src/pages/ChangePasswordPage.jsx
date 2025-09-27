@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 function ChangePasswordPage() {
-  const { token } = useAuth();
+  const { authFetch } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-
-  const API_BASE_URL = 'http://localhost:3001';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,20 +20,10 @@ function ChangePasswordPage() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/users/change-password`, {
+      const data = await authFetch('/users/change-password', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al cambiar la contraseña.');
-      }
 
       setMessage(data.message);
       setCurrentPassword('');

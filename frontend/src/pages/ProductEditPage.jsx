@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProductForm from '../components/ProductForm';
 import ProductComponents from '../components/ProductComponents'; // Import the new component
@@ -23,7 +23,8 @@ const ProductEditPage = () => {
       setLoading(true);
       const catPromise = authFetch('/categories');
       const supPromise = authFetch('/suppliers');
-      const allProdPromise = authFetch('/products'); // Fetch all products
+      // Fetch all products with pagination disabled to get the full list
+      const allProdPromise = authFetch('/products?pageSize=1000'); 
       let prodPromise = Promise.resolve(null);
 
       if (isEdit) {
@@ -34,7 +35,7 @@ const ProductEditPage = () => {
 
       setCategories(catData || []);
       setSuppliers(supData || []);
-      setAllProducts(allProdData || []); // Set all products
+      setAllProducts(allProdData.products || []); // Correctly access the products array
       if (prodData) {
         setProduct(prodData);
       }
@@ -128,6 +129,13 @@ const ProductEditPage = () => {
           <button onClick={handleSubmit} disabled={isSubmitting} style={buttonStyle}>
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>
+
+          {isEdit && (product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
+            <Link to={`/products/${id}/components`} style={buttonStyle}>
+              Gestionar Componentes
+            </Link>
+          )}
+
           <button onClick={() => navigate('/products')} style={cancelButtonStyle}>
             Cancelar
           </button>
@@ -138,15 +146,6 @@ const ProductEditPage = () => {
           </button>
         )}
       </div>
-
-      {isEdit && (product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
-        <ProductComponents 
-          product={product} 
-          allProducts={allProducts}
-          user={user}
-          reloadData={loadData}
-        />
-      )}
     </div>
   );
 };

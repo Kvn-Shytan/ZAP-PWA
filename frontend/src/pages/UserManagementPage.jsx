@@ -1,30 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 function UserManagementPage() {
-  const { user, token } = useAuth();
+  const { user, authFetch } = useAuth(); // Use authFetch from context
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', name: '', password: '', role: '' });
-  const [editingUser, setEditingUser] = useState(null); // User being edited
 
-  const API_BASE_URL = 'http://localhost:3001'; // Assuming backend runs on 3001
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await authFetch('/users');
       setUsers(data);
     } catch (e) {
       setError('Failed to fetch users: ' + e.message);
@@ -32,13 +21,13 @@ function UserManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authFetch]);
 
   useEffect(() => {
-    if (token && user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) {
+    if (user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) {
       fetchUsers();
     }
-  }, [token, user]);
+  }, [user, fetchUsers]);
 
   const handleNewUserChange = (e) => {
     setNewUser({ ...newUser, [e.target.name]: e.target.value });
@@ -48,18 +37,10 @@ function UserManagementPage() {
     e.preventDefault();
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/users`, {
+      await authFetch('/users', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify(newUser),
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
       setNewUser({ email: '', name: '', password: '', role: '' });
       setShowCreateForm(false);
       fetchUsers(); // Refresh list
@@ -72,18 +53,12 @@ function UserManagementPage() {
   const handleRoleChange = async (userId, newRole) => {
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
+      await authFetch(`/users/${userId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ role: newRole }),
+        }
+      );
       fetchUsers(); // Refresh list
     } catch (e) {
       setError('Failed to update role: ' + e.message);
@@ -97,16 +72,7 @@ function UserManagementPage() {
     }
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
+      await authFetch(`/users/${userId}`, { method: 'DELETE' });
       fetchUsers(); // Refresh list
     } catch (e) {
       setError('Failed to delete user: ' + e.message);
@@ -120,17 +86,9 @@ function UserManagementPage() {
     }
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${userId}/reset-password`, {
+      const result = await authFetch(`/users/${userId}/reset-password`, {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
       alert(`La nueva contraseña para el usuario ${userId} es: ${result.newPassword}. Por favor, comunícasela al usuario.`);
       fetchUsers(); // Refresh list (optional, as password change doesn't affect displayed data)
     } catch (e) {

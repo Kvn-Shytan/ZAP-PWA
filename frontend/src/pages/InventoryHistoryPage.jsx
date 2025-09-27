@@ -32,9 +32,10 @@ const InventoryHistoryPage = () => {
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
-        const productsData = await authFetch('/products');
+        // Fetch products with pagination disabled to get all for the filter
+        const productsData = await authFetch('/products?pageSize=1000'); 
         const usersData = await authFetch('/users');
-        setProducts(productsData || []);
+        setProducts(productsData.products || []); // Correctly access the products array
         setUsers(usersData || []);
       } catch (err) {
         console.error("Failed to fetch filter data", err);
@@ -118,23 +119,57 @@ const InventoryHistoryPage = () => {
 
     const canAnnul = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
 
-    return movements.map(mov => (
-      <tr key={mov.id} style={{ color: mov.notes?.startsWith('Anulación') ? 'red' : 'inherit' }}>
-        <td>{new Date(mov.createdAt).toLocaleString()}</td>
-        <td>{mov.product.description} ({mov.product.internalCode})</td>
-        <td>{mov.type}</td>
-        <td>{['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type) ? '+' : '-'}{mov.quantity}</td>
-        <td>{mov.user.name || mov.user.email}</td>
-        <td>{mov.notes}</td>
-        <td>
-          {canAnnul && !mov.notes?.startsWith('Anulación') && (
-            <button onClick={() => handleReversal(mov.id)} disabled={isSubmitting} style={annulButtonStyle}>
-              Anular
-            </button>
-          )}
-        </td>
-      </tr>
-    ));
+    // 1. Find all annulled movements to identify originals
+    const annulledOriginalIds = new Set();
+    movements.forEach(mov => {
+      if (mov.notes?.startsWith('Anulación del mov. #')) {
+        const match = mov.notes.match(/#(\d+)/);
+        if (match && match[1]) {
+          annulledOriginalIds.add(parseInt(match[1], 10));
+        }
+      }
+    });
+
+    return movements.map(mov => {
+      const isAnnulled = annulledOriginalIds.has(mov.id);
+      const isComponent = mov.type === 'PRODUCTION_OUT';
+      const isReversal = mov.notes?.startsWith('Anulación');
+
+      // 2. Define dynamic styles
+      const rowStyle = {};
+      if (isAnnulled) {
+        rowStyle.textDecoration = 'line-through';
+        rowStyle.color = '#999';
+      }
+      if (isComponent) {
+        rowStyle.fontStyle = 'italic';
+        rowStyle.fontSize = '0.9em';
+      }
+      if (isReversal) {
+        rowStyle.color = 'red';
+      }
+
+      // 3. Define button visibility
+      const showAnnulButton = canAnnul && mov.eventId && mov.type === 'PRODUCTION_IN' && !isAnnulled;
+
+      return (
+        <tr key={mov.id} style={rowStyle}>
+          <td>{new Date(mov.createdAt).toLocaleString()}</td>
+          <td>{mov.product.description} ({mov.product.internalCode})</td>
+          <td>{mov.type}</td>
+          <td>{['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type) ? '+' : '-'}{mov.quantity}</td>
+          <td>{mov.user.name || mov.user.email}</td>
+          <td>{mov.notes}</td>
+          <td>
+            {showAnnulButton && (
+              <button onClick={() => handleReversal(mov.id)} disabled={isSubmitting} style={annulButtonStyle}>
+                Anular
+              </button>
+            )}
+          </td>
+        </tr>
+      );
+    });
   };
 
   return (

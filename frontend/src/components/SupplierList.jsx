@@ -5,30 +5,13 @@ function SupplierList() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { authFetch } = useAuth();
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     const fetchSuppliers = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:3001/suppliers', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.status === 401) {
-          throw new Error('No autorizado. La sesión puede haber expirado.');
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await authFetch('/suppliers');
         setSuppliers(data);
       } catch (error) {
         setError(error);
@@ -38,7 +21,7 @@ function SupplierList() {
     };
 
     fetchSuppliers();
-  }, [token]);
+  }, [authFetch]);
 
   if (loading) {
     return <div>Cargando proveedores...</div>;

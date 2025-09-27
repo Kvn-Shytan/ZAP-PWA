@@ -55,7 +55,7 @@ const authorizeRole = (allowedRoles) => {
   };
 };
 
-app.get('/', (req, res) => {
+app.get('/api/', (req, res) => {
   res.send('¡El Backend de ZAP PWA está funcionando!');
 });
 
@@ -63,7 +63,7 @@ app.get('/', (req, res) => {
 
 // --- NUEVO ENDPOINT ---
 // Crear un nuevo producto
-app.post('/products', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/products', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { user } = req;
   let dataToCreate = { ...req.body };
 
@@ -95,7 +95,7 @@ app.post('/products', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']),
 
 // --- CATEGORY ENDPOINTS ---
 // Crear una nueva categoría
-app.post('/categories', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/categories', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
@@ -115,7 +115,7 @@ app.post('/categories', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']
 });
 
 // Obtener todas las categorías
-app.get('/categories', authenticateToken, async (req, res) => {
+app.get('/api/categories', authenticateToken, async (req, res) => {
   try {
     const categories = await prisma.category.findMany();
     res.json(categories);
@@ -126,7 +126,7 @@ app.get('/categories', authenticateToken, async (req, res) => {
 });
 
 // Obtener una categoría por ID
-app.get('/categories/:id', authenticateToken, async (req, res) => {
+app.get('/api/categories/:id', authenticateToken, async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -147,7 +147,7 @@ app.get('/categories/:id', authenticateToken, async (req, res) => {
 });
 
 // Actualizar una categoría por ID
-app.put('/categories/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.put('/api/categories/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -172,7 +172,7 @@ app.put('/categories/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISO
 });
 
 // Eliminar una categoría por ID
-app.delete('/categories/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.delete('/api/categories/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
@@ -193,7 +193,7 @@ app.delete('/categories/:id', authenticateToken, authorizeRole('ADMIN'), async (
 
 // --- SUPPLIER ENDPOINTS ---
 // Crear un nuevo proveedor
-app.post('/suppliers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/suppliers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const { name, contactInfo } = req.body;
     if (!name) {
@@ -213,7 +213,7 @@ app.post('/suppliers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR'])
 });
 
 // Obtener todos los proveedores
-app.get('/suppliers', authenticateToken, async (req, res) => {
+app.get('/api/suppliers', authenticateToken, async (req, res) => {
   try {
     const suppliers = await prisma.supplier.findMany();
     res.json(suppliers);
@@ -224,7 +224,7 @@ app.get('/suppliers', authenticateToken, async (req, res) => {
 });
 
 // Obtener un proveedor por ID
-app.get('/suppliers/:id', authenticateToken, async (req, res) => {
+app.get('/api/suppliers/:id', authenticateToken, async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -245,7 +245,7 @@ app.get('/suppliers/:id', authenticateToken, async (req, res) => {
 });
 
 // Actualizar un proveedor por ID
-app.put('/suppliers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.put('/api/suppliers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -270,7 +270,7 @@ app.put('/suppliers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR
 });
 
 // Eliminar un proveedor por ID
-app.delete('/suppliers/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.delete('/api/suppliers/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id); // Convert id to integer
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid supplier ID' });
@@ -295,7 +295,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 // --- AUTH ENDPOINTS ---
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -334,7 +334,7 @@ app.post('/login', async (req, res) => {
 const saltRounds = 10;
 
 // Crear un nuevo usuario
-app.post('/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.post('/api/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   try {
     const { email, name, password } = req.body;
     let { role } = req.body; // Make role optional
@@ -366,7 +366,7 @@ app.post('/users', authenticateToken, authorizeRole('ADMIN'), async (req, res) =
 });
 
 // Obtener todos los usuarios (sin passwords)
-app.get('/users', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.get('/api/users', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -386,7 +386,7 @@ app.get('/users', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), asy
 });
 
 // Obtener un usuario por ID (sin password)
-app.get('/users/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.get('/api/users/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid user ID' });
@@ -414,7 +414,7 @@ app.get('/users/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']),
   }
 });
 
-app.put('/users/change-password', authenticateToken, async (req, res) => {
+app.put('/api/users/change-password', authenticateToken, async (req, res) => {
   const { currentPassword, newPassword, confirmNewPassword } = req.body;
   const userId = req.user.userId; // ID del usuario logueado desde el token
 
@@ -453,7 +453,7 @@ app.put('/users/change-password', authenticateToken, async (req, res) => {
 });
 
 // Actualizar un usuario por ID
-app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.put('/api/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid user ID' });
@@ -486,9 +486,9 @@ app.put('/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
 });
 
 // Obtener todos los productos con filtros
-app.get('/products', authenticateToken, async (req, res) => {
+app.get('/api/products', authenticateToken, async (req, res) => {
   const { user } = req;
-  const { search, categoryId } = req.query;
+  const { search, categoryId, type, page = 1, pageSize = 25 } = req.query;
 
   const where = {};
 
@@ -509,8 +509,12 @@ app.get('/products', authenticateToken, async (req, res) => {
     ];
   }
 
-  if (categoryId) {
-    where.categoryId = parseInt(categoryId);
+  if (type) {
+    if (type.includes(',')) {
+      where.type = { in: type.split(',') };
+    } else {
+      where.type = type;
+    }
   }
 
   let selectFields = {
@@ -519,6 +523,7 @@ app.get('/products', authenticateToken, async (req, res) => {
     description: true,
     unit: true,
     stock: true,
+    type: true,
     createdAt: true,
     updatedAt: true,
     categoryId: true,
@@ -533,178 +538,166 @@ app.get('/products', authenticateToken, async (req, res) => {
   }
 
   try {
+    const pageNum = parseInt(page);
+    const pageSizeNum = parseInt(pageSize);
+
     const products = await prisma.product.findMany({
       where,
       select: selectFields,
       orderBy: { description: 'asc' },
+      skip: (pageNum - 1) * pageSizeNum,
+      take: pageSizeNum,
     });
-    res.json(products);
+
+    const totalProducts = await prisma.product.count({ where });
+
+    res.json({
+      products,
+      totalProducts,
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalProducts / pageSizeNum),
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch products.' });
   }
 });
 
-// Obtener un producto por ID
-app.get('/products/:id', authenticateToken, async (req, res) => {
+// Obtener un solo producto por su ID
+app.get('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { id } = req.params;
-  const { user } = req;
-
   try {
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: id },
       include: {
         category: true,
         supplier: true,
-        components: { // Incluir los componentes de la lista de materiales
+        components: {
           include: {
-            component: { // Para cada entrada en la lista, incluir los detalles del producto componente
-              select: {
-                id: true,
-                description: true,
-                internalCode: true,
-                unit: true,
-              }
-            }
-          }
-        }
+            component: true,
+          },
+        },
       },
     });
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ error: 'Producto no encontrado' });
     }
-
-    // Si el usuario no es ADMIN, eliminar los campos de precio antes de enviar la respuesta
-    if (user.role !== 'ADMIN') {
-      delete product.priceUSD;
-      delete product.priceARS;
-    }
-
-    res.json(product);
-
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch product.' });
+    console.error('Error fetching product by ID:', error);
+    res.status(500).json({ error: 'Error al obtener el producto' });
   }
 });
 
-// --- PRODUCT COMPONENTS (BILL OF MATERIALS) ENDPOINTS ---
+// Obtener los componentes de un producto (receta)
+app.get('/api/products/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { id } = req.params;
+  console.log('Fetching components for product ID:', id);
+  try {
+    const productComponents = await prisma.productComponent.findMany({
+      where: {
+        productId: id,
+      },
+      include: {
+        component: {
+          select: {
+            id: true,
+            internalCode: true,
+            description: true,
+            stock: true,
+          },
+        },
+      },
+    });
+    res.json(productComponents);
+  } catch (error) {
+    console.error('Error al obtener los componentes del producto:', error);
+    res.status(500).json({ error: 'Error al obtener los componentes del producto' });
+  }
+});
 
 // Añadir un componente a un producto
-app.post('/products/:productId/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { productId } = req.params;
+app.post('/api/products/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { id: productId } = req.params;
   const { componentId, quantity } = req.body;
 
   if (!componentId || !quantity || quantity <= 0) {
     return res.status(400).json({ error: 'componentId and a positive quantity are required.' });
   }
 
-  if (productId === componentId) {
-    return res.status(400).json({ error: 'Un producto no puede ser componente de sí mismo.' });
-  }
-
   try {
     const newComponent = await prisma.productComponent.create({
       data: {
-        productId,
-        componentId,
-        quantity,
+        productId: productId,
+        componentId: componentId,
+        quantity: parseFloat(quantity),
       },
     });
     res.status(201).json(newComponent);
   } catch (error) {
+    console.error('Error adding component to product:', error);
     if (error.code === 'P2002') {
-      return res.status(409).json({ error: 'Este componente ya existe en la lista.' });
+      return res.status(409).json({ error: 'Este componente ya existe en la receta del producto.' });
     }
-    if (error.code === 'P2003') {
-      return res.status(404).json({ error: 'El producto o el componente no existen.' });
-    }
-    console.error(error);
-    res.status(500).json({ error: 'Failed to add component.' });
+    res.status(500).json({ error: 'Error al añadir el componente.' });
   }
 });
 
-// Actualizar la cantidad de un componente
-app.put('/products/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { productId, componentId } = req.params;
-  const { quantity } = req.body;
-
-  if (!quantity || quantity <= 0) {
-    return res.status(400).json({ error: 'A positive quantity is required.' });
-  }
-
-  try {
-    const updatedComponent = await prisma.productComponent.update({
-      where: {
-        productId_componentId: {
-          productId,
-          componentId,
-        },
-      },
-      data: {
-        quantity,
-      },
-    });
-    res.json(updatedComponent);
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Component not found in the list.' });
-    }
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update component.' });
-  }
-});
-
-// Eliminar un componente de un producto
-app.delete('/products/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+// Quitar un componente de un producto
+app.delete('/api/products/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId, componentId } = req.params;
 
   try {
     await prisma.productComponent.delete({
       where: {
         productId_componentId: {
-          productId,
-          componentId,
+          productId: productId,
+          componentId: componentId,
         },
       },
     });
-    res.status(204).send(); // No Content
+    res.status(204).send(); // Success, no content
   } catch (error) {
+    console.error('Error removing component from product:', error);
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Component not found in the list.' });
+      return res.status(404).json({ error: 'Component relation not found.' });
     }
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete component.' });
+    res.status(500).json({ error: 'Error al quitar el componente.' });
   }
 });
 
-// Actualizar un producto por ID
-app.put('/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+
+// Actualizar un producto
+app.put('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   const { user } = req; // User from token
 
-  // Make a copy of the body to modify
-  let dataToUpdate = { ...req.body };
+  const {
+    internalCode, description, unit, type, lowStockThreshold, categoryId, supplierId, priceUSD, priceARS
+  } = req.body;
 
-  // Rule: stock is always read-only in this endpoint for everyone
-  if (dataToUpdate.stock !== undefined) {
-    delete dataToUpdate.stock;
-  }
+  // Build a clean data object for Prisma
+  const dataToUpdate = {
+    internalCode,
+    description,
+    unit,
+    type,
+    lowStockThreshold: lowStockThreshold ? parseFloat(lowStockThreshold) : undefined,
+    categoryId: categoryId ? parseInt(categoryId) : undefined,
+    supplierId: supplierId ? parseInt(supplierId) : undefined,
+  };
 
   // Rule: Only ADMIN can update prices
-  if (user.role !== 'ADMIN') {
-    if (dataToUpdate.priceUSD !== undefined) {
-      delete dataToUpdate.priceUSD;
-    }
-    if (dataToUpdate.priceARS !== undefined) {
-      delete dataToUpdate.priceARS;
-    }
+  if (user.role === 'ADMIN') {
+    dataToUpdate.priceUSD = priceUSD ? parseFloat(priceUSD) : undefined;
+    dataToUpdate.priceARS = priceARS ? parseFloat(priceARS) : undefined;
   }
 
   try {
     const updatedProduct = await prisma.product.update({
-      where: { id },
+      where: { id: id },
       data: dataToUpdate,
     });
     res.json(updatedProduct);
@@ -713,14 +706,14 @@ app.put('/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR'
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Product not found' });
     }
-    console.error(error);
+    console.error('Error updating product:', error);
     res.status(500).json({ error: 'Failed to update product.' });
   }
 });
 
 
 // Eliminar un producto por ID
-app.delete('/products/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.delete('/api/products/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.product.delete({
@@ -740,7 +733,7 @@ app.delete('/products/:id', authenticateToken, authorizeRole('ADMIN'), async (re
 // --- INVENTORY MOVEMENT ENDPOINTS ---
 
 // Registrar una Orden de Producción
-app.post('/inventory/production', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+app.post('/api/inventory/production', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { productId, quantity } = req.body;
   const userId = req.user.userId;
 
@@ -825,7 +818,7 @@ app.post('/inventory/production', authenticateToken, authorizeRole(['ADMIN', 'SU
 });
 
 // Registrar una Compra
-app.post('/inventory/purchase', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/inventory/purchase', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId, quantity, notes } = req.body;
   const userId = req.user.userId;
 
@@ -874,7 +867,7 @@ app.post('/inventory/purchase', authenticateToken, authorizeRole(['ADMIN', 'SUPE
 });
 
 // Registrar una Venta
-app.post('/inventory/sale', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/inventory/sale', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId, quantity, notes } = req.body;
   const userId = req.user.userId;
 
@@ -927,7 +920,7 @@ app.post('/inventory/sale', authenticateToken, authorizeRole(['ADMIN', 'SUPERVIS
 });
 
 // Anular un Movimiento de Inventario (Contra-asiento)
-app.post('/inventory/reversal', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.post('/api/inventory/reversal', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { movementId } = req.body;
   const userPerformingReversalId = req.user.userId;
 
@@ -1003,7 +996,7 @@ app.post('/inventory/reversal', authenticateToken, authorizeRole(['ADMIN', 'SUPE
 });
 
 // Obtener productos con bajo stock
-app.get('/inventory/low-stock', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.get('/api/inventory/low-stock', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const lowStockProducts = await prisma.product.findMany({
       where: {
@@ -1028,7 +1021,7 @@ app.get('/inventory/low-stock', authenticateToken, authorizeRole(['ADMIN', 'SUPE
 });
 
 // Actualizar el umbral de bajo stock para un producto
-app.put('/inventory/low-stock-threshold', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+app.put('/api/inventory/low-stock-threshold', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const { productId, newThreshold } = req.body;
 
   if (!productId || newThreshold === undefined || newThreshold < 0) {
@@ -1051,7 +1044,7 @@ app.put('/inventory/low-stock-threshold', authenticateToken, authorizeRole('ADMI
 });
 
 // Obtener historial de movimientos con filtros y paginación
-app.get('/inventory/movements', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+app.get('/api/inventory/movements', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const {
     page = 1,
     pageSize = 20,

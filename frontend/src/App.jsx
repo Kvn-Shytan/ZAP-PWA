@@ -9,6 +9,8 @@ import UserManagementPage from './pages/UserManagementPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import InventoryHistoryPage from './pages/InventoryHistoryPage';
 import ProductEditPage from './pages/ProductEditPage'; // Import the new page
+import ProductionOrderPage from './pages/ProductionOrderPage';
+import ProductComponentsPage from './pages/ProductComponentsPage';
 import './App.css';
 
 function App() {
@@ -25,10 +27,13 @@ function App() {
           {user && <Link to="/categories">Categorías</Link>}
           {user && <Link to="/suppliers">Proveedores</Link>}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/users">Usuarios</Link>
+            <Link to="/inventory-history">Historial</Link>
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/inventory-history">Historial</Link>
+            <Link to="/production-orders">Producción</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/users">Usuarios</Link>
           )}
           {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
           {user ? (
@@ -57,6 +62,10 @@ function App() {
           element={<ProtectedRoute element={<ProductEditPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
+          path="/products/:id/components"
+          element={<ProtectedRoute element={<ProductComponentsPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
           path="/categories"
           element={<ProtectedRoute element={<CategoryList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
         />
@@ -71,6 +80,10 @@ function App() {
         <Route
           path="/inventory-history"
           element={<ProtectedRoute element={<InventoryHistoryPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/production-orders"
+          element={<ProtectedRoute element={<ProductionOrderPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/change-password"

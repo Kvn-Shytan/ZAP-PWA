@@ -5,30 +5,13 @@ function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { authFetch } = useAuth();
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:3001/categories', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.status === 401) {
-          throw new Error('No autorizado. La sesión puede haber expirado.');
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await authFetch('/categories');
         setCategories(data);
       } catch (error) {
         setError(error);
@@ -38,7 +21,7 @@ function CategoryList() {
     };
 
     fetchCategories();
-  }, [token]);
+  }, [authFetch]);
 
   if (loading) {
     return <div>Cargando categorías...</div>;

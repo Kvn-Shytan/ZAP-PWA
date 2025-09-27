@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
-const API_URL = 'http://localhost:3001'; // Define the API base URL
+const API_URL = import.meta.env.VITE_API_URL || ''; // Use env variable
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -79,6 +79,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   return useContext(AuthContext);
 };

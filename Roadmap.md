@@ -72,11 +72,14 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   [x] Actualizar UI de creación/edición de Productos para incluir `type` y `lowStockThreshold`.
         -   [x] **(Nuevo)** Implementar la funcionalidad de Eliminar un producto en la UI (restringido a ADMIN).
         -   [x] **(Nuevo)** Desarrollar UI para gestionar la "Lista de Materiales" de un producto (añadir/quitar componentes).
-        -   [ ] Crear UI para registrar una "Orden de Producción".
+
+    -   **4.4. Interfaces de Gestión de Inventario (Nuevo)**
+        -   [x] **Prioridad 1:** Crear UI para registrar "Órdenes de Producción Interna" (con verificación dinámica de stock de componentes, alertas de insuficiencia y validación de disponibilidad).
+        -   [ ] **Prioridad 2:** Crear UI para registrar "Compras a Proveedores" (Ingreso de Materia Prima).
 
 -   **Fase 5: Módulo de Armadores (Pendiente)**
-    -   [ ] Diseñar modelo de datos para Armadores, envíos y recepciones.
-    -   [ ] Implementar API y UI para la gestión de Armadores.
+    -   [ ] **Prioridad 3:** Diseñar e implementar el flujo completo de "Producción Externa" (modelos de datos, API y UI para Envíos y Recepciones).
+    -   [ ] Gestionar pagos a armadores con cierres quincenales.
 
 -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   [ ] Implementar Service Workers para el funcionamiento offline.

@@ -8,9 +8,11 @@ function ProductList() {
   const [error, setError] = useState(null);
   const { authFetch, user } = useAuth();
 
-  // State for filters
-  const [filters, setFilters] = useState({ search: '', categoryId: '' });
+  // State for filters & pagination
+  const [filters, setFilters] = useState({ search: '', categoryId: '', type: '', page: 1 });
+  const [pagination, setPagination] = useState({});
   const [categories, setCategories] = useState([]);
+  const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 
   // Fetch categories for the filter dropdown
   useEffect(() => {
@@ -28,9 +30,17 @@ function ProductList() {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const query = new URLSearchParams(filters);
-      const data = await authFetch(`/products?${query}`);
-      setProducts(data);
+      const activeFilters = { ...filters };
+      Object.keys(activeFilters).forEach(key => {
+        if (!activeFilters[key]) delete activeFilters[key];
+      });
+
+      const query = new URLSearchParams(activeFilters);
+      const data = await authFetch(`/products?${query.toString()}`);
+      
+      setProducts(data.products || []);
+      setPagination({ totalPages: data.totalPages, currentPage: data.currentPage, totalProducts: data.totalProducts });
+
     } catch (error) {
       setError(error);
     } finally {
@@ -44,7 +54,17 @@ function ProductList() {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    setFilters(prev => ({ ...prev, [name]: value, page: 1 })); // Reset to page 1 on filter change
+  };
+
+  const handleSearch = () => {
+    fetchProducts();
+  }
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setFilters(prev => ({ ...prev, page: newPage }));
+    }
   };
 
   if (error) {
@@ -72,6 +92,7 @@ function ProductList() {
           placeholder="Buscar por código o descripción..."
           value={filters.search}
           onChange={handleFilterChange}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           style={inputStyle}
         />
         <select 
@@ -83,6 +104,16 @@ function ProductList() {
           <option value="">Todas las Categorías</option>
           {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
         </select>
+        <select 
+          name="type"
+          value={filters.type}
+          onChange={handleFilterChange}
+          style={inputStyle}
+        >
+          <option value="">Todos los Tipos</option>
+          {PRODUCT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+        </select>
+        <button onClick={handleSearch} style={{...buttonStyle, backgroundColor: '#007bff'}}>Buscar</button>
       </div>
 
       {loading ? (
@@ -90,36 +121,45 @@ function ProductList() {
       ) : products.length === 0 ? (
         <p>No hay productos que coincidan con los filtros.</p>
       ) : (
-        <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={tableHeaderStyle}>Código Interno</th>
-              <th style={tableHeaderStyle}>Descripción</th>
-              <th style={tableHeaderStyle}>Stock</th>
-              {products[0]?.priceUSD !== undefined && <th style={tableHeaderStyle}>Precio USD</th>}
-              {products[0]?.priceARS !== undefined && <th style={tableHeaderStyle}>Precio ARS</th>}
-              {canManage && <th style={tableHeaderStyle}>Acciones</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.internalCode}</td>
-                <td>{product.description}</td>
-                <td>{`${product.stock} ${product.unit}`}</td>
-                {product.priceUSD !== undefined && <td>${product.priceUSD}</td>}
-                {product.priceARS !== undefined && <td>${product.priceARS}</td>}
-                {canManage && (
-                  <td>
-                    <Link to={`/products/edit/${product.id}`} style={editButtonStyle}>
-                      Editar
-                    </Link>
-                  </td>
-                )}
+        <>
+          <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={tableHeaderStyle}>Código Interno</th>
+                <th style={tableHeaderStyle}>Descripción</th>
+                <th style={tableHeaderStyle}>Stock</th>
+                {products[0]?.priceUSD !== undefined && <th style={tableHeaderStyle}>Precio USD</th>}
+                {products[0]?.priceARS !== undefined && <th style={tableHeaderStyle}>Precio ARS</th>}
+                {canManage && <th style={tableHeaderStyle}>Acciones</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td>{product.internalCode}</td>
+                  <td>{product.description}</td>
+                  <td>{`${product.stock} ${product.unit}`}</td>
+                  {product.priceUSD !== undefined && <td>${product.priceUSD}</td>}
+                  {product.priceARS !== undefined && <td>${product.priceARS}</td>}
+                  {canManage && (
+                    <td>
+                      <Link to={`/products/edit/${product.id}`} style={editButtonStyle}>
+                        Editar
+                      </Link>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={paginationStyle}>
+            <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage <= 1}>Anterior</button>
+            <span>
+              Página {pagination.currentPage || '-'} de {pagination.totalPages || '-'} (Total: {pagination.totalProducts} productos)
+            </span>
+            <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage >= pagination.totalPages}>Siguiente</button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -131,5 +171,6 @@ const buttonStyle = { padding: '8px 12px', border: 'none', backgroundColor: '#28
 const editButtonStyle = { padding: '4px 8px', border: '1px solid #007bff', backgroundColor: 'transparent', color: '#007bff', borderRadius: '4px', textDecoration: 'none' };
 const filterContainerStyle = { display: 'flex', gap: '10px', margin: '1rem 0' };
 const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px', minWidth: '200px' };
+const paginationStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' };
 
 export default ProductList;

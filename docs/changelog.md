@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2025-09-26
+-   **[FIX] Estabilización de la Aplicación:**
+    -   Resolución de errores de duplicación de rutas `/api/api/` en llamadas del frontend (`ProductList.jsx`, `InventoryHistoryPage.jsx`, `ProductEditPage.jsx`, `ProductionOrderPage.jsx`).
+    -   Corrección de `ReferenceError: paginationStyle is not defined` en `ProductList.jsx`.
+    -   Manejo correcto de datos paginados de productos en `InventoryHistoryPage.jsx` y `ProductEditPage.jsx`.
+-   **[FEAT] Mejoras en la Página de Órdenes de Producción (`ProductionOrderPage.jsx`):**
+    -   Tabla de productos fabricables mejorada: ahora muestra "Código", "Descripción", "Tipo" y "Stock".
+    -   Implementación de verificación dinámica de stock de componentes:
+        -   Advertencia para productos sin componentes definidos.
+        -   Resaltado en rojo de componentes con stock insuficiente.
+        -   Habilitación condicional del botón "Registrar Producción" según disponibilidad de stock.
+
 ## 2025-09-21
 -   **Gestión de Lista de Materiales (Recetas):**
     -   Añadida nueva sección "Lista de componentes" en la página de edición de productos, visible solo para productos pre-ensamblados o finales.
