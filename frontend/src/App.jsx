@@ -12,6 +12,9 @@ import ProductEditPage from './pages/ProductEditPage'; // Import the new page
 import ProductionOrderPage from './pages/ProductionOrderPage';
 import ProductComponentsPage from './pages/ProductComponentsPage';
 import PurchaseOrderPage from './pages/PurchaseOrderPage'; // Import the new page
+import AdminToolsPage from './pages/AdminToolsPage'; // Import the Admin Tools page
+import ClassifyProductsPage from './pages/ClassifyProductsPage'; // Import the Classify Products page
+import AssemblerManagementPage from './pages/AssemblerManagementPage'; // Import the new page
 import './App.css';
 
 function App() {
@@ -28,6 +31,9 @@ function App() {
           {user && <Link to="/categories">Categorías</Link>}
           {user && <Link to="/suppliers">Proveedores</Link>}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/assemblers">Armadores</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/inventory-history">Historial</Link>
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
@@ -38,6 +44,9 @@ function App() {
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
+          )}
+          {user && user.role === 'ADMIN' && (
+            <Link to="/admin-tools">Herramientas</Link>
           )}
           {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
           {user ? (
@@ -78,8 +87,20 @@ function App() {
           element={<ProtectedRoute element={<SupplierList />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />}
         />
         <Route
+          path="/assemblers"
+          element={<ProtectedRoute element={<AssemblerManagementPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />}
+        />
+        <Route
           path="/users"
           element={<ProtectedRoute element={<UserManagementPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/admin-tools"
+          element={<ProtectedRoute element={<AdminToolsPage />} allowedRoles={['ADMIN']} />}
+        />
+        <Route
+          path="/admin-tools/classify-products"
+          element={<ProtectedRoute element={<ClassifyProductsPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/inventory-history"

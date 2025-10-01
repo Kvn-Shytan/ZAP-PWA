@@ -1,5 +1,19 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-01
+-   **[FEAT] CRUD Completo de Armadores:**
+    -   Implementada la página de "Gestión de Armadores" con funcionalidad completa de Crear, Leer, Actualizar y Eliminar (CRUD).
+    -   Añadida lógica de permisos para que los `EMPLOYEE` solo puedan ver datos de contacto, mientras que `ADMIN` y `SUPERVISOR` tienen acceso a la gestión completa.
+-   **[FEAT] Nueva Arquitectura de Costos:**
+    -   Diseñada e implementada una nueva arquitectura para manejar costos no-físicos.
+    -   Añadidos los modelos `TrabajoDeArmado`, `CostoIndirecto` y `ProductoCostoIndirecto` a la base de datos para permitir un cálculo de costos de producción más preciso y escalable.
+-   **[FIX] Corrección de Múltiples Errores:**
+    -   Solucionado error "Error desconocido" en la sección de Armadores (GET, POST, PUT, DELETE) causado por una duplicación del prefijo `/api/` en las llamadas del frontend.
+    -   Implementado el endpoint `PUT /api/users/:id/reset-password` que faltaba en el backend, solucionando el error en la función de reseteo de contraseña de administrador.
+-   **[CHORE] Mantenimiento de la Base de Datos y Datos:**
+    -   Solucionado un estado de "deriva de migración" (migration drift) reseteando la base de datos y generando un historial de migración limpio y unificado.
+    -   Implementado y ejecutado un script para actualizar y añadir productos masivamente desde un archivo CSV (`actualizacion_sept25.csv`) usando una estrategia `upsert`.
+
 ## 2025-09-27
 -   **[FEAT] Nueva Página de Registro de Compras:**
     -   Creada la nueva sección "Registrar Compra" (`/purchase-order`), accesible para roles `ADMIN` y `SUPERVISOR`.

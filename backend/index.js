@@ -14,10 +14,12 @@ app.use(cors({ origin: 'http://localhost:5173' })); // Use cors middleware
 
 // --- AUTH MIDDLEWARE ---
 const authenticateToken = (req, res, next) => {
+  console.log('[authenticateToken] Request received.');
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (token == null) {
+    console.log('[authenticateToken] No token provided. Sending 401.');
     return res.sendStatus(401); // Unauthorized
   }
 
@@ -25,8 +27,10 @@ const authenticateToken = (req, res, next) => {
   new Promise((resolve, reject) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
+        console.log('[authenticateToken] Invalid token. Sending 403.', err.message);
         return reject(err);
       }
+      console.log('[authenticateToken] Token valid. User:', user.userId, user.role);
       resolve(user);
     });
   })
@@ -41,15 +45,19 @@ const authenticateToken = (req, res, next) => {
 
 const authorizeRole = (allowedRoles) => {
   return (req, res, next) => {
+    console.log('[authorizeRole] Checking roles. User role:', req.user?.role, 'Allowed roles:', allowedRoles);
     if (!req.user || !req.user.role) {
+      console.log('[authorizeRole] No user or user role. Sending 403.');
       return res.sendStatus(403); // Forbidden
     }
 
     const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
 
     if (rolesArray.includes(req.user.role)) {
+      console.log('[authorizeRole] Role allowed. Proceeding.');
       next(); // Role is allowed, proceed
     } else {
+      console.log('[authorizeRole] Role not allowed. Sending 403.');
       res.sendStatus(403); // Forbidden
     }
   };
@@ -289,6 +297,109 @@ app.delete('/api/suppliers/:id', authenticateToken, authorizeRole('ADMIN'), asyn
   }
 });
 
+// --- ARMADOR ENDPOINTS ---
+// Crear un nuevo armador
+app.post('/api/assemblers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  try {
+    const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
+    if (!name || !paymentTerms) {
+      return res.status(400).json({ error: 'Name and paymentTerms are required' });
+    }
+    const newAssembler = await prisma.armador.create({
+      data: { name, contactInfo, address, phone, email, paymentTerms },
+    });
+    res.status(201).json(newAssembler);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'An assembler with this name already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create assembler.' });
+  }
+});
+
+// Obtener todos los armadores (con seguridad a nivel de campo)
+app.get('/api/assemblers', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { role } = req.user;
+  const selectFields = (role === 'ADMIN' || role === 'SUPERVISOR')
+    ? undefined // Admins/Supervisors ven todo
+    : { id: true, name: true, phone: true, address: true }; // Employees ven un set limitado
+
+  try {
+    const assemblers = await prisma.armador.findMany({
+      select: selectFields,
+      orderBy: { name: 'asc' },
+    });
+    res.json(assemblers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch assemblers.' });
+  }
+});
+
+// Obtener un armador por ID (con seguridad a nivel de campo)
+app.get('/api/assemblers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.user;
+  const selectFields = (role === 'ADMIN' || role === 'SUPERVISOR')
+    ? undefined // Admins/Supervisors ven todo
+    : { id: true, name: true, phone: true, address: true }; // Employees ven un set limitado
+
+  try {
+    const assembler = await prisma.armador.findUnique({
+      where: { id },
+      select: selectFields,
+    });
+    if (assembler) {
+      res.json(assembler);
+    } else {
+      res.status(404).json({ error: 'Assembler not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch assembler.' });
+  }
+});
+
+// Actualizar un armador por ID
+app.put('/api/assemblers/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { id } = req.params;
+  const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
+  try {
+    const updatedAssembler = await prisma.armador.update({
+      where: { id },
+      data: { name, contactInfo, address, phone, email, paymentTerms },
+    });
+    res.json(updatedAssembler);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Assembler not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'An assembler with this name already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update assembler.' });
+  }
+});
+
+// Eliminar un armador por ID
+app.delete('/api/assemblers/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.armador.delete({
+      where: { id },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Assembler not found' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete assembler.' });
+  }
+});
+
 if (!process.env.JWT_SECRET) {
   console.error("FATAL ERROR: JWT_SECRET is not defined.");
   process.exit(1);
@@ -452,6 +563,35 @@ app.put('/api/users/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+// Resetear la contraseña de un usuario (Admin only)
+app.put('/api/users/:id/reset-password', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  const userId = parseInt(id);
+  const defaultPassword = 'zap123';
+
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    const newHashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: newHashedPassword },
+    });
+
+    res.json({ message: `Password for user ${userId} has been reset.`, newPassword: defaultPassword });
+
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to reset password.' });
+  }
+});
+
 // Actualizar un usuario por ID
 app.put('/api/users/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const id = parseInt(req.params.id);
@@ -568,6 +708,28 @@ app.get('/api/products', authenticateToken, async (req, res) => {
   }
 });
 
+// NUEVO ENDPOINT: Obtener productos no clasificados
+app.get('/api/products/unclassified', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  console.log('[/api/products/unclassified] Request received.');
+  try {
+    const unclassifiedProducts = await prisma.product.findMany({
+      where: { isClassified: false },
+      select: {
+        id: true,
+        internalCode: true,
+        description: true,
+        type: true, // Para mostrar el tipo actual
+      },
+      orderBy: { description: 'asc' },
+    });
+    console.log(`[/api/products/unclassified] Found ${unclassifiedProducts.length} unclassified products.`);
+    res.json(unclassifiedProducts);
+  } catch (error) {
+    console.error("[/api/products/unclassified] Error al obtener productos no clasificados:", error.message);
+    res.status(500).json({ error: 'Failed to fetch unclassified products.' });
+  }
+});
+
 // Obtener un solo producto por su ID
 app.get('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { id } = req.params;
@@ -631,6 +793,11 @@ app.post('/api/products/:id/components', authenticateToken, authorizeRole(['ADMI
     return res.status(400).json({ error: 'componentId and a positive quantity are required.' });
   }
 
+  // Critical Validation: Prevent a product from being its own component
+  if (productId === componentId) {
+    return res.status(400).json({ error: 'Un producto no puede ser componente de sí mismo.' });
+  }
+
   try {
     const newComponent = await prisma.productComponent.create({
       data: {
@@ -679,7 +846,7 @@ app.put('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVI
   const { user } = req; // User from token
 
   const {
-    internalCode, description, unit, type, lowStockThreshold, categoryId, supplierId, priceUSD, priceARS
+    internalCode, description, unit, type, lowStockThreshold, categoryId, supplierId, priceUSD, priceARS, isClassified
   } = req.body;
 
   // Build a clean data object for Prisma
@@ -691,6 +858,7 @@ app.put('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVI
     lowStockThreshold: lowStockThreshold ? parseFloat(lowStockThreshold) : undefined,
     categoryId: categoryId ? parseInt(categoryId) : undefined,
     supplierId: supplierId ? parseInt(supplierId) : undefined,
+    isClassified: typeof isClassified === 'boolean' ? isClassified : undefined, // Añadir isClassified
   };
 
   // Rule: Only ADMIN can update prices
@@ -1121,6 +1289,28 @@ app.get('/api/inventory/movements', authenticateToken, authorizeRole(['ADMIN', '
   } catch (error) {
     console.error("Error al obtener historial de movimientos:", error.message);
     res.status(500).json({ error: 'Failed to fetch inventory movements.' });
+  }
+});
+
+// NUEVO ENDPOINT: Obtener productos no clasificados
+app.get('/api/products/unclassified', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  console.log('[/api/products/unclassified] Request received.');
+  try {
+    const unclassifiedProducts = await prisma.product.findMany({
+      where: { isClassified: false },
+      select: {
+        id: true,
+        internalCode: true,
+        description: true,
+        type: true, // Para mostrar el tipo actual
+      },
+      orderBy: { description: 'asc' },
+    });
+    console.log(`[/api/products/unclassified] Found ${unclassifiedProducts.length} unclassified products.`);
+    res.json(unclassifiedProducts);
+  } catch (error) {
+    console.error("[/api/products/unclassified] Error al obtener productos no clasificados:", error.message);
+    res.status(500).json({ error: 'Failed to fetch unclassified products.' });
   }
 });
 

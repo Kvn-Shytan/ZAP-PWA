@@ -56,14 +56,21 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   [x] En `schema.prisma`, crear el modelo `ProductComponent` para la "Lista de Materiales".
         -   [x] En `schema.prisma`, refinar el modelo `InventoryMovement` con un `enum MovementType`.
         -   [x] Ejecutar la migración de la base de datos para aplicar los cambios.
-        -   [ ] **(Nuevo)** Crear una herramienta o script para asignar masivamente el `ProductType` a los productos existentes.
+        -   **4.5. Panel de Administración y Herramientas (Nuevo)**
+            -   `[x]` **Prioridad 1.A:** Crear la página base para el "Panel de Administración" (ruta `/admin-tools`), visible solo para `ADMIN`. Este panel unificará herramientas y futuras notificaciones.
+            -   `[x]` **Prioridad 1.B:** Desarrollar e integrar la herramienta de **"Clasificación de Tipos de Producto"**:
+                -   `[x]` (BD) Añadir el campo `isClassified` al modelo `Product` y ejecutar la migración.
+                -   `[x]` (Backend) Crear el endpoint para obtener productos no clasificados (`isClassified: false`).
+                -   `[x]` (Backend) Ajustar el endpoint de actualización para que establezca `isClassified` en `true`.
+                -   `[x]` (Frontend) Construir la interfaz de la herramienta de clasificación dentro del nuevo panel.
     -   **4.2. Lógica de Negocio y API (Backend)**
         -   [x] Crear endpoint para registrar "Órdenes de Producción" (gestionando `PRODUCTION_IN` y `PRODUCTION_OUT`).
         -   [x] Crear endpoints para registrar `COMPRAS` y `VENTAS` (restringidos por rol).
         -   [x] Crear endpoint para "Anular" movimientos (lógica de contra-asiento).
         -   [x] Crear endpoint para obtener la lista de productos con bajo stock.
         -   [x] Crear endpoint para que el Admin actualice el `lowStockThreshold` de un producto.
-        -   [x] **(Nuevo)** Crear endpoints para gestionar la Lista de Materiales (Añadir, Actualizar, Quitar).
+        -   [x] **(Completado)** Crear endpoints para gestionar la Lista de Materiales (Añadir, Actualizar, Quitar).
+        -   [x] **(Mejora)** Añadida validación para prevenir que un producto sea componente de sí mismo.
     -   **4.3. Interfaz de Usuario (Frontend)**
         -   [x] **(Nuevo)** Crear página "Historial de Movimientos" para ver, filtrar y buscar en todos los movimientos de inventario.
         -   [x] **(Nuevo)** En el historial, implementar el botón "Anular" (visible según rol).
@@ -77,9 +84,53 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   [x] **Prioridad 1:** Crear UI para registrar "Órdenes de Producción Interna" (con verificación dinámica de stock de componentes, alertas de insuficiencia y validación de disponibilidad).
         -   [x] **Prioridad 2:** Crear UI para registrar "Compras a Proveedores" (Ingreso de Materia Prima).
 
--   **Fase 5: Módulo de Armadores (Pendiente)**
-    -   [ ] **Prioridad 3:** Diseñar e implementar el flujo completo de "Producción Externa" (modelos de datos, API y UI para Envíos y Recepciones).
-    -   [ ] Gestionar pagos a armadores con cierres quincenales.
+-   **Fase 5: Módulo de Armadores (Diseño Detallado)**
+
+    > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa, desde la asignación de materiales a un repartidor, la entrega al armador, la gestión de fallos, y la recepción de productos terminados, hasta el pago final.
+
+    ### **5.1: Modelos de Datos y API Core**
+    *   **5.1.1. `schema.prisma` (Nuevos Campos y Estados):**
+        *   [x] En `ExternalProductionOrder`, añadir `deliveryUserId: Int?` para la asignación explícita a un empleado repartidor.
+        *   [x] En `User`, añadir la relación inversa `assignedDeliveries`.
+        *   [x] Ampliar el `enum ExternalProductionOrderStatus` para incluir: `PENDING_DELIVERY`, `OUT_FOR_DELIVERY`, `DELIVERED`, `DELIVERY_FAILED`, `RETURNED`.
+        *   [x] **(Realizado)** Crear modelos `Armador`, `TrabajoDeArmado`, `ExternalProductionOrder`, `ExternalProductionOrderItem`, `ReceivedProduction`, `AssemblerPayment`.
+        *   [x] **(Realizado)** Ejecutar la migración de la base de datos.
+
+    *   **5.1.2. API (Endpoints de Gestión):**
+        *   [x] **(Realizado)** Implementar endpoints CRUD para `Armador` con seguridad a nivel de campo para `EMPLOYEE`.
+        *   [ ] Implementar endpoints CRUD para `TrabajoDeArmado` (precio por armado de cada producto).
+        *   [ ] Implementar endpoint `PUT /api/external-production-orders/:id/assign` para que el `SUPERVISOR` asigne un pedido a un `EMPLOYEE`.
+        *   [ ] Implementar endpoint `POST /api/external-production-orders/:id/deliver` para que el `EMPLOYEE` confirme una entrega exitosa.
+        *   [ ] Implementar endpoint `POST /api/external-production-orders/:id/fail-delivery` para que el `EMPLOYEE` reporte una entrega fallida.
+        *   [ ] Implementar endpoint `POST /api/external-production-orders/:id/confirm-return` para que el `SUPERVISOR` confirme la devolución de mercadería y se revierta el stock automáticamente.
+
+    ### **5.2: Interfaz de Usuario y Experiencia por Rol**
+
+    *   **5.2.1. Funcionalidades para `EMPLOYEE` (Repartidor):**
+        *   [ ] **Pantalla Principal ("Mis Entregas"):** Al iniciar sesión, ver una lista de los pedidos que tiene asignados para el día, con nombre y dirección del armador.
+        *   [ ] **Pantalla de Detalle de Entrega:**
+            *   Ver detalles del armador (dirección con enlace a mapas, teléfono con botón de llamada).
+            *   Ver lista de materiales a entregar.
+            *   Botón "Entregado" (con doble confirmación) para registrar una entrega exitosa.
+            *   Botón "No Entregado" (con doble confirmación) para reportar un fallo.
+
+    *   **5.2.2. Funcionalidades para `SUPERVISOR` (Control Logístico):**
+        *   [ ] **Panel de Control ("Producción Externa"):** Ver una tabla con todos los pedidos, con filtros avanzados por estado, empleado, armador y fechas.
+        *   [ ] **Acciones de Gestión:**
+            *   Crear nuevos envíos a armadores.
+            *   Asignar pedidos pendientes a un empleado repartidor.
+            *   Gestionar entregas fallidas: Ver la alerta y tener un botón para "Confirmar Devolución a Stock", que revierte la operación.
+
+    *   **5.2.3. Funcionalidades para `ADMIN` (Finanzas):**
+        *   [x] **Gestión de Armadores:** Interfaz para crear, editar y eliminar los `Armador` y sus datos de contacto.
+        *   [ ] **Gestión de Trabajos de Armado:** Interfaz para crear, editar y eliminar los `TrabajoDeArmado` y sus precios.
+        *   [ ] **Gestión de Pagos:** Interfaz para calcular los montos adeudados a los armadores (basado en `ReceivedProduction` y `TrabajoDeArmado.precio`) y registrar los pagos.
+
+    ### **5.4: Arquitectura de Costos Avanzada (Diseño)**
+    *   `[x]` **Decisión Arquitectónica:** Separar costos no-físicos (servicios, horas-máquina) del modelo `Product` para mantener la integridad de los datos.
+    *   [ ] **Modelo `CostoIndirecto`:** Crear un nuevo modelo para catalogar costos como "Horas de Máquina" (ej: `HS-`). Incluirá `nombre`, `precio`, `unidad` y un `tipo` (ej: `MACHINE_HOUR`, `SERVICE`).
+    *   [ ] **Modelo `ProductoCostoIndirecto`:** Crear una tabla de conexión para aplicar estos costos a la "receta" de un producto terminado, especificando la cantidad (ej: 0.5 horas).
+    *   [ ] **Plan de Migración de Datos (Futuro):** Añadir a la lista de tareas la creación de una herramienta de administrador para migrar los datos de los antiguos productos `AR-` y `HS-` a las nuevas tablas (`TrabajoDeArmado` y `CostoIndirecto`) y posteriormente eliminarlos de la tabla `Product`.
 
 -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   [ ] Implementar Service Workers para el funcionamiento offline.
@@ -92,6 +143,11 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 -   **Fase 8: Mejoras Futuras y Escalabilidad (Pendiente)**
     -   [ ] Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
     -   [ ] Opcional: Desarrollar UI para la gestión dinámica de permisos por rol.
+    -   [ ] **Desarrollo de Herramientas Adicionales para el Panel de Administración:**
+        -   `[ ]` **(NUEVO)** Diseño de una "Sección de Inicio" personalizada por rol (Dashboard) para mostrar tareas y alertas relevantes.
+        -   `[ ]` **(NUEVO)** Calculadora de Estructura de Costos (para análisis de rentabilidad).
+        -   `[ ]` Herramientas de Calidad de Datos (Detector de Duplicados, Editor Masivo, Visor de Huérfanos).
+        -   `[ ]` Sistema de Notificaciones y Alertas dentro del panel.
 
 ---
 

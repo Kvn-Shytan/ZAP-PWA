@@ -117,8 +117,6 @@ const InventoryHistoryPage = () => {
     if (error) return <tr><td colSpan="7" style={{ color: 'red' }}>{error}</td></tr>;
     if (movements.length === 0) return <tr><td colSpan="7">No se encontraron movimientos con los filtros actuales.</td></tr>;
 
-    const canAnnul = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
-
     // 1. Find all annulled movements to identify originals
     const annulledOriginalIds = new Set();
     movements.forEach(mov => {
@@ -140,17 +138,21 @@ const InventoryHistoryPage = () => {
       if (isAnnulled) {
         rowStyle.textDecoration = 'line-through';
         rowStyle.color = '#999';
+        rowStyle.fontStyle = 'italic';
+        rowStyle.fontSize = '0.9em';
       }
-      if (isComponent) {
+      if (isComponent && !isAnnulled) { // Prevent style override
         rowStyle.fontStyle = 'italic';
         rowStyle.fontSize = '0.9em';
       }
       if (isReversal) {
         rowStyle.color = 'red';
+        rowStyle.textDecoration = 'none'; // Ensure it's not crossed out
+        rowStyle.fontStyle = 'normal';
       }
 
-      // 3. Define button visibility
-      const showAnnulButton = canAnnul && mov.eventId && mov.type === 'PRODUCTION_IN' && !isAnnulled;
+      // 3. Define button visibility - NEW LOGIC
+      const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && mov.type !== 'PRODUCTION_OUT';
 
       return (
         <tr key={mov.id} style={rowStyle}>

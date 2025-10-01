@@ -20,6 +20,7 @@ model Product {
   priceARS          Float?
   stock             Float     @default(0)
   lowStockThreshold Float     @default(0)
+  isClassified      Boolean   @default(false)
   type              ProductType @default(RAW_MATERIAL)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -31,10 +32,16 @@ model Product {
   supplierId Int?
 
   movements      InventoryMovement[]
-  
-  // Relaciones para la Lista de Materiales (BOM)
-  components     ProductComponent[] @relation("isComponentFor") // Productos de los que este producto es componente
-  componentOf    ProductComponent[] @relation("componentOf")    // Componentes que conforman este producto
+  components     ProductComponent[] @relation("isComponentFor")
+  componentOf    ProductComponent[] @relation("componentOf")
+
+  externalProductionItems ExternalProductionOrderItem[]
+  receivedProductions     ReceivedProduction[]
+
+  // Relación con el trabajo de armado
+  trabajoDeArmado TrabajoDeArmado?
+  // Relación con los costos indirectos
+  overheadCosts   ProductOverhead[]
 }
 
 model ProductComponent {
@@ -42,7 +49,7 @@ model ProductComponent {
   productId   String
   component   Product @relation("componentOf", fields: [componentId], references: [id])
   componentId String
-  quantity    Float // Cantidad del componente necesaria para 1 unidad del producto
+  quantity    Float
 
   @@id([productId, componentId])
 }
@@ -60,16 +67,131 @@ model Supplier {
   products    Product[]
 }
 
+// --- MODELOS DE COSTOS AVANZADOS ---
+
+model OverheadCost {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  cost        Float
+  unit        String // e.g., "HORA", "UNIDAD"
+  type        OverheadType @default(OTHER)
+  
+  products    ProductOverhead[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductOverhead {
+  product       Product      @relation(fields: [productId], references: [id])
+  productId     String
+  overheadCost  OverheadCost @relation(fields: [overheadCostId], references: [id])
+  overheadCostId String
+  quantity      Float
+
+  @@id([productId, overheadCostId])
+}
+
+
+// --- MODELOS DEL MÓDULO DE ARMADORES ---
+
+model TrabajoDeArmado {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  precio      Float
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación: Este trabajo corresponde a un único producto final.
+  producto   Product  @relation(fields: [productoId], references: [id])
+  productoId String   @unique
+}
+
+model ExternalProductionOrder {
+  id                       String                      @id @default(cuid())
+  armadorId                String
+  dateSent                 DateTime
+  expectedCompletionDate   DateTime?
+  status                   ExternalProductionOrderStatus @default(PENDING_DELIVERY) // Default state is now PENDING_DELIVERY
+  notes                    String?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+
+  // New field for delivery assignment
+  deliveryUserId           Int? // ID of the User (employee) assigned to deliver
+  deliveryUser             User?                       @relation("Deliveries", fields: [deliveryUserId], references: [id])
+
+  armador       Armador                     @relation(fields: [armadorId], references: [id])
+  items         ExternalProductionOrderItem[]
+  receivedItems ReceivedProduction[]
+}
+
+model ExternalProductionOrderItem {
+  id                        String                  @id @default(cuid())
+  externalProductionOrderId String
+  productId                 String // Componente enviado
+  quantitySent              Float
+
+  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
+  product Product                 @relation(fields: [productId], references: [id])
+
+  @@unique([externalProductionOrderId, productId])
+}
+
+model ReceivedProduction {
+  id                        String        @id @default(cuid())
+  externalProductionOrderId String
+  dateReceived              DateTime
+  productId                 String // Producto terminado recibido
+  quantityReceived          Float
+  qualityStatus             QualityStatus @default(OK)
+  notes                     String?
+  createdAt                 DateTime      @default(now())
+
+  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
+  product Product                 @relation(fields: [productId], references: [id])
+}
+
+model AssemblerPayment {
+  id          String   @id @default(cuid())
+  armadorId   String
+  datePaid    DateTime
+  amount      Float
+  periodStart DateTime
+  periodEnd   DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  armador Armador @relation(fields: [armadorId], references: [id])
+}
+
+model Armador {
+  id           String       @id @default(cuid())
+  name         String       @unique
+  contactInfo  String?
+  address      String?
+  phone        String?
+  email        String?
+  paymentTerms PaymentTerms
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  externalProductionOrders ExternalProductionOrder[]
+  assemblerPayments        AssemblerPayment[]
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
-  password  String // Se guardará hasheada
-  role      Role
+  password  String
+  role      Role     @default(EMPLOYEE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  movements InventoryMovement[]
+  movements          InventoryMovement[]
+  assignedDeliveries ExternalProductionOrder[] @relation("Deliveries") // Inverse relation
 }
 
 model InventoryMovement {
@@ -80,7 +202,7 @@ model InventoryMovement {
   userId    Int
   notes     String?
   createdAt DateTime     @default(now())
-  eventId   String?      // Para agrupar movimientos de una misma transacción (ej. Producción)
+  eventId   String?
 
   product   Product      @relation(fields: [productId], references: [id])
   user      User         @relation(fields: [userId], references: [id])
@@ -88,11 +210,18 @@ model InventoryMovement {
   @@index([eventId])
 }
 
+// --- ENUMS ---
+
+enum PaymentTerms {
+  BI_WEEKLY
+  MONTHLY
+  PER_UNIT
+}
+
 enum Role {
   ADMIN
   SUPERVISOR
   EMPLOYEE
-  NO_ROLE
 }
 
 enum ProductType {
@@ -106,8 +235,34 @@ enum MovementType {
   PRODUCTION_IN
   CUSTOMER_RETURN
   ADJUSTMENT_IN
+  SENT_TO_ASSEMBLER
+  RECEIVED_FROM_ASSEMBLER
   PRODUCTION_OUT
   SALE
   WASTAGE
   ADJUSTMENT_OUT
+}
+
+enum ExternalProductionOrderStatus {
+  PENDING_DELIVERY // Supervisor created, ready for pickup
+  OUT_FOR_DELIVERY // Assigned to an employee for delivery
+  DELIVERED        // Employee confirmed successful delivery
+  DELIVERY_FAILED  // Employee confirmed delivery failed
+  RETURNED         // Supervisor confirmed return of goods
+  PARTIALLY_RECEIVED // Assembler has returned some finished products
+  COMPLETED        // All work for this order is done
+  CANCELLED        // Order cancelled
+}
+
+enum QualityStatus {
+  OK
+  DEFECTIVE
+  PARTIAL_OK
+}
+
+enum OverheadType {
+  MACHINE_HOUR
+  SERVICE
+  DESIGN
+  OTHER
 }
