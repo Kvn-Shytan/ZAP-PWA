@@ -16,10 +16,10 @@ model Product {
   internalCode      String    @unique
   description       String
   unit              String // "kg", "un", "mt", etc.
-  priceUSD          Float?
-  priceARS          Float?
-  stock             Float     @default(0)
-  lowStockThreshold Float     @default(0)
+  priceUSD          Decimal?
+  priceARS          Decimal?
+  stock             Decimal     @default(0)
+  lowStockThreshold Decimal     @default(0)
   isClassified      Boolean   @default(false)
   type              ProductType @default(RAW_MATERIAL)
   createdAt         DateTime  @default(now())
@@ -49,7 +49,7 @@ model ProductComponent {
   productId   String
   component   Product @relation("componentOf", fields: [componentId], references: [id])
   componentId String
-  quantity    Float
+  quantity    Decimal
 
   @@id([productId, componentId])
 }
@@ -73,7 +73,7 @@ model OverheadCost {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
-  cost        Float
+  cost        Decimal
   unit        String // e.g., "HORA", "UNIDAD"
   type        OverheadType @default(OTHER)
   
@@ -87,7 +87,7 @@ model ProductOverhead {
   productId     String
   overheadCost  OverheadCost @relation(fields: [overheadCostId], references: [id])
   overheadCostId String
-  quantity      Float
+  quantity      Decimal
 
   @@id([productId, overheadCostId])
 }
@@ -98,7 +98,7 @@ model ProductOverhead {
 model TrabajoDeArmado {
   id          String   @id @default(cuid())
   nombre      String   @unique
-  precio      Float
+  precio      Decimal
   descripcion String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -131,7 +131,7 @@ model ExternalProductionOrderItem {
   id                        String                  @id @default(cuid())
   externalProductionOrderId String
   productId                 String // Componente enviado
-  quantitySent              Float
+  quantitySent              Decimal
 
   order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
   product Product                 @relation(fields: [productId], references: [id])
@@ -144,7 +144,7 @@ model ReceivedProduction {
   externalProductionOrderId String
   dateReceived              DateTime
   productId                 String // Producto terminado recibido
-  quantityReceived          Float
+  quantityReceived          Decimal
   qualityStatus             QualityStatus @default(OK)
   notes                     String?
   createdAt                 DateTime      @default(now())
@@ -157,7 +157,7 @@ model AssemblerPayment {
   id          String   @id @default(cuid())
   armadorId   String
   datePaid    DateTime
-  amount      Float
+  amount      Decimal
   periodStart DateTime
   periodEnd   DateTime
   notes       String?
@@ -198,7 +198,7 @@ model InventoryMovement {
   id        Int          @id @default(autoincrement())
   productId String
   type      MovementType
-  quantity  Float
+  quantity  Decimal
   userId    Int
   notes     String?
   createdAt DateTime     @default(now())

@@ -12,6 +12,10 @@ const AdminToolsPage = () => {
           <h2>Clasificar Productos</h2>
           <p>Asigna tipos (Materia Prima, Pre-ensamblado, Terminado) a productos no clasificados.</p>
         </Link>
+        <Link to="/admin-tools/overhead-costs" style={toolCardStyle}>
+          <h2>Gestionar Costos Indirectos</h2>
+          <p>Define y gestiona costos no materiales, como horas de máquina o servicios.</p>
+        </Link>
         {/* Próximamente: aquí irán más tarjetas o enlaces a las herramientas */}
       </div>
     </div>

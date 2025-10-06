@@ -19,3 +19,10 @@ backend/prisma/migrations/migration_lock.toml
 
 # Logs
 *.log
+
+# Generated files
+backend/prisma/productos_maestros.csv
+
+# Temporary/Cache directories
+backend@1.0.0/
+npm/

@@ -15,6 +15,7 @@ import PurchaseOrderPage from './pages/PurchaseOrderPage'; // Import the new pag
 import AdminToolsPage from './pages/AdminToolsPage'; // Import the Admin Tools page
 import ClassifyProductsPage from './pages/ClassifyProductsPage'; // Import the Classify Products page
 import AssemblerManagementPage from './pages/AssemblerManagementPage'; // Import the new page
+import OverheadCostPage from './pages/OverheadCostPage'; // Import the new page
 import './App.css';
 
 function App() {
@@ -101,6 +102,10 @@ function App() {
         <Route
           path="/admin-tools/classify-products"
           element={<ProtectedRoute element={<ClassifyProductsPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/admin-tools/overhead-costs"
+          element={<ProtectedRoute element={<OverheadCostPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
           path="/inventory-history"
