@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,66 +9,95 @@ const ProductComponentsPage = () => {
 
   const [product, setProduct] = useState(null);
   const [components, setComponents] = useState([]);
-  const [allPossibleComponents, setAllPossibleComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Form state
+  // --- State for Server-Side Search ---
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Form state
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadRecipeData = useCallback(async () => {
     try {
+      if (!loading) setLoading(true);
       const productData = await authFetch(`/products/${productId}`);
       const componentsData = await authFetch(`/products/${productId}/components`);
-      const allProductsData = await authFetch('/products');
-      
       setProduct(productData);
       setComponents(componentsData || []);
-      
-      // Correctly access the .products array from the paginated response
-      setAllPossibleComponents(allProductsData.products.filter(p => p.id !== productId) || []);
-
     } catch (err) {
-      setError('Error al cargar los datos de componentes.');
+      setError('Error al cargar la receta del producto.');
       console.error(err);
     } finally {
       setLoading(false);
     }
+  }, [authFetch, productId, loading]);
+
+  useEffect(() => {
+    loadRecipeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchSearchResults = useCallback(async (query, page) => {
+    if (!query) {
+        setSearchResults([]);
+        setTotalPages(0);
+        return;
+    }
+    setIsSearching(true);
+    try {
+      const response = await authFetch(
+        `/products?search=${query}&type=RAW_MATERIAL,PRE_ASSEMBLED&page=${page}&pageSize=8`
+      );
+      const filtered = response.products.filter(p => p.id !== productId);
+      setSearchResults(filtered || []);
+      setTotalPages(response.totalPages || 0);
+    } catch (err) {
+      console.error("Failed to search components", err);
+      setError('Error al buscar componentes.');
+    } finally {
+      setIsSearching(false);
+    }
   }, [authFetch, productId]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const handler = setTimeout(() => {
+        setCurrentPage(1);
+        fetchSearchResults(searchTerm, 1);
+    }, 300); // 300ms debounce
 
-  const filteredComponents = useMemo(() => {
-    if (!searchTerm) return [];
-    return allPossibleComponents.filter(p => 
-      p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.internalCode.toLowerCase().includes(searchTerm.toLowerCase())
-    ).slice(0, 10);
-  }, [searchTerm, allPossibleComponents]);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm, fetchSearchResults]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchSearchResults(searchTerm, newPage);
+    }
+  };
 
   const handleSelectComponent = (component) => {
     setSelectedComponent(component);
     setSearchTerm(`${component.internalCode} - ${component.description}`);
+    setShowSearchResults(false);
   };
 
   const handleAddComponent = async (e) => {
     e.preventDefault();
-    const quantityNum = parseInt(quantity, 10);
-
+    const quantityNum = parseFloat(quantity);
     if (!selectedComponent || !quantityNum || quantityNum <= 0) {
       alert('Por favor, seleccione un componente y especifique una cantidad válida.');
       return;
     }
-
-    const confirmed = window.confirm(`¿Añadir este componente a la receta?`);
-    if (!confirmed) return;
-
     setIsSubmitting(true);
     try {
       await authFetch(`/products/${productId}/components`, {
@@ -78,7 +107,7 @@ const ProductComponentsPage = () => {
       setSearchTerm('');
       setSelectedComponent(null);
       setQuantity(1);
-      await loadData(); 
+      await loadRecipeData();
     } catch (err) {
       alert(`Error al añadir componente: ${err.message}`);
     } finally {
@@ -89,11 +118,10 @@ const ProductComponentsPage = () => {
   const handleRemoveComponent = async (componentIdToRemove) => {
     const confirmed = window.confirm('¿Estás seguro de que quieres quitar este componente de la receta?');
     if (!confirmed) return;
-
     setIsSubmitting(true);
     try {
       await authFetch(`/products/${productId}/components/${componentIdToRemove}`, { method: 'DELETE' });
-      await loadData();
+      await loadRecipeData();
     } catch (err) {
       alert(`Error al quitar componente: ${err.message}`);
     } finally {
@@ -101,8 +129,8 @@ const ProductComponentsPage = () => {
     }
   };
 
-  if (loading) return <p>Cargando...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
+  if (loading && !product) return <p>Cargando...</p>;
+  if (error && !product) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -150,18 +178,33 @@ const ProductComponentsPage = () => {
             <input 
               type="text"
               value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setSelectedComponent(null); }}
-              placeholder="Escribe para buscar..."
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setSelectedComponent(null);
+                setShowSearchResults(true);
+              }}
+              placeholder="Escribe para buscar en todo el catálogo..."
               style={{ width: '100%', padding: '8px' }}
             />
-            {searchTerm && filteredComponents.length > 0 && !selectedComponent && (
-              <ul style={searchResultStyle}>
-                {filteredComponents.map(p => (
-                  <li key={p.id} onClick={() => handleSelectComponent(p)} style={searchResultItemStyle}>
-                    {p.internalCode} - {p.description}
-                  </li>
-                ))}
-              </ul>
+            {showSearchResults && searchTerm && (
+              <div style={searchResultStyle}>
+                {isSearching ? <p>Buscando...</p> : (
+                  <ul>
+                    {searchResults.length > 0 ? searchResults.map(p => (
+                      <li key={p.id} onClick={() => handleSelectComponent(p)} style={searchResultItemStyle}>
+                        {p.internalCode} - {p.description}
+                      </li>
+                    )) : <li>No se encontraron resultados.</li>}
+                  </ul>
+                )}
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '8px' }}>
+                    <button type="button" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}>Anterior</button>
+                    <span style={{ margin: '0 10px' }}>Página {currentPage} de {totalPages}</span>
+                    <button type="button" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}>Siguiente</button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           
@@ -170,9 +213,9 @@ const ProductComponentsPage = () => {
             <input 
               type="number"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)} // Allow empty string
-              min="1"
-              step="1"
+              onChange={(e) => setQuantity(e.target.value)}
+              min="0.01"
+              step="0.01"
               style={{ padding: '8px' }}
             />
             {selectedComponent && <span>{selectedComponent.unit}</span>}
@@ -196,7 +239,7 @@ const tableHeaderStyle = { borderBottom: '2px solid black', textAlign: 'left', p
 const buttonStyle = { padding: '10px 15px', border: 'none', backgroundColor: '#007bff', color: 'white', borderRadius: '4px', cursor: 'pointer', marginTop: '1rem' };
 const cancelButtonStyle = { ...buttonStyle, backgroundColor: '#6c757d' };
 const deleteButtonStyle = { ...buttonStyle, backgroundColor: '#dc3545', padding: '4px 8px', marginTop: 0 };
-const searchResultStyle = { listStyle: 'none', padding: 0, margin: 0, border: '1px solid #ccc', borderRadius: '4px', position: 'absolute', width: '100%', backgroundColor: 'white', zIndex: 1000 };
-const searchResultItemStyle = { padding: '8px', cursor: 'pointer' };
+const searchResultStyle = { listStyle: 'none', padding: '1rem', margin: 0, border: '1px solid #ccc', borderRadius: '4px', position: 'absolute', width: '100%', backgroundColor: 'white', zIndex: 1000 };
+const searchResultItemStyle = { padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' };
 
 export default ProductComponentsPage;

@@ -400,11 +400,313 @@ app.delete('/api/assemblers/:id', authenticateToken, authorizeRole('ADMIN'), asy
   }
 });
 
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined.");
-  process.exit(1);
-}
+// --- OVERHEAD COST ENDPOINTS ---
+// Crear un nuevo costo indirecto
+app.post('/api/overhead-costs', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  try {
+    const { name, description, cost, unit, type } = req.body;
+    if (!name || !cost || !unit) {
+      return res.status(400).json({ error: 'name, cost, and unit are required' });
+    }
+    const newOverheadCost = await prisma.overheadCost.create({
+      data: { name, description, cost: cost, unit, type },
+    });
+    res.status(201).json(newOverheadCost);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'An overhead cost with this name already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create overhead cost.' });
+  }
+});
 
+// Obtener todos los costos indirectos
+app.get('/api/overhead-costs', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  try {
+    const overheadCosts = await prisma.overheadCost.findMany({
+      orderBy: { name: 'asc' },
+    });
+    res.json(overheadCosts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch overhead costs.' });
+  }
+});
+
+// Obtener un costo indirecto por ID
+app.get('/api/overhead-costs/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const overheadCost = await prisma.overheadCost.findUnique({
+      where: { id },
+    });
+    if (overheadCost) {
+      res.json(overheadCost);
+    } else {
+      res.status(404).json({ error: 'Overhead cost not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch overhead cost.' });
+  }
+});
+
+// Actualizar un costo indirecto por ID
+app.put('/api/overhead-costs/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  const { name, description, cost, unit, type } = req.body;
+  try {
+    const updatedOverheadCost = await prisma.overheadCost.update({
+      where: { id },
+      data: { name, description, cost: cost ? cost : undefined, unit, type },
+    });
+    res.json(updatedOverheadCost);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Overhead cost not found' });
+    }
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'An overhead cost with this name already exists.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update overhead cost.' });
+  }
+});
+
+// Eliminar un costo indirecto por ID
+app.delete('/api/overhead-costs/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.overheadCost.delete({
+      where: { id },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Overhead cost not found' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete overhead cost.' });
+  }
+});
+
+// --- PRODUCT DESIGN STATION ENDPOINTS ---
+
+// Obtener todos los datos de diseño de un producto
+app.get('/api/product-design/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const productDesign = await prisma.product.findUnique({
+      where: { id: id },
+      include: {
+        // Incluir la lista de materiales (componentes)
+        components: {
+          orderBy: { component: { description: 'asc' } },
+          include: {
+            component: {
+              select: { id: true, internalCode: true, description: true, unit: true, stock: true, priceARS: true },
+            },
+          },
+        },
+        // Incluir el costo de armado
+        trabajoDeArmado: true,
+        // Incluir los costos indirectos asignados
+        overheadCosts: {
+          orderBy: { overheadCost: { name: 'asc' } },
+          include: {
+            overheadCost: true,
+          },
+        },
+      },
+    });
+
+    if (!productDesign) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    // Opcional: Calcular costos totales en el backend
+    // let totalMaterialCost = 0;
+    // productDesign.components.forEach(comp => {
+    //   totalMaterialCost += (comp.component.priceARS || 0) * comp.quantity;
+    // });
+
+    res.json(productDesign);
+
+  } catch (error) {
+    console.error(`Error fetching product design for id ${id}:`, error);
+    res.status(500).json({ error: 'Error al obtener los datos de diseño del producto.' });
+  }
+});
+
+// Añadir un componente a la receta de un producto
+app.post('/api/product-design/:id/components', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId } = req.params;
+  const { componentId, quantity } = req.body;
+
+  if (!componentId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'componentId and a positive quantity are required.' });
+  }
+  if (productId === componentId) {
+    return res.status(400).json({ error: 'Un producto no puede ser componente de sí mismo.' });
+  }
+
+  try {
+    const newComponent = await prisma.productComponent.create({
+      data: {
+        productId: productId,
+        componentId: componentId,
+        quantity: quantity,
+      },
+    });
+    res.status(201).json(newComponent);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Este componente ya existe en la receta.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Error al añadir el componente.' });
+  }
+});
+
+// Actualizar la cantidad de un componente en la receta
+app.put('/api/product-design/:id/components/:componentId', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId, componentId } = req.params;
+  const { quantity } = req.body;
+
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'A positive quantity is required.' });
+  }
+
+  try {
+    const updatedComponent = await prisma.productComponent.update({
+      where: {
+        productId_componentId: {
+          productId: productId,
+          componentId: componentId,
+        },
+      },
+      data: {
+        quantity: quantity,
+      },
+    });
+    res.json(updatedComponent);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Componente no encontrado en la receta.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar el componente.' });
+  }
+});
+
+// Eliminar un componente de la receta de un producto
+app.delete('/api/product-design/:id/components/:componentId', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId, componentId } = req.params;
+
+  try {
+    await prisma.productComponent.delete({
+      where: {
+        productId_componentId: {
+          productId: productId,
+          componentId: componentId,
+        },
+      },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Componente no encontrado en la receta.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar el componente.' });
+  }
+});
+
+// Crear o actualizar el costo de armado de un producto
+app.post('/api/product-design/:id/assembly-cost', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId } = req.params;
+  const { precio, nombre, descripcion } = req.body;
+
+  if (precio === undefined || precio < 0) {
+    return res.status(400).json({ error: 'El precio es requerido y no puede ser negativo.' });
+  }
+
+  try {
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    const assemblyCost = await prisma.trabajoDeArmado.upsert({
+      where: { productoId: productId },
+      update: {
+        precio: precio,
+        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
+        descripcion: descripcion,
+      },
+      create: {
+        productoId: productId,
+        precio: precio,
+        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
+        descripcion: descripcion,
+      },
+    });
+    res.status(201).json(assemblyCost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al guardar el costo de armado.' });
+  }
+});
+
+// Asignar un costo indirecto a un producto
+app.post('/api/product-design/:id/overhead-costs', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId } = req.params;
+  const { overheadCostId, quantity } = req.body;
+
+  if (!overheadCostId || !quantity || quantity <= 0) {
+    return res.status(400).json({ error: 'overheadCostId and a positive quantity are required.' });
+  }
+
+  try {
+    const newProductOverhead = await prisma.productOverhead.create({
+      data: {
+        productId: productId,
+                  overheadCostId: overheadCostId,
+                  quantity: quantity,      },
+    });
+    res.status(201).json(newProductOverhead);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Este costo indirecto ya ha sido asignado al producto.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Error al asignar el costo indirecto.' });
+  }
+});
+
+// Eliminar un costo indirecto de un producto
+app.delete('/api/product-design/:id/overhead-costs/:overheadCostId', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
+  const { id: productId, overheadCostId } = req.params;
+
+  try {
+    await prisma.productOverhead.delete({
+      where: {
+        productId_overheadCostId: {
+          productId: productId,
+          overheadCostId: overheadCostId,
+        },
+      },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'La asignación de costo indirecto no fue encontrada.' });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Error al eliminar el costo indirecto.' });
+  }
+});
 // --- AUTH ENDPOINTS ---
 app.post('/api/login', async (req, res) => {
   try {
@@ -799,14 +1101,13 @@ app.post('/api/products/:id/components', authenticateToken, authorizeRole(['ADMI
   }
 
   try {
-    const newComponent = await prisma.productComponent.create({
-      data: {
-        productId: productId,
-        componentId: componentId,
-        quantity: parseFloat(quantity),
-      },
-    });
-    res.status(201).json(newComponent);
+            const newComponent = await prisma.productComponent.create({
+              data: {
+                productId: productId,
+                componentId: componentId,
+                quantity: quantity,
+              },
+            });    res.status(201).json(newComponent);
   } catch (error) {
     console.error('Error adding component to product:', error);
     if (error.code === 'P2002') {
@@ -855,7 +1156,7 @@ app.put('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVI
     description,
     unit,
     type,
-    lowStockThreshold: lowStockThreshold ? parseFloat(lowStockThreshold) : undefined,
+    lowStockThreshold: lowStockThreshold ? lowStockThreshold : undefined,
     categoryId: categoryId ? parseInt(categoryId) : undefined,
     supplierId: supplierId ? parseInt(supplierId) : undefined,
     isClassified: typeof isClassified === 'boolean' ? isClassified : undefined, // Añadir isClassified
@@ -863,8 +1164,8 @@ app.put('/api/products/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVI
 
   // Rule: Only ADMIN can update prices
   if (user.role === 'ADMIN') {
-    dataToUpdate.priceUSD = priceUSD ? parseFloat(priceUSD) : undefined;
-    dataToUpdate.priceARS = priceARS ? parseFloat(priceARS) : undefined;
+    dataToUpdate.priceUSD = priceUSD ? priceUSD : undefined;
+    dataToUpdate.priceARS = priceARS ? priceARS : undefined;
   }
 
   try {

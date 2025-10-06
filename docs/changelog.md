@@ -1,5 +1,16 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-05
+-   **[FIX] Búsqueda de Componentes Crítica:**
+    -   Corregido un bug crítico en la página "Gestionar Componentes" que impedía encontrar y añadir materias primas a la receta de un producto.
+    -   La causa raíz era que la búsqueda se realizaba en una lista paginada e incompleta de solo 25 productos.
+-   **[FEAT] Refactorización de Búsqueda a Nivel de Servidor:**
+    -   Se refactorizó la página "Gestionar Componentes" para implementar una búsqueda dinámica y paginada del lado del servidor.
+    -   La nueva interfaz ahora permite buscar en todo el catálogo de materias primas y productos pre-ensamblados de forma escalable, mejorando significativamente la experiencia de usuario y la robustez del sistema.
+-   **[CHORE] Mantenimiento de Código y Datos:**
+    -   Verificada y completada la migración de todos los campos monetarios y de cantidad a `Decimal` en la base de datos y el backend.
+    -   Creado el script `export_products.js` para generar un archivo CSV maestro de productos desde la base de datos.
+
 ## 2025-10-01
 -   **[FEAT] CRUD Completo de Armadores:**
     -   Implementada la página de "Gestión de Armadores" con funcionalidad completa de Crear, Leer, Actualizar y Eliminar (CRUD).
