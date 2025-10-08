@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { categoryService } from '../services/categoryService';
 
 function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { authFetch } = useAuth();
 
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const data = await authFetch('/categories');
+        const data = await categoryService.getCategories();
         setCategories(data);
       } catch (error) {
         setError(error);
@@ -21,7 +20,7 @@ function CategoryList() {
     };
 
     fetchCategories();
-  }, [authFetch]);
+  }, []);
 
   if (loading) {
     return <div>Cargando categorías...</div>;
@@ -32,14 +31,14 @@ function CategoryList() {
   }
 
   return (
-    <div>
+    <div style={{ padding: '2rem' }}>
       <h3>Listado de Categorías</h3>
       {categories.length === 0 ? (
         <p>No hay categorías disponibles.</p>
       ) : (
-        <ul>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
           {categories.map((category) => (
-            <li key={category.id}>
+            <li key={category.id} style={{ background: '#f4f4f4', margin: '5px 0', padding: '10px', border: '1px solid #ddd' }}>
               {category.name}
             </li>
           ))}

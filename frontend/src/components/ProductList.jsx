@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { productService } from '../services/productService';
+import { categoryService } from '../services/categoryService';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { authFetch, user } = useAuth();
+  const { user } = useAuth();
 
   // State for filters & pagination
   const [filters, setFilters] = useState({ search: '', categoryId: '', type: '', page: 1 });
@@ -18,14 +20,14 @@ function ProductList() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await authFetch('/categories');
+        const data = await categoryService.getCategories();
         setCategories(data || []);
       } catch (err) {
         console.error("Failed to fetch categories", err);
       }
     };
     fetchCategories();
-  }, [authFetch]);
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -35,8 +37,7 @@ function ProductList() {
         if (!activeFilters[key]) delete activeFilters[key];
       });
 
-      const query = new URLSearchParams(activeFilters);
-      const data = await authFetch(`/products?${query.toString()}`);
+      const data = await productService.getProducts(activeFilters);
       
       setProducts(data.products || []);
       setPagination({ totalPages: data.totalPages, currentPage: data.currentPage, totalProducts: data.totalProducts });
@@ -46,7 +47,7 @@ function ProductList() {
     } finally {
       setLoading(false);
     }
-  }, [authFetch, filters]);
+  }, [filters]);
 
   useEffect(() => {
     fetchProducts();

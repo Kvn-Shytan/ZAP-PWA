@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { productService } from '../services/productService';
 
 const ProductComponentsPage = () => {
   const { id: productId } = useParams();
   const navigate = useNavigate();
-  const { authFetch } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [components, setComponents] = useState([]);
+  const [whereUsedList, setWhereUsedList] = useState([]); // State for where-used list
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -28,22 +28,28 @@ const ProductComponentsPage = () => {
   const loadRecipeData = useCallback(async () => {
     try {
       if (!loading) setLoading(true);
-      const productData = await authFetch(`/products/${productId}`);
-      const componentsData = await authFetch(`/products/${productId}/components`);
+      // Fetch all data in parallel
+      const [productData, componentsData, whereUsedData] = await Promise.all([
+        productService.getProductById(productId),
+        productService.getComponents(productId),
+        productService.getWhereUsed(productId),
+      ]);
+
       setProduct(productData);
       setComponents(componentsData || []);
+      setWhereUsedList(whereUsedData || []);
     } catch (err) {
       setError('Error al cargar la receta del producto.');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [authFetch, productId, loading]);
+  }, [productId, loading]);
 
   useEffect(() => {
     loadRecipeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [productId]); // Reload when productId changes
 
   const fetchSearchResults = useCallback(async (query, page) => {
     if (!query) {
@@ -53,9 +59,12 @@ const ProductComponentsPage = () => {
     }
     setIsSearching(true);
     try {
-      const response = await authFetch(
-        `/products?search=${query}&type=RAW_MATERIAL,PRE_ASSEMBLED&page=${page}&pageSize=8`
-      );
+      const response = await productService.getProducts({
+        search: query,
+        type: 'RAW_MATERIAL,PRE_ASSEMBLED',
+        page: page,
+        pageSize: 8,
+      });
       const filtered = response.products.filter(p => p.id !== productId);
       setSearchResults(filtered || []);
       setTotalPages(response.totalPages || 0);
@@ -65,7 +74,7 @@ const ProductComponentsPage = () => {
     } finally {
       setIsSearching(false);
     }
-  }, [authFetch, productId]);
+  }, [productId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -100,9 +109,9 @@ const ProductComponentsPage = () => {
     }
     setIsSubmitting(true);
     try {
-      await authFetch(`/products/${productId}/components`, {
-        method: 'POST',
-        body: JSON.stringify({ componentId: selectedComponent.id, quantity: quantityNum }),
+      await productService.addComponent(productId, { 
+        componentId: selectedComponent.id, 
+        quantity: quantityNum 
       });
       setSearchTerm('');
       setSelectedComponent(null);
@@ -120,7 +129,7 @@ const ProductComponentsPage = () => {
     if (!confirmed) return;
     setIsSubmitting(true);
     try {
-      await authFetch(`/products/${productId}/components/${componentIdToRemove}`, { method: 'DELETE' });
+      await productService.removeComponent(productId, componentIdToRemove);
       await loadRecipeData();
     } catch (err) {
       alert(`Error al quitar componente: ${err.message}`);
@@ -134,97 +143,128 @@ const ProductComponentsPage = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h2>Gestionar Componentes de: {product?.description}</h2>
+      <h2>Gestionar Relaciones de: {product?.description}</h2>
       
-      <div className="component-list">
-        <h4>Receta Actual</h4>
-        {components.length > 0 ? (
+      {(product?.type === 'PRE_ASSEMBLED' || product?.type === 'FINISHED') && (
+        <>
+          <div className="component-list">
+            <h4>Receta Actual (Componentes que usa este producto)</h4>
+            {components.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={tableHeaderStyle}>Código</th>
+                    <th style={tableHeaderStyle}>Descripción</th>
+                    <th style={tableHeaderStyle}>Cantidad Necesaria</th>
+                    <th style={tableHeaderStyle}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {components.map(({ component, quantity }) => (
+                    <tr key={component.id}>
+                      <td><Link to={`/products/${component.id}/components`}>{component.internalCode}</Link></td>
+                      <td><Link to={`/products/${component.id}/components`}>{component.description}</Link></td>
+                      <td>{quantity}</td>
+                      <td>
+                        <button onClick={() => handleRemoveComponent(component.id)} disabled={isSubmitting} style={deleteButtonStyle}>
+                          Quitar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>Este producto aún no tiene componentes en su receta.</p>
+            )}
+          </div>
+
+          <hr style={{ margin: '2rem 0' }} />
+
+          <div className="add-component-form">
+            <h4>Añadir Nuevo Componente</h4>
+            <form onSubmit={handleAddComponent}>
+              <div style={{ position: 'relative' }}>
+                <label>Buscar componente:</label>
+                <input 
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setSelectedComponent(null);
+                    setShowSearchResults(true);
+                  }}
+                  placeholder="Escribe para buscar en todo el catálogo..."
+                  style={{ width: '100%', padding: '8px' }}
+                />
+                {showSearchResults && searchTerm && (
+                  <div style={searchResultStyle}>
+                    {isSearching ? <p>Buscando...</p> : (
+                      <ul>
+                        {searchResults.length > 0 ? searchResults.map(p => (
+                          <li key={p.id} onClick={() => handleSelectComponent(p)} style={searchResultItemStyle}>
+                            {p.internalCode} - {p.description}
+                          </li>
+                        )) : <li>No se encontraron resultados.</li>}
+                      </ul>
+                    )}
+                    {totalPages > 1 && (
+                      <div style={{ display: 'flex', justifyContent: 'center', padding: '8px' }}>
+                        <button type="button" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}>Anterior</button>
+                        <span style={{ margin: '0 10px' }}>Página {currentPage} de {totalPages}</span>
+                        <button type="button" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}>Siguiente</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <label>Cantidad:</label>
+                <input 
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  min="0.01"
+                  step="0.01"
+                  style={{ padding: '8px' }}
+                />
+                {selectedComponent && <span>{selectedComponent.unit}</span>}
+              </div>
+
+              <button type="submit" disabled={isSubmitting || !selectedComponent} style={buttonStyle}>
+                Añadir Componente
+              </button>
+            </form>
+          </div>
+
+          <hr style={{ margin: '2rem 0' }} />
+        </>
+      )}
+
+      {/* Where-Used List */}
+      <div className="where-used-list">
+        <h4>Utilizado En (Productos que usan este ítem como componente)</h4>
+        {whereUsedList.length > 0 ? (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 <th style={tableHeaderStyle}>Código</th>
                 <th style={tableHeaderStyle}>Descripción</th>
-                <th style={tableHeaderStyle}>Cantidad Necesaria</th>
-                <th style={tableHeaderStyle}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {components.map(({ component, quantity }) => (
-                <tr key={component.id}>
-                  <td>{component.internalCode}</td>
-                  <td>{component.description}</td>
-                  <td>{quantity}</td>
-                  <td>
-                    <button onClick={() => handleRemoveComponent(component.id)} disabled={isSubmitting} style={deleteButtonStyle}>
-                      Quitar
-                    </button>
-                  </td>
+              {whereUsedList.map((parentProduct) => (
+                <tr key={parentProduct.id}>
+                  <td><Link to={`/products/${parentProduct.id}/components`}>{parentProduct.internalCode}</Link></td>
+                  <td><Link to={`/products/${parentProduct.id}/components`}>{parentProduct.description}</Link></td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <p>Este producto aún no tiene componentes en su receta.</p>
+          <p>Este ítem no es un componente de ninguna otra receta.</p>
         )}
-      </div>
-
-      <hr style={{ margin: '2rem 0' }} />
-
-      <div className="add-component-form">
-        <h4>Añadir Nuevo Componente</h4>
-        <form onSubmit={handleAddComponent}>
-          <div style={{ position: 'relative' }}>
-            <label>Buscar componente:</label>
-            <input 
-              type="text"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setSelectedComponent(null);
-                setShowSearchResults(true);
-              }}
-              placeholder="Escribe para buscar en todo el catálogo..."
-              style={{ width: '100%', padding: '8px' }}
-            />
-            {showSearchResults && searchTerm && (
-              <div style={searchResultStyle}>
-                {isSearching ? <p>Buscando...</p> : (
-                  <ul>
-                    {searchResults.length > 0 ? searchResults.map(p => (
-                      <li key={p.id} onClick={() => handleSelectComponent(p)} style={searchResultItemStyle}>
-                        {p.internalCode} - {p.description}
-                      </li>
-                    )) : <li>No se encontraron resultados.</li>}
-                  </ul>
-                )}
-                {totalPages > 1 && (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: '8px' }}>
-                    <button type="button" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}>Anterior</button>
-                    <span style={{ margin: '0 10px' }}>Página {currentPage} de {totalPages}</span>
-                    <button type="button" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}>Siguiente</button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label>Cantidad:</label>
-            <input 
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              min="0.01"
-              step="0.01"
-              style={{ padding: '8px' }}
-            />
-            {selectedComponent && <span>{selectedComponent.unit}</span>}
-          </div>
-
-          <button type="submit" disabled={isSubmitting || !selectedComponent} style={buttonStyle}>
-            Añadir Componente
-          </button>
-        </form>
       </div>
 
       <button onClick={() => navigate(`/products/edit/${productId}`)} style={{...cancelButtonStyle, marginTop: '2rem'}}>

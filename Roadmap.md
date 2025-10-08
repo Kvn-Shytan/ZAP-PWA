@@ -32,13 +32,13 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[x]` **Acción (Backend):** Actualizar el código del backend (API y scripts) que usa `parseFloat` para que sea compatible con el tipo `Decimal`.
         *   `[x]` **(NUEVO)** **Acción (DB):** Crear un script `export_products.js` para generar un `productos_maestros.csv` limpio desde la base de datos, estableciendo una nueva "fuente de verdad" para los datos de productos.
 
-    *   **Sub-fase 3.6.2: Refactorización Arquitectónica del Backend**
-        *   `[ ]` **Acción (Backend):** Reestructurar el archivo monolítico `index.js` en un directorio `routes/` con un archivo por cada recurso (`products.routes.js`, `users.routes.js`, etc.).
-        *   `[ ]` **Acción (Backend):** Implementar validación de `req.body` en todos los endpoints `POST` y `PUT` usando una librería como `zod`.
+    *   **Sub-fase 3.6.2: Refactorización Arquitectónica del Backend (Completada)**
+        *   `[x]` **Acción (Backend):** Reestructurar el archivo monolítico `index.js` en un directorio `routes/` con un archivo por cada recurso (`products.routes.js`, `users.routes.js`, etc.).
+        *   `[x]` **Acción (Backend):** Implementar validación de `req.body` en todos los endpoints `POST` y `PUT` usando una librería como `zod`.
 
-    *   **Sub-fase 3.6.3: Corrección y Refactorización del Frontend**
-        *   `[ ]` **Acción (Frontend):** Corregir el uso de `authFetch` en `OverheadCostPage.jsx` y otros componentes para manejar la respuesta ya procesada.
-        *   `[ ]` **Acción (Frontend):** Crear una capa de servicios (ej. `src/services/`) para centralizar todas las llamadas a la API.
+    *   **Sub-fase 3.6.3: Corrección y Refactorización del Frontend (Completada)**
+        *   `[x]` **Acción (Frontend):** Corregir el uso de `authFetch` en `OverheadCostPage.jsx` y otros componentes para manejar la respuesta ya procesada.
+        *   `[x]` **Acción (Frontend):** Crear una capa de servicios (ej. `src/services/`) para centralizar todas las llamadas a la API.
 
 -   **Fase 4: Módulo de Inventario Avanzado y Alertas (En Progreso)**
     -   [x] **Actualización del Modelo de Datos:** `type`, `lowStockThreshold`, `ProductComponent`, `InventoryMovement`.
@@ -49,6 +49,8 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   `[x]` **(Casi Completo)** Herramienta de "Gestión de Costos Indirectos".
             -   La funcionalidad está implementada. La tarea final para completarla es el bugfix de `authFetch` definido en la **Fase 3.6.3**.
     -   [x] **Interfaz de Usuario:** Historial de Movimientos, gestión de Lista de Materiales, UI para Órdenes de Producción y Compras.
+    -   `[ ]` **(NUEVO)** Implementar vista "Utilizado En" en la página de gestión de componentes.
+    -   `[ ]` **(NUEVO)** Implementar navegación recursiva (drill-down) en las recetas.
 
 -   **Fase 5: Módulo de Armadores (Diseño Detallado)**
     > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa.

@@ -35,44 +35,11 @@ export const AuthProvider = ({ children }) => {
     setToken(authToken);
   };
 
-  const authFetch = useCallback(async (endpoint, options = {}) => {
-    const url = `${API_URL}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { ...options, headers });
-
-    if (response.status === 401 || response.status === 403) {
-      logout();
-      throw new Error('Sesión expirada o no autorizada.');
-    }
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: 'Error desconocido' }));
-      throw new Error(errorBody.error || `Error en la petición: ${response.statusText}`);
-    }
-
-    // Si la respuesta no tiene contenido (ej. 204 No Content), no intentar parsear JSON
-    if (response.status === 204) {
-        return null;
-    }
-
-    return response.json();
-  }, [token, logout]);
-
-
   const value = {
     user,
     token,
     login,
     logout,
-    authFetch, // Expose the new function
     isAuthenticated: !!token,
   };
 

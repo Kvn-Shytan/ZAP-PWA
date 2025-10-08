@@ -2,18 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProductForm from '../components/ProductForm';
-import ProductComponents from '../components/ProductComponents'; // Import the new component
+import { productService } from '../services/productService';
+import { categoryService } from '../services/categoryService';
+import { supplierService } from '../services/supplierService';
 
 const ProductEditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { authFetch, user } = useAuth(); // Get user role
+  const { user } = useAuth(); // Get user role
   
   const isEdit = Boolean(id);
   const [product, setProduct] = useState({ type: 'RAW_MATERIAL', lowStockThreshold: 0 });
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [allProducts, setAllProducts] = useState([]); // State for all products list
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,21 +22,18 @@ const ProductEditPage = () => {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const catPromise = authFetch('/categories');
-      const supPromise = authFetch('/suppliers');
-      // Fetch all products with pagination disabled to get the full list
-      const allProdPromise = authFetch('/products?pageSize=1000'); 
+      const catPromise = categoryService.getCategories();
+      const supPromise = supplierService.getSuppliers();
       let prodPromise = Promise.resolve(null);
 
       if (isEdit) {
-        prodPromise = authFetch(`/products/${id}`);
+        prodPromise = productService.getProductById(id);
       }
 
-      const [catData, supData, prodData, allProdData] = await Promise.all([catPromise, supPromise, prodPromise, allProdPromise]);
+      const [catData, supData, prodData] = await Promise.all([catPromise, supPromise, prodPromise]);
 
       setCategories(catData || []);
       setSuppliers(supData || []);
-      setAllProducts(allProdData.products || []); // Correctly access the products array
       if (prodData) {
         setProduct(prodData);
       }
@@ -46,7 +44,7 @@ const ProductEditPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [authFetch, id, isEdit]);
+  }, [id, isEdit]);
 
   useEffect(() => {
     loadData();
@@ -59,9 +57,6 @@ const ProductEditPage = () => {
     try {
       setIsSubmitting(true);
       setError(null);
-
-      const method = isEdit ? 'PUT' : 'POST';
-      const endpoint = isEdit ? `/products/${id}` : '/products';
       
       const payload = {
         ...product,
@@ -72,7 +67,13 @@ const ProductEditPage = () => {
         lowStockThreshold: product.lowStockThreshold ? parseFloat(product.lowStockThreshold) : 0,
       };
 
-      await authFetch(endpoint, { method, body: JSON.stringify(payload) });
+      console.log('Create/Update Payload:', payload);
+
+      if (isEdit) {
+        await productService.updateProduct(id, payload);
+      } else {
+        await productService.createProduct(payload);
+      }
 
       alert(`Producto ${isEdit ? 'actualizado' : 'creado'} correctamente.`);
       navigate('/products');
@@ -94,7 +95,7 @@ const ProductEditPage = () => {
     try {
       setIsSubmitting(true);
       setError(null);
-      await authFetch(`/products/${id}`, { method: 'DELETE' });
+      await productService.deleteProduct(id);
       alert('Producto eliminado correctamente.');
       navigate('/products');
     } catch (err) {
@@ -130,7 +131,7 @@ const ProductEditPage = () => {
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>
 
-          {isEdit && (product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
+          {isEdit && (
             <Link to={`/products/${id}/components`} style={buttonStyle}>
               Gestionar Componentes
             </Link>

@@ -1,5 +1,21 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-07
+-   **[REFACTOR] Modernización de Módulos Principales:**
+    -   Se refactorizó por completo la arquitectura de los módulos de **Productos, Categorías y Proveedores**.
+    -   **Backend:** Se modularizaron las rutas, moviéndolas desde el `index.js` monolítico a archivos dedicados (ej. `products.routes.js`).
+    -   **Frontend:** Se implementó una nueva **capa de servicios** (`api.js`, `productService.js`, etc.), eliminando el antiguo hook `authFetch` y centralizando la lógica de llamadas a la API.
+-   **[FEAT] Nuevas Funcionalidades de Usabilidad:**
+    -   **Vista "Utilizado En":** Se implementó una nueva sección en la gestión de componentes que permite ver en qué recetas se utiliza una materia prima o un sub-ensamble.
+    -   **Navegación Recursiva:** Se mejoró la página de gestión de componentes para permitir "bucear" en las recetas, convirtiendo los componentes en enlaces navegables.
+-   **[FIX] Corrección de Bugs Críticos:**
+    -   Solucionado el bug que impedía **crear nuevos productos** debido a un error de validación de datos nulos en el backend (`zod`).
+    -   Solucionado el bug que impedía **cargar la página de gestión de componentes** ("Error al cargar la receta del producto").
+    -   Solucionado el error de duplicación de rutas `/api/api/`.
+-   **[CHORE] Mejoras Generales:**
+    -   Se mejoró el mensaje de error al intentar eliminar un producto que es componente de otro, especificando la causa.
+    -   Se corrigió la lógica de visualización del botón "Gestionar Componentes" para que sea accesible desde materias primas.
+
 ## 2025-10-05
 -   **[FIX] Búsqueda de Componentes Crítica:**
     -   Corregido un bug crítico en la página "Gestionar Componentes" que impedía encontrar y añadir materias primas a la receta de un producto.
