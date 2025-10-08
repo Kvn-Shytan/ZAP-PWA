@@ -16,6 +16,9 @@ import AdminToolsPage from './pages/AdminToolsPage'; // Import the Admin Tools p
 import ClassifyProductsPage from './pages/ClassifyProductsPage'; // Import the Classify Products page
 import AssemblerManagementPage from './pages/AssemblerManagementPage'; // Import the new page
 import OverheadCostPage from './pages/OverheadCostPage'; // Import the new page
+import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
+import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
+import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
 import './App.css';
 
 function App() {
@@ -42,6 +45,12 @@ function App() {
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/purchase-order">Registrar Compra</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/external-production-orders/new">Crear Orden Externa</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/logistics-dashboard">Panel de Logística</Link>
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
@@ -108,6 +117,10 @@ function App() {
           element={<ProtectedRoute element={<OverheadCostPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
+          path="/admin-tools/assembly-work"
+          element={<ProtectedRoute element={<TrabajoDeArmadoPage />} allowedRoles={['ADMIN']} />}
+        />
+        <Route
           path="/inventory-history"
           element={<ProtectedRoute element={<InventoryHistoryPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
@@ -118,6 +131,14 @@ function App() {
         <Route
           path="/purchase-order"
           element={<ProtectedRoute element={<PurchaseOrderPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/external-production-orders/new"
+          element={<ProtectedRoute element={<ExternalProductionOrderPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/logistics-dashboard"
+          element={<ProtectedRoute element={<LogisticsDashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/change-password"

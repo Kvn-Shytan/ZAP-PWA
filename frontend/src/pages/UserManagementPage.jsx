@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+import { apiFetch } from '../services/api';
+
 function UserManagementPage() {
-  const { user, authFetch } = useAuth(); // Use authFetch from context
+  const { user } = useAuth(); // Use user from context
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ function UserManagementPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await authFetch('/users');
+      const data = await apiFetch('/users');
       setUsers(data);
     } catch (e) {
       setError('Failed to fetch users: ' + e.message);
@@ -21,7 +23,7 @@ function UserManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, []);
 
   useEffect(() => {
     if (user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR')) {
@@ -37,7 +39,7 @@ function UserManagementPage() {
     e.preventDefault();
     setError(null);
     try {
-      await authFetch('/users', {
+      await apiFetch('/users', {
         method: 'POST',
         body: JSON.stringify(newUser),
       });
@@ -53,9 +55,8 @@ function UserManagementPage() {
   const handleRoleChange = async (userId, newRole) => {
     setError(null);
     try {
-      await authFetch(`/users/${userId}`,
-        {
-          method: 'PUT',
+                await apiFetch(`/users/${userId}`,
+                  {          method: 'PUT',
           body: JSON.stringify({ role: newRole }),
         }
       );
@@ -72,7 +73,7 @@ function UserManagementPage() {
     }
     setError(null);
     try {
-      await authFetch(`/users/${userId}`, { method: 'DELETE' });
+      await apiFetch(`/users/${userId}`, { method: 'DELETE' });
       fetchUsers(); // Refresh list
     } catch (e) {
       setError('Failed to delete user: ' + e.message);
@@ -86,7 +87,7 @@ function UserManagementPage() {
     }
     setError(null);
     try {
-      const result = await authFetch(`/users/${userId}/reset-password`, {
+      const result = await apiFetch(`/users/${userId}/reset-password`, {
         method: 'PUT',
       });
       alert(`La nueva contraseña para el usuario ${userId} es: ${result.newPassword}. Por favor, comunícasela al usuario.`);

@@ -38,8 +38,8 @@ model Product {
   externalProductionItems ExternalProductionOrderItem[]
   receivedProductions     ReceivedProduction[]
 
-  // Relación con el trabajo de armado
-  trabajoDeArmado TrabajoDeArmado?
+  // Relación con los trabajos de armado (muchos a muchos)
+  trabajosDeArmado ProductoTrabajoArmado[]
   // Relación con los costos indirectos
   overheadCosts   ProductOverhead[]
 }
@@ -103,9 +103,17 @@ model TrabajoDeArmado {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relación: Este trabajo corresponde a un único producto final.
-  producto   Product  @relation(fields: [productoId], references: [id])
-  productoId String   @unique
+  // Relación a la tabla intermedia
+  productos   ProductoTrabajoArmado[]
+}
+
+model ProductoTrabajoArmado {
+  producto    Product         @relation(fields: [productId], references: [id])
+  productId   String
+  trabajo     TrabajoDeArmado @relation(fields: [trabajoId], references: [id])
+  trabajoId   String
+
+  @@id([productId, trabajoId])
 }
 
 model ExternalProductionOrder {

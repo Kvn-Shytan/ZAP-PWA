@@ -16,6 +16,10 @@ const AdminToolsPage = () => {
           <h2>Gestionar Costos Indirectos</h2>
           <p>Define y gestiona costos no materiales, como horas de máquina o servicios.</p>
         </Link>
+        <Link to="/admin-tools/assembly-work" style={toolCardStyle}>
+          <h2>Gestionar Trabajos de Armado</h2>
+          <p>Define y gestiona los tipos de trabajo de armado y sus precios.</p>
+        </Link>
         {/* Próximamente: aquí irán más tarjetas o enlaces a las herramientas */}
       </div>
     </div>

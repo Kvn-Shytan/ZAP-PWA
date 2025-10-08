@@ -101,4 +101,15 @@ export const productService = {
   getWhereUsed(productId) {
     return apiFetch(`/products/${productId}/where-used`);
   },
+
+  // --- Assembly (Recipe) Management ---
+
+  /**
+   * Obtiene la lista de trabajos de armado (receta de armado) de un producto.
+   * @param {string} productId - El ID del producto.
+   * @returns {Promise<Array<object>>} - La lista de trabajos asignados.
+   */
+  getTrabajosArmado(productId) {
+    return apiFetch(`/products/${productId}/trabajos-armado`);
+  },
 };

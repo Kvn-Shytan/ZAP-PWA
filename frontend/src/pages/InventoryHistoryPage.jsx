@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const MOVEMENT_TYPES = [
@@ -27,14 +28,14 @@ const InventoryHistoryPage = () => {
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
 
-  const { authFetch, user } = useAuth(); // Get user from auth context
+  const { user } = useAuth(); // Get user from auth context
 
   useEffect(() => {
     const fetchFilterData = async () => {
       try {
         // Fetch products with pagination disabled to get all for the filter
-        const productsData = await authFetch('/products?pageSize=1000'); 
-        const usersData = await authFetch('/users');
+        const productsData = await apiFetch('/products?pageSize=1000'); 
+        const usersData = await apiFetch('/users');
         setProducts(productsData.products || []); // Correctly access the products array
         setUsers(usersData || []);
       } catch (err) {
@@ -42,7 +43,7 @@ const InventoryHistoryPage = () => {
       }
     };
     fetchFilterData();
-  }, [authFetch]);
+  }, []);
 
   const loadMovements = useCallback(async () => {
     try {
@@ -56,7 +57,7 @@ const InventoryHistoryPage = () => {
       });
 
       const query = new URLSearchParams(activeFilters).toString();
-      const data = await authFetch(`/inventory/movements?${query}`);
+      const data = await apiFetch(`/inventory/movements?${query}`);
       setMovements(data.movements || []);
       setPagination({
         totalMovements: data.totalMovements,
@@ -69,7 +70,7 @@ const InventoryHistoryPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [authFetch, filters]);
+  }, [filters]);
 
   useEffect(() => {
     loadMovements();
@@ -98,7 +99,7 @@ const InventoryHistoryPage = () => {
 
     try {
       setIsSubmitting(true);
-      await authFetch('/inventory/reversal', {
+      await apiFetch('/inventory/reversal', {
         method: 'POST',
         body: JSON.stringify({ movementId }),
       });

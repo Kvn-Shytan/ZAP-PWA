@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 
 const OverheadCostPage = () => {
   const [costs, setCosts] = useState([]);
@@ -7,13 +7,11 @@ const OverheadCostPage = () => {
   const [error, setError] = useState(null);
   const [editingCost, setEditingCost] = useState(null); // State to hold the cost being edited
 
-  const { authFetch } = useAuth();
-
   const fetchCosts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authFetch('/overhead-costs');
+      const response = await apiFetch('/overhead-costs');
       if (!response.ok) {
         throw new Error('Error al obtener los costos indirectos.');
       }
@@ -24,7 +22,7 @@ const OverheadCostPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [authFetch]);
+  }, []);
 
   useEffect(() => {
     fetchCosts();
@@ -37,7 +35,7 @@ const OverheadCostPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Está seguro de que desea eliminar este costo?')) {
       try {
-        const response = await authFetch(`/overhead-costs/${id}`, { method: 'DELETE' });
+        const response = await apiFetch(`/overhead-costs/${id}`, { method: 'DELETE' });
         if (!response.ok) {
           throw new Error('Error al eliminar el costo.');
         }
@@ -55,7 +53,7 @@ const OverheadCostPage = () => {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      const response = await authFetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingCost),

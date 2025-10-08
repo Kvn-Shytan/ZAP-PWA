@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // Keep useAuth for user role
+import { armadorService } from '../services/armadorService';
 
 const INITIAL_FORM_STATE = {
   name: '',
@@ -43,7 +44,7 @@ function EditForm({ assembler, onSave, onCancel }) {
 }
 
 function AssemblerManagementPage() {
-  const { user, authFetch } = useAuth();
+  const { user } = useAuth(); // Keep useAuth only for user role
   const [assemblers, setAssemblers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,15 +59,14 @@ function AssemblerManagementPage() {
     setLoading(true);
     setError(null);
     try {
-      // The API endpoint we created earlier
-      const data = await authFetch('/assemblers');
+      const data = await armadorService.getArmadores();
       setAssemblers(data);
     } catch (e) {
       setError('Failed to fetch assemblers: ' + e.message);
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, []); // No authFetch dependency needed anymore
 
   useEffect(() => {
     fetchAssemblers();
@@ -80,10 +80,7 @@ function AssemblerManagementPage() {
     e.preventDefault();
     setError(null);
     try {
-      await authFetch('/assemblers', {
-        method: 'POST',
-        body: JSON.stringify(newAssembler),
-      });
+      await armadorService.create(newAssembler);
       setNewAssembler(INITIAL_FORM_STATE);
       setShowCreateForm(false);
       fetchAssemblers();
@@ -96,7 +93,7 @@ function AssemblerManagementPage() {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este armador?')) return;
     setError(null);
     try {
-      await authFetch(`/assemblers/${assemblerId}`, { method: 'DELETE' });
+      await armadorService.delete(assemblerId);
       fetchAssemblers();
     } catch (e) {
       setError('Failed to delete assembler: ' + e.message);
@@ -106,12 +103,7 @@ function AssemblerManagementPage() {
   const handleUpdateAssembler = async (assemblerToUpdate) => {
     setError(null);
     try {
-      await authFetch(`/assemblers/${assemblerToUpdate.id}`,
-        {
-          method: 'PUT',
-          body: JSON.stringify(assemblerToUpdate),
-        }
-      );
+      await armadorService.update(assemblerToUpdate.id, assemblerToUpdate);
       setEditingAssembler(null); // Exit edit mode
       fetchAssemblers();
     } catch (e) {

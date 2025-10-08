@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 
 function ChangePasswordPage() {
-  const { authFetch } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -20,7 +19,7 @@ function ChangePasswordPage() {
     }
 
     try {
-      const data = await authFetch('/users/change-password', {
+      const data = await apiFetch('/users/change-password', {
         method: 'PUT',
         body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword }),
       });

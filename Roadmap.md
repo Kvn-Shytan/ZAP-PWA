@@ -37,7 +37,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[x]` **Acción (Backend):** Implementar validación de `req.body` en todos los endpoints `POST` y `PUT` usando una librería como `zod`.
 
     *   **Sub-fase 3.6.3: Corrección y Refactorización del Frontend (Completada)**
-        *   `[x]` **Acción (Frontend):** Corregir el uso de `authFetch` en `OverheadCostPage.jsx` y otros componentes para manejar la respuesta ya procesada.
+        *   `[x]` **Acción (Frontend):** Corregir el uso de `authFetch` en `OverheadCostPage.jsx` y otros componentes para manejar la respuesta ya procesada, refactorizando a `apiFetch` en todas las páginas afectadas.
         *   `[x]` **Acción (Frontend):** Crear una capa de servicios (ej. `src/services/`) para centralizar todas las llamadas a la API.
 
 -   **Fase 4: Módulo de Inventario Avanzado y Alertas (En Progreso)**
@@ -49,22 +49,48 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   `[x]` **(Casi Completo)** Herramienta de "Gestión de Costos Indirectos".
             -   La funcionalidad está implementada. La tarea final para completarla es el bugfix de `authFetch` definido en la **Fase 3.6.3**.
     -   [x] **Interfaz de Usuario:** Historial de Movimientos, gestión de Lista de Materiales, UI para Órdenes de Producción y Compras.
-    -   `[ ]` **(NUEVO)** Implementar vista "Utilizado En" en la página de gestión de componentes.
-    -   `[ ]` **(NUEVO)** Implementar navegación recursiva (drill-down) en las recetas.
+    -   `[x]` **(NUEVO)** Implementar vista "Utilizado En" en la página de gestión de componentes.
+    -   `[x]` **(NUEVO)** Implementar navegación recursiva (drill-down) en las recetas.
 
 -   **Fase 5: Módulo de Armadores (Diseño Detallado)**
-    > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa.
+    > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa con trazabilidad total y simplicidad para el operario.
 
-    *   **5.1: Modelos de Datos y API Core**
-        *   [x] Modelos de `Armador` y relacionados ya creados.
-        *   [x] Endpoints CRUD para `Armador` implementados.
-        *   `[ ]` Implementar endpoints CRUD para `TrabajoDeArmado` (precio por armado).
-        *   `[ ]` Implementar endpoints para el ciclo de vida de la entrega (`assign`, `deliver`, `fail-delivery`, `confirm-return`).
+    *   **5.1: Modelos de Datos y API Core (Rediseño Aprobado)**
+        *   `[x]` **(REDISEÑO)** Modificar `schema.prisma`: `TrabajoDeArmado` pasa a ser un catálogo genérico y se crea la tabla intermedia `ProductoTrabajoArmado` (muchos a muchos).
+        *   `[x]` Generar y ejecutar la nueva migración de base de datos.
+        *   `[x]` **(REFACTOR)** Mover endpoints de `Armador` a su propio archivo de rutas para consistencia arquitectónica.
+        *   `[x]` Implementar endpoints CRUD para el nuevo modelo `TrabajoDeArmado` (el "catálogo de trabajos").
+        *   `[x]` Implementar endpoints para gestionar la asignación de trabajos a productos (la "receta de armado").
 
-    *   **5.2: Interfaz de Usuario y Experiencia por Rol**
-        *   `[ ]` **`EMPLOYEE` (Repartidor):** Pantallas "Mis Entregas" y "Detalle de Entrega".
-        *   `[ ]` **`SUPERVISOR` (Logística):** Panel de "Producción Externa" con filtros y acciones.
-        *   `[ ]` **`ADMIN` (Finanzas):** UI para gestionar `TrabajoDeArmado` y registrar pagos.
+    *   **5.2: Flujo de Producción Externa y Lógica de Negocio**
+        *   `[x]` **Creación de Orden (`SUPERVISOR`):**
+            *   `[x]` El backend soporta modo "simulación" (`dry-run`) para calcular el plan de producción anidado sin afectar el inventario.
+            *   `[x]` El backend soporta modo "confirmación" (`commit`) para ejecutar la transacción real de la orden.
+            *   `[x]` La UI consulta al backend en modo "simulación" y muestra el "Plan de Producción Anidado" (materiales base, pasos de ensamblaje, costos).
+            *   `[x]` La UI permite confirmar la orden, enviando la solicitud al backend en modo "confirmación".
+            *   `[x]` El backend realiza un movimiento de inventario atómico (`SENT_TO_ASSEMBLER`) al confirmar la orden.
+        *   `[ ]` **Gestión de Errores (`SUPERVISOR`):**
+            *   `[x]` (Backend) Permitir "Reasignar" una orden en estado `OUT_FOR_DELIVERY`.
+            *   `[x]` (Backend) Permitir "Cancelar" una orden en estado `PENDING_DELIVERY`, lo que debe disparar una reversión automática del movimiento de inventario.
+            *   `[ ]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
+            *   `[ ]` (UI) Implementar confirmación para "Cancelar" orden.
+        *   `[ ]` **Recepción de Mercadería (`EMPLOYEE`):**
+            *   La UI debe permitir al empleado registrar la cantidad *real* recibida.
+            *   El backend debe incrementar el stock del producto terminado (`RECEIVED_FROM_ASSEMBLER`).
+        *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
+            *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
+
+    *   **5.3: Interfaz de Usuario y Experiencia por Rol**
+        *   `[ ]` **`EMPLOYEE` (Repartidor):**
+            *   UI móvil simple con "Mis Tareas" (Entregas/Recolecciones).
+            *   Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
+        *   `[ ]` **`SUPERVISOR` (Logística):**
+            *   Panel de "Producción Externa" para monitorear órdenes en tiempo real.
+            *   Filtros por estado (ej. "Pendiente de Entrega", "En Reparto", "Entrega Fallida").
+            *   Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
+        *   `[ ]` **`ADMIN` (Finanzas):**
+            *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
+            *   UI para visualizar y registrar liquidaciones de pago.
 
 -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   `[ ]` Implementar Service Workers para el funcionamiento offline.

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 
 const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 
 const ClassifyProductsPage = () => {
-  const { authFetch } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +13,7 @@ const ClassifyProductsPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await authFetch('/products/unclassified');
+      const data = await apiFetch('/products/unclassified');
       setProducts(data);
     } catch (err) {
       console.error("Error fetching unclassified products:", err);
@@ -22,7 +21,7 @@ const ClassifyProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, []);
 
   useEffect(() => {
     fetchUnclassifiedProducts();
@@ -35,7 +34,7 @@ const ClassifyProductsPage = () => {
       setIsSubmitting(true);
       setError(null);
 
-      await authFetch(`/products/${productId}`, {
+      await apiFetch(`/products/${productId}`, {
         method: 'PUT',
         body: JSON.stringify({ type: newType, isClassified: true }),
       });

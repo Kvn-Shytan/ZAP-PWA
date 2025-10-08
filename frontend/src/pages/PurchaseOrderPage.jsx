@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api'; // Import the new apiFetch
 import './PurchaseOrderPage.css';
 
 function PurchaseOrderPage() {
-  const { authFetch } = useAuth(); // Use the custom fetch hook
   const [rawMaterials, setRawMaterials] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState('');
@@ -21,7 +20,7 @@ function PurchaseOrderPage() {
       setError(null);
       try {
         // Use authFetch and remove /api prefix
-        const data = await authFetch('/products?type=RAW_MATERIAL');
+        const data = await apiFetch('/products?type=RAW_MATERIAL');
         
         const products = data.products || [];
         
@@ -39,7 +38,7 @@ function PurchaseOrderPage() {
     };
 
     fetchRawMaterials();
-  }, [authFetch]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,7 +62,7 @@ function PurchaseOrderPage() {
 
     try {
       // Use authFetch and remove /api prefix
-      await authFetch('/inventory/purchase', {
+      await apiFetch('/inventory/purchase', {
         method: 'POST',
         body: JSON.stringify({
           productId: selectedProduct.value,

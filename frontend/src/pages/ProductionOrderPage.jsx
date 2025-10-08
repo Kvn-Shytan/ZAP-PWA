@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 
 const tableStyle = { width: '100%', marginTop: '1rem', borderCollapse: 'collapse' };
 const thStyle = { borderBottom: '1px solid #ccc', padding: '8px', textAlign: 'left' };
@@ -11,7 +11,6 @@ const ProductTable = ({ onProductSelect, searchTerm }) => {
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const { authFetch } = useAuth();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -22,7 +21,7 @@ const ProductTable = ({ onProductSelect, searchTerm }) => {
         type: 'PRE_ASSEMBLED,FINISHED', // Assuming backend can handle comma-separated values
         search: searchTerm,
       });
-      const data = await authFetch(`/products?${params.toString()}`);
+      const data = await apiFetch(`/products?${params.toString()}`);
       setProducts(data.products || []);
       setPagination({ totalPages: data.totalPages, currentPage: data.currentPage });
     } catch (error) {
@@ -30,7 +29,7 @@ const ProductTable = ({ onProductSelect, searchTerm }) => {
     } finally {
       setLoading(false);
     }
-  }, [authFetch, currentPage, searchTerm]);
+  }, [currentPage, searchTerm]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -73,7 +72,6 @@ const ProductTable = ({ onProductSelect, searchTerm }) => {
 };
 
 const ProductionOrderPage = () => {
-  const { authFetch } = useAuth();
   const [recipe, setRecipe] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState('');
@@ -88,7 +86,7 @@ const ProductionOrderPage = () => {
     // Fetch all component stocks once for pre-flight checks
     const fetchAllStocks = async () => {
         try {
-            const data = await authFetch('/products?pageSize=1000'); // Fetch all products to get their stock
+            const data = await apiFetch('/products?pageSize=1000'); // Fetch all products to get their stock
             const stocks = data.products.reduce((acc, p) => { acc[p.id] = p.stock; return acc; }, {});
             setComponentStocks(stocks);
         } catch (err) {
@@ -96,7 +94,7 @@ const ProductionOrderPage = () => {
         }
     };
     fetchAllStocks();
-  }, [authFetch]);
+  }, []);
 
   useEffect(() => {
     if (!selectedProduct) {
@@ -106,14 +104,14 @@ const ProductionOrderPage = () => {
     }
     const fetchRecipe = async () => {
       try {
-        const data = await authFetch(`/products/${selectedProduct.id}/components`);
+        const data = await apiFetch(`/products/${selectedProduct.id}/components`);
         setRecipe(data || []);
       } catch (err) {
         setError(err.message);
       }
     };
     fetchRecipe();
-  }, [selectedProduct, authFetch]);
+  }, [selectedProduct]);
 
   // Effect to calculate component availability and update button state
   useEffect(() => {
@@ -160,7 +158,7 @@ const ProductionOrderPage = () => {
     setError(null);
     setSuccess(null);
     try {
-      await authFetch('/inventory/production', {
+      await apiFetch('/inventory/production', {
         method: 'POST',
         body: JSON.stringify({ productId: selectedProduct.id, quantity: quantityNum }),
       });

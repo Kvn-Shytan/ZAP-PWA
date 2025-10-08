@@ -1,5 +1,38 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-08
+-   **[FIX] Errores de `authFetch` y Refactorización a `apiFetch`:**
+    -   Se corrigieron múltiples errores de `authFetch is not a function` en varias páginas del frontend.
+    -   Se refactorizaron las siguientes páginas para utilizar la nueva función `apiFetch` centralizada:
+        -   `PurchaseOrderPage.jsx` (Registrar Compra de Materia Prima)
+        -   `InventoryHistoryPage.jsx` (Historial de Movimientos)
+        -   `ProductionOrderPage.jsx` (Orden de Producción Interna)
+        -   `UserManagementPage.jsx` (Gestión de Usuarios)
+        -   `OverheadCostPage.jsx` (Gestionar Costos Indirectos)
+        -   `ChangePasswordPage.jsx` (Cambiar Contraseña)
+    -   Se corrigieron errores de compilación relacionados con rutas de importación y declaraciones duplicadas de estados durante el proceso de refactorización.
+-   **[FIX] Módulo de Armadores - Funcionalidad CRUD:**
+    -   Se corrigió el error `armadorService.create is not a function`.
+    -   Se extendió `frontend/src/services/armadorService.js` para incluir los métodos `create`, `update` y `delete`, permitiendo la gestión completa de armadores.
+
+## 2025-10-08
+-   **[FEAT] Módulo de Armadores - Rediseño y Funcionalidad Central:**
+    -   **Rediseño de DB:** `TrabajoDeArmado` transformado en catálogo genérico; creación de `ProductoTrabajoArmado` para relación N:M con `Product`.
+    -   **Backend:**
+        -   Endpoints CRUD para `TrabajoDeArmado` implementados.
+        -   Endpoints para gestionar la asignación de `TrabajoDeArmado` a `Product` (receta de armado).
+        -   Endpoints para listar, asignar y cancelar órdenes de producción externa.
+        -   Lógica de "Producción Anidada Inteligente" implementada en el endpoint de creación de órdenes (`dry-run` y `commit`).
+    -   **Frontend:**
+        -   Servicios (`armadorService`, `trabajoDeArmadoService`, `externalProductionOrderService`) creados/actualizados.
+        -   UI para gestionar el catálogo `TrabajoDeArmado` (CRUD).
+        -   UI para crear órdenes de producción externa, incluyendo la visualización del "Plan de Producción Anidado".
+-   **[REFACTOR] Modularización del Backend:**
+    -   Endpoints de `Armador` movidos de `index.js` a `armadores.routes.js`.
+-   **[CHORE] Documentación:**
+    -   `Roadmap.md` actualizado con el flujo de trabajo detallado y las decisiones de diseño.
+
+
 ## 2025-10-07
 -   **[REFACTOR] Modernización de Módulos Principales:**
     -   Se refactorizó por completo la arquitectura de los módulos de **Productos, Categorías y Proveedores**.

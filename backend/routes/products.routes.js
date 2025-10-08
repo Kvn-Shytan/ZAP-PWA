@@ -312,6 +312,77 @@ router.delete('/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
   }
 });
 
+// --- GESTIÓN DE RECETA DE ARMADO ---
+
+// Obtener la receta de armado de un producto
+router.get('/:productId/trabajos-armado', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId } = req.params;
+  try {
+    const trabajosAsignados = await prisma.productoTrabajoArmado.findMany({
+      where: { productId },
+      include: {
+        trabajo: true, // Incluir los detalles del trabajo de armado
+      },
+      orderBy: {
+        trabajo: { nombre: 'asc' },
+      },
+    });
+    res.json(trabajosAsignados);
+  } catch (error) {
+    console.error(`Error fetching trabajos de armado for product ${productId}:`, error);
+    res.status(500).json({ error: 'Error al obtener la receta de armado.' });
+  }
+});
+
+// Asignar un trabajo de armado a un producto
+router.post('/:productId/trabajos-armado', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId } = req.params;
+  const { trabajoId } = req.body;
+
+  if (!trabajoId) {
+    return res.status(400).json({ error: 'El campo trabajoId es requerido.' });
+  }
+
+  try {
+    const nuevaAsignacion = await prisma.productoTrabajoArmado.create({
+      data: {
+        productId,
+        trabajoId,
+      },
+    });
+    res.status(201).json(nuevaAsignacion);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Este trabajo de armado ya está asignado a este producto.' });
+    }
+    console.error(`Error assigning trabajo ${trabajoId} to product ${productId}:`, error);
+    res.status(500).json({ error: 'Error al asignar el trabajo de armado.' });
+  }
+});
+
+// Quitar un trabajo de armado de un producto
+router.delete('/:productId/trabajos-armado/:trabajoId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, trabajoId } = req.params;
+
+  try {
+    await prisma.productoTrabajoArmado.delete({
+      where: {
+        productId_trabajoId: {
+          productId,
+          trabajoId,
+        },
+      },
+    });
+    res.status(204).send();
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Asignación de trabajo no encontrada.' });
+    }
+    console.error(`Error removing trabajo ${trabajoId} from product ${productId}:`, error);
+    res.status(500).json({ error: 'Error al quitar el trabajo de armado.' });
+  }
+});
+
 module.exports = router;
 
 // NUEVO ENDPOINT: Dónde se usa un componente
