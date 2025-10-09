@@ -133,6 +133,7 @@ const InventoryHistoryPage = () => {
       const isAnnulled = annulledOriginalIds.has(mov.id);
       const isComponent = mov.type === 'PRODUCTION_OUT';
       const isReversal = mov.notes?.startsWith('Anulación');
+      const isSystemEvent = !!mov.eventId; // Check if it's a system event
 
       // 2. Define dynamic styles
       const rowStyle = {};
@@ -141,7 +142,10 @@ const InventoryHistoryPage = () => {
         rowStyle.color = '#999';
         rowStyle.fontStyle = 'italic';
         rowStyle.fontSize = '0.9em';
+      } else if (isSystemEvent) {
+        rowStyle.color = '#4682B4'; // SteelBlue
       }
+
       if (isComponent && !isAnnulled) { // Prevent style override
         rowStyle.fontStyle = 'italic';
         rowStyle.fontSize = '0.9em';
@@ -153,7 +157,7 @@ const InventoryHistoryPage = () => {
       }
 
       // 3. Define button visibility - NEW LOGIC
-      const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && mov.type !== 'PRODUCTION_OUT';
+      const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && !isSystemEvent;
 
       return (
         <tr key={mov.id} style={rowStyle}>

@@ -11,11 +11,7 @@ const OverheadCostPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiFetch('/overhead-costs');
-      if (!response.ok) {
-        throw new Error('Error al obtener los costos indirectos.');
-      }
-      const data = await response.json();
+      const data = await apiFetch('/overhead-costs'); // 'data' will be the parsed JSON data or null
       setCosts(data);
     } catch (err) {
       setError(err.message);
@@ -35,10 +31,9 @@ const OverheadCostPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('¿Está seguro de que desea eliminar este costo?')) {
       try {
-        const response = await apiFetch(`/overhead-costs/${id}`, { method: 'DELETE' });
-        if (!response.ok) {
-          throw new Error('Error al eliminar el costo.');
-        }
+        await apiFetch(`/overhead-costs/${id}`, { method: 'DELETE' });
+        // Si no se lanzó ningún error, la eliminación fue exitosa.
+        // No es necesario verificar 'response.ok', ya que apiFetch maneja el lanzamiento de errores.
         fetchCosts(); // Refresh list
       } catch (err) {
         setError(err.message);
@@ -53,16 +48,14 @@ const OverheadCostPage = () => {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      const response = await apiFetch(url, {
+      const result = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingCost),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al guardar el costo.');
-      }
+      // apiFetch ya maneja los errores y devuelve el JSON parseado o null (para 204).
+      // No es necesario verificar 'response.ok' ni llamar a 'response.json()' aquí.
 
       setEditingCost(null); // Close form
       fetchCosts(); // Refresh list
