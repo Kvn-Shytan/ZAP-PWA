@@ -1,5 +1,22 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-09
+-   **[FEAT] Panel de Logística - Asignación de Órdenes:**
+    -   Implementado un modal para asignar, reasignar y desasignar órdenes a repartidores.
+    -   La lista de asignación ahora incluye roles `EMPLOYEE` y `SUPERVISOR`.
+    -   Corregido un bug crítico que enviaba el ID de usuario como texto en lugar de número.
+-   **[UX] Creación de Órdenes - Mejoras de Usabilidad:**
+    -   Solucionado un problema en el campo "Cantidad" que impedía borrar el valor por defecto. Ahora el campo puede dejarse vacío temporalmente.
+    -   Añadido un diálogo de confirmación (`window.confirm`) antes de crear una orden para prevenir envíos accidentales.
+    -   Mejorada la simulación del plan de producción: ahora siempre se muestra, incluso si la cantidad es cero o si el stock es insuficiente.
+-   **[FEAT] Creación de Órdenes - Visualización de Stock Insuficiente:**
+    -   **Backend:** La API ahora devuelve el plan de producción junto con una lista de materiales con stock insuficiente, en lugar de devolver un error.
+    -   **Frontend:** La interfaz ahora muestra una advertencia clara, resalta en rojo los materiales faltantes en el plan y especifica la cantidad necesaria vs. la disponible.
+-   **[FIX] Historial de Inventario - Anulación de Movimientos:**
+    -   Solucionado un bug crítico que permitía la duplicación de stock al anular movimientos generados por el sistema.
+    -   Se deshabilitó el botón "Anular" para cualquier movimiento que sea parte de un evento (ej: creación/cancelación de órdenes), previniendo inconsistencias.
+    -   Los movimientos generados por el sistema ahora se muestran en un color distinto para fácil identificación.
+
 ## 2025-10-08
 -   **[FIX] Errores de `authFetch` y Refactorización a `apiFetch`:**
     -   Se corrigieron múltiples errores de `authFetch is not a function` en varias páginas del frontend.

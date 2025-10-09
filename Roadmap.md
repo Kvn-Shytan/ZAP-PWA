@@ -69,11 +69,11 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` La UI consulta al backend en modo "simulación" y muestra el "Plan de Producción Anidado" (materiales base, pasos de ensamblaje, costos).
             *   `[x]` La UI permite confirmar la orden, enviando la solicitud al backend en modo "confirmación".
             *   `[x]` El backend realiza un movimiento de inventario atómico (`SENT_TO_ASSEMBLER`) al confirmar la orden.
-        *   `[ ]` **Gestión de Errores (`SUPERVISOR`):**
+        *   `[x]` **Gestión de Errores (`SUPERVISOR`):**
             *   `[x]` (Backend) Permitir "Reasignar" una orden en estado `OUT_FOR_DELIVERY`.
             *   `[x]` (Backend) Permitir "Cancelar" una orden en estado `PENDING_DELIVERY`, lo que debe disparar una reversión automática del movimiento de inventario.
-            *   `[ ]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
-            *   `[ ]` (UI) Implementar confirmación para "Cancelar" orden.
+            *   `[x]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
+            *   `[x]` (UI) Implementar confirmación para "Cancelar" orden.
         *   `[ ]` **Recepción de Mercadería (`EMPLOYEE`):**
             *   La UI debe permitir al empleado registrar la cantidad *real* recibida.
             *   El backend debe incrementar el stock del producto terminado (`RECEIVED_FROM_ASSEMBLER`).
@@ -84,10 +84,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[ ]` **`EMPLOYEE` (Repartidor):**
             *   UI móvil simple con "Mis Tareas" (Entregas/Recolecciones).
             *   Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
-        *   `[ ]` **`SUPERVISOR` (Logística):**
+        *   `[x]` **`SUPERVISOR` (Logística):**
             *   Panel de "Producción Externa" para monitorear órdenes en tiempo real.
             *   Filtros por estado (ej. "Pendiente de Entrega", "En Reparto", "Entrega Fallida").
-            *   Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
+            *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
         *   `[ ]` **`ADMIN` (Finanzas):**
             *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
             *   UI para visualizar y registrar liquidaciones de pago.

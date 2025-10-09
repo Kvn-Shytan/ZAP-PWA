@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { armadorService } from '../services/armadorService';
 import { productService } from '../services/productService';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
@@ -10,13 +10,14 @@ const ExternalProductionOrderPage = () => {
   // Form state
   const [selectedArmador, setSelectedArmador] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('1'); // Use string to allow empty value
   
   // Production Plan state
   const [productionPlan, setProductionPlan] = useState(null);
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
   const [planError, setPlanError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [insufficientStock, setInsufficientStock] = useState([]); // New state for stock issues
 
   // Initial data load
   useEffect(() => {
@@ -39,20 +40,30 @@ const ExternalProductionOrderPage = () => {
 
   // Effect to fetch production plan when product or quantity changes
   useEffect(() => {
-    if (!selectedProduct || !quantity || quantity <= 0) {
+    if (!selectedProduct) {
       setProductionPlan(null);
       return;
+    }
+
+    // Default to 1 for simulation if quantity is empty, 0, or invalid
+    let simulationQuantity = parseInt(quantity, 10);
+    if (!simulationQuantity || simulationQuantity <= 0) {
+        simulationQuantity = 1;
     }
 
     const fetchProductionPlan = async () => {
       setIsLoadingPlan(true);
       setPlanError(null);
+      setInsufficientStock([]);
       try {
         const plan = await externalProductionOrderService.createOrder(
-          { productId: selectedProduct, quantity },
+          { productId: selectedProduct, quantity: simulationQuantity },
           'dry-run' // Request a dry-run simulation
         );
         setProductionPlan(plan);
+        if (plan.insufficientStockItems && plan.insufficientStockItems.length > 0) {
+          setInsufficientStock(plan.insufficientStockItems);
+        }
       } catch (err) {
         setPlanError(`Error al simular la orden: ${err.message}`);
         setProductionPlan(null);
@@ -68,7 +79,15 @@ const ExternalProductionOrderPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedArmador || !selectedProduct || !quantity || !productionPlan) {
+
+    // Double-check confirmation
+    const isConfirmed = window.confirm("¿Está seguro de que desea crear esta orden de producción externa?");
+    if (!isConfirmed) {
+      return; // Stop if user cancels
+    }
+
+    const numericQuantity = parseInt(quantity, 10);
+    if (!selectedArmador || !selectedProduct || !numericQuantity || numericQuantity <= 0 || !productionPlan) {
       alert('Por favor, complete todos los campos y espere a que se genere el plan de producción.');
       return;
     }
@@ -77,14 +96,15 @@ const ExternalProductionOrderPage = () => {
       await externalProductionOrderService.createOrder({ 
         armadorId: selectedArmador, 
         productId: selectedProduct, 
-        quantity 
+        quantity: numericQuantity 
       }, 'commit'); // Commit the order
       alert('¡Orden de producción creada exitosamente!');
       // Reset form
       setSelectedArmador('');
       setSelectedProduct('');
-      setQuantity(1);
+      setQuantity('1');
       setProductionPlan(null);
+      setInsufficientStock([]);
     } catch (err) {
       alert(`Error al crear la orden: ${err.message}`);
     } finally {
@@ -92,7 +112,9 @@ const ExternalProductionOrderPage = () => {
     }
   };
 
-  const canSubmit = !isLoadingPlan && productionPlan && !planError && !isSubmitting;
+  const numericQuantity = parseInt(quantity, 10);
+  // Disable submit if there are stock issues
+  const canSubmit = !isLoadingPlan && productionPlan && !isSubmitting && numericQuantity > 0 && insufficientStock.length === 0;
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -117,9 +139,10 @@ const ExternalProductionOrderPage = () => {
           <input 
             type="number" 
             value={quantity} 
-            onChange={e => setQuantity(parseInt(e.target.value, 10) || 1)} 
+            onChange={e => setQuantity(e.target.value)} 
             min="1" 
             required 
+            placeholder="Escriba una cantidad"
           />
         </div>
 
@@ -131,16 +154,31 @@ const ExternalProductionOrderPage = () => {
         {productionPlan && (
           <div>
             <h4>Resumen del Plan de Producción</h4>
+            {insufficientStock.length > 0 && (
+              <p style={{color: 'red', fontWeight: 'bold'}}>
+                Advertencia: No hay stock suficiente para crear la cantidad deseada.
+              </p>
+            )}
             <h5>Materiales Requeridos a Enviar</h5>
-            {productionPlan.requiredMaterials.length > 0 ? (
-              <ul>
-                {productionPlan.requiredMaterials.map(item => (
-                  <li key={item.product.id}>
-                    {item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})
-                  </li>
-                ))}
-              </ul>
-            ) : <p>No se requieren materiales para este producto.</p>}
+            {(() => {
+              const insufficientIds = new Set(insufficientStock.map(item => item.product.id));
+              return (
+                productionPlan.requiredMaterials.length > 0 ? (
+                <ul>
+                  {productionPlan.requiredMaterials.map(item => {
+                    const isInsufficient = insufficientIds.has(item.product.id);
+                    const shortItem = isInsufficient ? insufficientStock.find(s => s.product.id === item.product.id) : null;
+                    return (
+                      <li key={item.product.id} style={{ color: isInsufficient ? 'red' : 'inherit' }}>
+                        {item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})
+                        {isInsufficient && <strong>{` (Necesario: ${shortItem.required}, Disponible: ${shortItem.available})`}</strong>}
+                      </li>
+                    );
+                  })}
+                </ul>
+                ) : <p>No se requieren materiales para este producto.</p>
+              );
+            })()}
 
             <h5>Pasos de Ensamblaje a Realizar</h5>
             {productionPlan.assemblySteps.length > 0 ? (

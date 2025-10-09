@@ -27,6 +27,7 @@ const getProductionPlan = async (tx, prodId, requiredQty, neededFor = '') => {
 
   let requiredMaterials = new Map();
   let requiredWork = new Map();
+  let insufficientStockItems = []; // Array to track items with insufficient stock
 
   assemblyWork.forEach(aw => {
       const currentQty = requiredWork.get(aw.trabajo.id)?.quantity || 0;
@@ -39,23 +40,30 @@ const getProductionPlan = async (tx, prodId, requiredQty, neededFor = '') => {
 
     if (component.type === 'RAW_MATERIAL') {
       if (component.stock < totalRequiredForThisLevel) {
-        throw new Error(`Stock insuficiente para el material base: ${component.description}. Necesario: ${totalRequiredForThisLevel}, Disponible: ${component.stock}`);
+        // Don't throw an error, just record the insufficient item
+        insufficientStockItems.push({
+            product: component,
+            required: totalRequiredForThisLevel,
+            available: component.stock,
+        });
       }
       const currentQty = requiredMaterials.get(component.id)?.quantity || 0;
       requiredMaterials.set(component.id, { product: component, quantity: currentQty + totalRequiredForThisLevel });
     } 
     else if (component.type === 'PRE_ASSEMBLED') {
       if (component.stock < totalRequiredForThisLevel) {
-        const { rawMaterials: subAssemblyMaterials, workItems: subAssemblyWork } = await getProductionPlan(tx, component.id, totalRequiredForThisLevel, component.description);
+        const subPlan = await getProductionPlan(tx, component.id, totalRequiredForThisLevel, component.description);
         
-        subAssemblyMaterials.forEach((value, key) => {
+        subPlan.rawMaterials.forEach((value, key) => {
           const currentQty = requiredMaterials.get(key)?.quantity || 0;
           requiredMaterials.set(key, { product: value.product, quantity: currentQty + value.quantity });
         });
-        subAssemblyWork.forEach((value, key) => {
+        subPlan.workItems.forEach((value, key) => {
             const currentQty = requiredWork.get(key)?.quantity || 0;
             requiredWork.set(key, { work: value.work, quantity: currentQty + value.quantity });
         });
+        // Aggregate insufficient stock items from the sub-plan
+        insufficientStockItems = insufficientStockItems.concat(subPlan.insufficientStock);
 
       } else {
         const currentQty = requiredMaterials.get(component.id)?.quantity || 0;
@@ -63,7 +71,8 @@ const getProductionPlan = async (tx, prodId, requiredQty, neededFor = '') => {
       }
     }
   }
-  return { rawMaterials: requiredMaterials, workItems: requiredWork };
+  // Return the plan details along with any stock shortages
+  return { rawMaterials: requiredMaterials, workItems: requiredWork, insufficientStock: insufficientStockItems };
 };
 
 // POST /api/external-production-orders - Crear o Simular una orden de producción externa
@@ -79,20 +88,23 @@ router.post('/', async (req, res) => {
   // --- DRY RUN / SIMULATION MODE ---
   if (mode === 'dry-run') {
     try {
-      const { rawMaterials, workItems } = await getProductionPlan(prisma, productId, quantity);
+      const { rawMaterials, workItems, insufficientStock } = await getProductionPlan(prisma, productId, quantity);
       
       const materialsList = Array.from(rawMaterials.values());
       const workList = Array.from(workItems.values());
 
       const totalCost = workList.reduce((acc, item) => acc + (Number(item.work.precio) * item.quantity), 0);
 
+      // Return the plan, including the list of items with insufficient stock
       return res.json({
         requiredMaterials: materialsList,
         assemblySteps: workList,
         totalAssemblyCost: totalCost,
+        insufficientStockItems: insufficientStock,
       });
 
     } catch (error) {
+      // This will now only catch unexpected errors, not stock issues
       return res.status(400).json({ error: `Simulación fallida: ${error.message}` });
     }
   }
@@ -104,7 +116,14 @@ router.post('/', async (req, res) => {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const { rawMaterials } = await getProductionPlan(tx, productId, quantity);
+      // First, get the plan to check for stock issues before committing
+      const { rawMaterials, insufficientStock } = await getProductionPlan(tx, productId, quantity);
+
+      // CRITICAL CHECK: If any item has insufficient stock, abort the transaction.
+      if (insufficientStock.length > 0) {
+        const errorItem = insufficientStock[0];
+        throw new Error(`Stock insuficiente para ${errorItem.product.description}. Necesario: ${errorItem.required}, Disponible: ${errorItem.available}`);
+      }
 
       const order = await tx.externalProductionOrder.create({
         data: {
