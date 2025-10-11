@@ -1,9 +1,8 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRole } = require('../authMiddleware');
 const crypto = require('crypto');
 
-const prisma = new PrismaClient();
+const prisma = require('../prisma/client');
 const router = express.Router();
 
 // Middleware to protect all routes in this file

@@ -1,9 +1,8 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRole } = require('../authMiddleware');
 const { validate, createProductSchema } = require('../validators/product.validator');
 
-const prisma = new PrismaClient();
+const prisma = require('../prisma/client');
 const router = express.Router();
 
 // Crear un nuevo producto

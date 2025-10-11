@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "prisma generate && nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "set DATABASE_URL=postgresql://postgres:postgres@localhost:5433/zappwa_test && npx prisma generate && npx prisma migrate deploy && jest --detectOpenHandles --forceExit",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -26,8 +26,10 @@
   },
   "devDependencies": {
     "bcrypt": "^5.1.1",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.10",
-    "prisma": "^6.16.1"
+    "prisma": "^6.16.1",
+    "supertest": "^7.1.4"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

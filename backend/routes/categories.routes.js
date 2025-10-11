@@ -1,8 +1,7 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRole } = require('../authMiddleware');
 
-const prisma = new PrismaClient();
+const prisma = require('../prisma/client');
 const router = express.Router();
 
 // Crear una nueva categoría

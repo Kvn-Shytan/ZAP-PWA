@@ -110,6 +110,45 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   `[ ]` Diseño de un "Dashboard" personalizado por rol.
     -   `[ ]` Desarrollar Calculadora de Estructura de Costos.
 
+-   **Fase 9: Refactorización Arquitectónica (En Curso)**
+    > *Esta fase se enfoca en mejorar la robustez y escalabilidad de la aplicación mediante la aplicación de patrones arquitectónicos profesionales.*
+
+    *   **9.1: Centralización de la Conexión a Base de Datos (PrismaClient Único)**
+        *   **Objetivo:** Asegurar que toda la aplicación use una única instancia de `PrismaClient` para una gestión eficiente de recursos y estabilidad.
+        *   **Acciones:**
+            *   Crear `backend/prisma/client.js` para exportar una instancia única de `PrismaClient`.
+            *   Modificar `backend/index.js` para importar y usar `backend/prisma/client.js`.
+            *   Modificar todos los archivos de rutas (`backend/routes/*.js`) para importar y usar `backend/prisma/client.js`.
+
+    *   **9.2: Modularización Completa del Backend (Mover Rutas de `index.js`)**
+        *   **Objetivo:** Descomponer el archivo `backend/index.js` en módulos de rutas dedicados para mejorar la organización y mantenibilidad.
+        *   **Acciones:**
+            *   Crear `backend/routes/overheadCosts.routes.js` y mover rutas de costos indirectos.
+            *   Crear `backend/routes/productDesign.routes.js` y mover rutas de diseño de producto.
+            *   Crear `backend/routes/auth.routes.js` y mover la ruta de login.
+            *   Crear `backend/routes/users.routes.js` y mover rutas de usuarios.
+            *   Crear `backend/routes/inventory.routes.js` y mover rutas de inventario.
+            *   Actualizar `backend/index.js` para importar y montar todos los nuevos routers.
+
+    *   **9.3: Validación Consistente de Entradas (Backend)**
+        *   **Objetivo:** Implementar validación robusta para todas las entradas de la API.
+        *   **Acciones:**
+            *   Asegurar que todos los endpoints `POST` y `PUT` utilicen `zod` para validar `req.body`.
+
+    *   **9.4: Gestión Centralizada de Errores y Logging Estructurado**
+        *   **Objetivo:** Mejorar la capacidad de depuración y monitoreo de la aplicación.
+        *   **Acciones:**
+            *   Implementar una librería de logging (ej. Winston/Pino) para errores estructurados.
+            *   Asegurar que los errores sean capturados y registrados de forma consistente.
+
+    *   **9.5: Implementación del Entorno de Pruebas de Integración (Completo)**
+        *   **Objetivo:** Crear una red de seguridad para detectar regresiones y verificar la funcionalidad del backend de forma automática.
+        *   **Acciones:**
+            *   `[x]` Instalar y configurar Jest y Supertest.
+            *   `[x]` Modificar Docker Compose para soportar una base de datos de prueba aislada (`postgres-test`).
+            *   `[x]` Crear un script de prueba que aplica migraciones y ejecuta los tests contra la base de datos de prueba.
+            *   `[x]` Escribir y pasar el primer test de integración para el endpoint de productos.
+
 ---
 
 ## 2. Changelog (Registro de Cambios)

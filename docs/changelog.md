@@ -1,5 +1,16 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-11
+-   **[TEST] Implementación del Entorno de Pruebas de Integración:**
+    -   Instalado y configurado `Jest` y `Supertest` para el backend.
+    -   Añadido un servicio `postgres-test` en `docker-compose` para una base de datos de pruebas aislada.
+    -   Creado un script `npm test` que prepara la base de datos de prueba (aplicando migraciones) y ejecuta los tests.
+    -   Implementado el primer test para `GET /api/products` y verificado el funcionamiento de todo el flujo.
+-   **[FIX] Refactorización de `PrismaClient` y `authMiddleware`:**
+    -   Corregida la implementación del singleton de `PrismaClient` en `prisma/client.js` para prevenir la creación de múltiples instancias.
+    -   Solucionado un error en el mock del middleware de autenticación en los tests para soportar `authorizeRole`.
+    -   Corregidas importaciones faltantes de rutas en `index.js` descubiertas gracias a los tests.
+
 ## 2025-10-09
 -   **[FEAT] Panel de Logística - Asignación de Órdenes:**
     -   Implementado un modal para asignar, reasignar y desasignar órdenes a repartidores.

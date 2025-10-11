@@ -12,6 +12,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  postgres-test:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zappwa_test
+    ports:
+      - '5433:5432'
+
   backend:
     build: ./backend
     ports:
@@ -22,6 +32,7 @@ services:
       - ./.env
     volumes:
       - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - db
     command: node index.js
