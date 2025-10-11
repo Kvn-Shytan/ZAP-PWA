@@ -1,6 +1,24 @@
 # Changelog (Registro de Cambios)
 
 ## 2025-10-11
+-   **[FEAT] Validación de Entradas para Categorías (Fase 9.3 - Parcial):**
+    -   Implementada la validación de entradas usando `zod` para las rutas `POST /api/categories` y `PUT /api/categories/:id`.
+    -   Creado `backend/validators/category.validator.js` con el esquema de validación para categorías.
+    -   Creado `backend/routes/categories.test.js` con pruebas de integración para verificar la validación de entradas y la funcionalidad de creación/actualización.
+    -   Corregidos errores en las pruebas relacionados con el formato de los mensajes de error de `zod` y la limpieza de la base de datos de prueba.
+    -   **Ejemplo de Prueba de Validación (backend/routes/categories.test.js):**
+        ```javascript
+        it('should return 400 if category name is missing', async () => {
+          const res = await request(app)
+            .post('/api/categories')
+            .send({}); // Empty body, missing name
+          expect(res.statusCode).toEqual(400);
+          expect(res.body).toHaveProperty('errors');
+          expect(res.body.errors[0].message).toEqual('Invalid input: expected string, received undefined');
+        });
+        ```
+
+## 2025-10-11
 -   **[TEST] Implementación del Entorno de Pruebas de Integración:**
     -   Instalado y configurado `Jest` y `Supertest` para el backend.
     -   Añadido un servicio `postgres-test` en `docker-compose` para una base de datos de pruebas aislada.

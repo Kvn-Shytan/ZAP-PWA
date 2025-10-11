@@ -133,7 +133,8 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **9.3: Validación Consistente de Entradas (Backend)**
         *   **Objetivo:** Implementar validación robusta para todas las entradas de la API.
         *   **Acciones:**
-            *   Asegurar que todos los endpoints `POST` y `PUT` utilicen `zod` para validar `req.body`.
+            *   `[ ]` Asegurar que todos los endpoints `POST` y `PUT` utilicen `zod` para validar `req.body`.
+            *   `[x]` Implementada validación `zod` para `POST /api/categories` y `PUT /api/categories/:id`.
 
     *   **9.4: Gestión Centralizada de Errores y Logging Estructurado**
         *   **Objetivo:** Mejorar la capacidad de depuración y monitoreo de la aplicación.

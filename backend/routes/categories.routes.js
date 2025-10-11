@@ -5,12 +5,12 @@ const prisma = require('../prisma/client');
 const router = express.Router();
 
 // Crear una nueva categoría
-router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+const { validate, createCategorySchema } = require('../validators/category.validator');
+
+// Crear una nueva categoría
+router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), validate(createCategorySchema), async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
-    }
     const newCategory = await prisma.category.create({
       data: { name },
     });
@@ -57,7 +57,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Actualizar una categoría por ID
-router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), validate(createCategorySchema), async (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid category ID' });
