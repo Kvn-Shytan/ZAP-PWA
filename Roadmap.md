@@ -138,8 +138,8 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **9.4: Gestión Centralizada de Errores y Logging Estructurado**
         *   **Objetivo:** Mejorar la capacidad de depuración y monitoreo de la aplicación.
         *   **Acciones:**
-            *   Implementar una librería de logging (ej. Winston/Pino) para errores estructurados.
-            *   Asegurar que los errores sean capturados y registrados de forma consistente.
+            *   `[x]` Implementar una librería de logging (ej. Winston/Pino) para errores estructurados.
+            *   `[x]` Asegurar que los errores sean capturados y registrados de forma consistente.
 
     *   **9.5: Implementación del Entorno de Pruebas de Integración (Completo)**
         *   **Objetivo:** Crear una red de seguridad para detectar regresiones y verificar la funcionalidad del backend de forma automática.

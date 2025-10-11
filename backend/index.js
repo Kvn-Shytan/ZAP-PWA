@@ -11,6 +11,7 @@ const externalProductionOrdersRoutes = require('./routes/externalProductionOrder
 const overheadCostsRoutes = require('./routes/overheadCosts.routes.js');
 const productDesignRoutes = require('./routes/productDesign.routes.js');
 const authRoutes = require('./routes/auth.routes.js');
+const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
 const app = express();
@@ -56,6 +57,14 @@ app.use('/api/users', usersRoutes);
 // Use inventory routes
 app.use('/api/inventory', inventoryRoutes);
 
+// Catch 404 and forward to error handler
+app.use((req, res, next) => {
+  const error = new Error('Not Found');
+  error.statusCode = 404;
+  next(error);
+});
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Backend escuchando en http://localhost:${port}`);
