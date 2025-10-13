@@ -57,6 +57,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
     *   **5.1: Modelos de Datos y API Core (Rediseño Aprobado)**
         *   `[x]` **(REDISEÑO)** Modificar `schema.prisma`: `TrabajoDeArmado` pasa a ser un catálogo genérico y se crea la tabla intermedia `ProductoTrabajoArmado` (muchos a muchos).
+        *   `[x]` **(NUEVO)** Rediseñar el flujo de estados (`ExternalProductionOrderStatus`) y el manejo de productos esperados (nuevo modelo `ExpectedProduction`).
         *   `[x]` Generar y ejecutar la nueva migración de base de datos.
         *   `[x]` **(REFACTOR)** Mover endpoints de `Armador` a su propio archivo de rutas para consistencia arquitectónica.
         *   `[x]` Implementar endpoints CRUD para el nuevo modelo `TrabajoDeArmado` (el "catálogo de trabajos").
@@ -69,14 +70,19 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` La UI consulta al backend en modo "simulación" y muestra el "Plan de Producción Anidado" (materiales base, pasos de ensamblaje, costos).
             *   `[x]` La UI permite confirmar la orden, enviando la solicitud al backend en modo "confirmación".
             *   `[x]` El backend realiza un movimiento de inventario atómico (`SENT_TO_ASSEMBLER`) al confirmar la orden.
+        *   `[x]` **(NUEVO) Backend: Máquina de Estados de la Orden:**
+            *   `[x]` Implementado endpoint `confirm-delivery` (OUT_FOR_DELIVERY -> IN_ASSEMBLY).
+            *   `[x]` Implementado endpoint `report-failure` (OUT_FOR_DELIVERY -> DELIVERY_FAILED).
+            *   `[x]` Implementado endpoint `confirm-assembly` (IN_ASSEMBLY -> PENDING_PICKUP).
+            *   `[x]` Implementado endpoint `assign-pickup` (PENDING_PICKUP -> RETURN_IN_TRANSIT).
         *   `[x]` **Gestión de Errores (`SUPERVISOR`):**
             *   `[x]` (Backend) Permitir "Reasignar" una orden en estado `OUT_FOR_DELIVERY`.
             *   `[x]` (Backend) Permitir "Cancelar" una orden en estado `PENDING_DELIVERY`, lo que debe disparar una reversión automática del movimiento de inventario.
             *   `[x]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
             *   `[x]` (UI) Implementar confirmación para "Cancelar" orden.
-        *   `[ ]` **Recepción de Mercadería (`EMPLOYEE`):**
-            *   La UI debe permitir al empleado registrar la cantidad *real* recibida.
-            *   El backend debe incrementar el stock del producto terminado (`RECEIVED_FROM_ASSEMBLER`).
+        *   `[x]` **Recepción de Mercadería (`EMPLOYEE`):**
+            *   `[ ]` La UI debe permitir al empleado registrar la cantidad *real* recibida.
+            *   `[x]` El backend debe incrementar el stock del producto terminado (`RECEIVED_FROM_ASSEMBLER`) y manejar discrepancias.
         *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
             *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
 

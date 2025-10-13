@@ -286,4 +286,214 @@ router.post('/:id/cancel', async (req, res) => {
   }
 });
 
+// POST /:id/confirm-delivery - Confirmar entrega de materiales al armador
+router.post('/:id/confirm-delivery', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status !== 'OUT_FOR_DELIVERY') {
+      return res.status(400).json({ error: `Cannot confirm delivery for an order with status ${order.status}` });
+    }
+
+    const updatedOrder = await prisma.externalProductionOrder.update({
+      where: { id },
+      data: { status: 'IN_ASSEMBLY' },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error(`Error confirming delivery for order ${id}:`, error);
+    res.status(500).json({ error: 'Failed to confirm delivery' });
+  }
+});
+
+// POST /:id/report-failure - Reportar una entrega fallida
+router.post('/:id/report-failure', async (req, res) => {
+  const { id } = req.params;
+  const { notes } = req.body;
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status !== 'OUT_FOR_DELIVERY') {
+      return res.status(400).json({ error: `Cannot report failure for an order with status ${order.status}` });
+    }
+
+    const updatedOrder = await prisma.externalProductionOrder.update({
+      where: { id },
+      data: {
+        status: 'DELIVERY_FAILED',
+        notes: order.notes ? `${order.notes}\n${notes}` : notes,
+      },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error(`Error reporting failure for order ${id}:`, error);
+    res.status(500).json({ error: 'Failed to report delivery failure' });
+  }
+});
+
+// POST /:id/confirm-assembly - Supervisor confirms assembly is finished
+router.post('/:id/confirm-assembly', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status !== 'IN_ASSEMBLY') {
+      return res.status(400).json({ error: `Cannot confirm assembly for an order with status ${order.status}` });
+    }
+
+    const updatedOrder = await prisma.externalProductionOrder.update({
+      where: { id },
+      data: { status: 'PENDING_PICKUP' },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error(`Error confirming assembly for order ${id}:`, error);
+    res.status(500).json({ error: 'Failed to confirm assembly' });
+  }
+});
+
+// POST /:id/assign-pickup - Supervisor assigns an employee to pick up finished goods
+router.post('/:id/assign-pickup', async (req, res) => {
+  const { id } = req.params;
+  const { pickupUserId } = req.body;
+
+  if (!pickupUserId) {
+    return res.status(400).json({ error: 'pickupUserId is required' });
+  }
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (order.status !== 'PENDING_PICKUP') {
+      return res.status(400).json({ error: `Cannot assign pickup for an order with status ${order.status}` });
+    }
+
+    const updatedOrder = await prisma.externalProductionOrder.update({
+      where: { id },
+      data: {
+        status: 'RETURN_IN_TRANSIT',
+        pickupUserId: pickupUserId,
+      },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error(`Error assigning pickup for order ${id}:`, error);
+    res.status(500).json({ error: 'Failed to assign pickup' });
+  }
+});
+
+// POST /:id/receive - Receive finished goods from an assembler
+router.post('/:id/receive', async (req, res) => {
+  const { id } = req.params;
+  const { receivedItems, justified, notes } = req.body;
+  const userId = req.user.id;
+
+  if (!receivedItems || !Array.isArray(receivedItems)) {
+    return res.status(400).json({ error: 'receivedItems must be an array.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const order = await tx.externalProductionOrder.findUnique({
+        where: { id },
+        include: { expectedOutputs: true },
+      });
+
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      if (order.status !== 'RETURN_IN_TRANSIT') {
+        throw new Error(`Cannot receive items for an order with status ${order.status}`);
+      }
+
+      const eventId = crypto.randomUUID();
+      let isDiscrepancy = false;
+
+      const receivedMap = new Map(receivedItems.map(item => [item.productId, item.quantityReceived]));
+
+      for (const expected of order.expectedOutputs) {
+        const receivedQty = receivedMap.get(expected.productId) || 0;
+
+        if (receivedQty !== Number(expected.quantityExpected)) {
+          isDiscrepancy = true;
+        }
+
+        if (receivedQty > 0) {
+          await tx.product.update({
+            where: { id: expected.productId },
+            data: { stock: { increment: receivedQty } },
+          });
+
+          await tx.inventoryMovement.create({
+            data: {
+              productId: expected.productId,
+              type: 'RECEIVED_FROM_ASSEMBLER',
+              quantity: receivedQty,
+              userId: userId,
+              notes: `Recepción de orden externa #${order.id}`,
+              eventId,
+            },
+          });
+        }
+      }
+
+      // Determine the final status based on discrepancy and justification
+      let finalStatus;
+      if (!isDiscrepancy) {
+        finalStatus = 'COMPLETED';
+      } else {
+        finalStatus = justified ? 'COMPLETED_WITH_NOTES' : 'COMPLETED_WITH_DISCREPANCY';
+      }
+
+      const updatedOrder = await tx.externalProductionOrder.update({
+        where: { id },
+        data: { 
+          status: finalStatus,
+          notes: order.notes ? `${order.notes}\n${notes || ''}` : notes || null
+        }, 
+      });
+
+      return updatedOrder;
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error(`Error receiving order ${id}:`, error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;

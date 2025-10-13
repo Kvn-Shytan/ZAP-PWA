@@ -31,12 +31,11 @@ model Product {
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
   supplierId Int?
 
-  movements      InventoryMovement[]
-  components     ProductComponent[] @relation("isComponentFor")
-  componentOf    ProductComponent[] @relation("componentOf")
-
+  movements               InventoryMovement[]
+  components              ProductComponent[] @relation("isComponentFor")
+  componentOf             ProductComponent[] @relation("componentOf")
   externalProductionItems ExternalProductionOrderItem[]
-  receivedProductions     ReceivedProduction[]
+  expectedInOrders        ExpectedProduction[]
 
   // Relación con los trabajos de armado (muchos a muchos)
   trabajosDeArmado ProductoTrabajoArmado[]
@@ -121,18 +120,20 @@ model ExternalProductionOrder {
   armadorId                String
   dateSent                 DateTime
   expectedCompletionDate   DateTime?
-  status                   ExternalProductionOrderStatus @default(PENDING_DELIVERY) // Default state is now PENDING_DELIVERY
+  status                   ExternalProductionOrderStatus @default(PENDING_DELIVERY)
   notes                    String?
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
 
-  // New field for delivery assignment
-  deliveryUserId           Int? // ID of the User (employee) assigned to deliver
+  deliveryUserId           Int?
   deliveryUser             User?                       @relation("Deliveries", fields: [deliveryUserId], references: [id])
+  
+  pickupUserId             Int?
+  pickupUser               User?                       @relation("Pickups", fields: [pickupUserId], references: [id])
 
-  armador       Armador                     @relation(fields: [armadorId], references: [id])
-  items         ExternalProductionOrderItem[]
-  receivedItems ReceivedProduction[]
+  armador         Armador                     @relation(fields: [armadorId], references: [id])
+  items           ExternalProductionOrderItem[]
+  expectedOutputs ExpectedProduction[]
 }
 
 model ExternalProductionOrderItem {
@@ -141,24 +142,23 @@ model ExternalProductionOrderItem {
   productId                 String // Componente enviado
   quantitySent              Decimal
 
-  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
+  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
   product Product                 @relation(fields: [productId], references: [id])
 
   @@unique([externalProductionOrderId, productId])
 }
 
-model ReceivedProduction {
-  id                        String        @id @default(cuid())
+model ExpectedProduction {
+  id                        String   @id @default(cuid())
   externalProductionOrderId String
-  dateReceived              DateTime
-  productId                 String // Producto terminado recibido
-  quantityReceived          Decimal
-  qualityStatus             QualityStatus @default(OK)
-  notes                     String?
-  createdAt                 DateTime      @default(now())
+  productId                 String
+  quantityExpected          Decimal
+  createdAt                 DateTime @default(now())
 
-  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
+  order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
   product Product                 @relation(fields: [productId], references: [id])
+
+  @@unique([externalProductionOrderId, productId])
 }
 
 model AssemblerPayment {
@@ -199,7 +199,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   movements          InventoryMovement[]
-  assignedDeliveries ExternalProductionOrder[] @relation("Deliveries") // Inverse relation
+  assignedDeliveries ExternalProductionOrder[] @relation("Deliveries")
+  assignedPickups    ExternalProductionOrder[] @relation("Pickups")
 }
 
 model InventoryMovement {
@@ -252,14 +253,16 @@ enum MovementType {
 }
 
 enum ExternalProductionOrderStatus {
-  PENDING_DELIVERY // Supervisor created, ready for pickup
-  OUT_FOR_DELIVERY // Assigned to an employee for delivery
-  DELIVERED        // Employee confirmed successful delivery
-  DELIVERY_FAILED  // Employee confirmed delivery failed
-  RETURNED         // Supervisor confirmed return of goods
-  PARTIALLY_RECEIVED // Assembler has returned some finished products
-  COMPLETED        // All work for this order is done
-  CANCELLED        // Order cancelled
+  PENDING_DELIVERY
+  OUT_FOR_DELIVERY
+  DELIVERY_FAILED
+  IN_ASSEMBLY
+  PENDING_PICKUP
+  RETURN_IN_TRANSIT
+  COMPLETED
+  COMPLETED_WITH_NOTES
+  COMPLETED_WITH_DISCREPANCY
+  CANCELLED
 }
 
 enum QualityStatus {
