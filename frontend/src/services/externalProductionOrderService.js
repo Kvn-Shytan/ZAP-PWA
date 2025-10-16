@@ -47,4 +47,39 @@ export const externalProductionOrderService = {
       method: 'POST',
     });
   },
+
+  // --- New State Machine Endpoints ---
+
+  confirmDelivery(orderId) {
+    return apiFetch(`/external-production-orders/${orderId}/confirm-delivery`, {
+      method: 'POST',
+    });
+  },
+
+  reportFailure(orderId, notes) {
+    return apiFetch(`/external-production-orders/${orderId}/report-failure`, {
+      method: 'POST',
+      body: JSON.stringify({ notes }),
+    });
+  },
+
+  confirmAssembly(orderId) {
+    return apiFetch(`/external-production-orders/${orderId}/confirm-assembly`, {
+      method: 'POST',
+    });
+  },
+
+  assignPickup(orderId, userId) {
+    return apiFetch(`/external-production-orders/${orderId}/assign-pickup`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+  },
+
+  receiveOrder(orderId, payload) {
+    return apiFetch(`/external-production-orders/${orderId}/receive`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

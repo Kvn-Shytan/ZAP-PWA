@@ -1,44 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
-import { apiFetch } from '../services/api'; // Import the new apiFetch
+import React, { useState } from 'react';
+import AsyncSelect from 'react-select/async';
+import { apiFetch } from '../services/api';
 import './PurchaseOrderPage.css';
 
-function PurchaseOrderPage() {
-  const [rawMaterials, setRawMaterials] = useState([]);
+const PurchaseOrderPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState('');
   const [notes, setNotes] = useState('');
   
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    const fetchRawMaterials = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Use authFetch and remove /api prefix
-        const data = await apiFetch('/products?type=RAW_MATERIAL');
-        
+  const loadOptions = (inputValue, callback) => {
+    if (!inputValue) {
+      callback([]);
+      return;
+    }
+
+    apiFetch(`/products?type=RAW_MATERIAL&search=${inputValue}`)
+      .then(data => {
         const products = data.products || [];
-        
         const options = products.map(p => ({
           value: p.id,
           label: `${p.internalCode} - ${p.description}`,
-          unit: p.unit, // Include the unit in the option object
+          unit: p.unit,
         }));
-        setRawMaterials(options);
-      } catch (err) {
+        callback(options);
+      })
+      .catch(err => {
         setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRawMaterials();
-  }, []);
+        callback([]);
+      });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,13 +41,12 @@ function PurchaseOrderPage() {
       return;
     }
 
-    // Add confirmation dialog
     const isConfirmed = window.confirm(
       `¿Está seguro de que desea registrar la compra de ${quantity} x ${selectedProduct.label}?`
     );
 
     if (!isConfirmed) {
-      return; // Abort submission if user cancels
+      return;
     }
 
     setIsSubmitting(true);
@@ -61,7 +54,6 @@ function PurchaseOrderPage() {
     setSuccessMessage('');
 
     try {
-      // Use authFetch and remove /api prefix
       await apiFetch('/inventory/purchase', {
         method: 'POST',
         body: JSON.stringify({
@@ -72,12 +64,10 @@ function PurchaseOrderPage() {
       });
 
       setSuccessMessage('¡Compra registrada con éxito! El stock ha sido actualizado.');
-      // Reset form
       setSelectedProduct(null);
       setQuantity('');
       setNotes('');
       
-      // Hide success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
 
     } catch (err) {
@@ -99,14 +89,17 @@ function PurchaseOrderPage() {
       <form onSubmit={handleSubmit} className="purchase-form">
         <div className="form-group">
           <label htmlFor="product-select">Producto</label>
-          <Select
+          <AsyncSelect
             id="product-select"
-            options={rawMaterials}
+            cacheOptions
+            defaultOptions
+            loadOptions={loadOptions}
             value={selectedProduct}
             onChange={setSelectedProduct}
-            isLoading={isLoading}
             placeholder="Escriba para buscar un producto..."
-            noOptionsMessage={() => 'No se encontraron materias primas'}
+            noOptionsMessage={({ inputValue }) => 
+              !inputValue ? 'Escriba para buscar...' : 'No se encontraron materias primas'
+            }
             isClearable
           />
         </div>
@@ -143,6 +136,6 @@ function PurchaseOrderPage() {
       </form>
     </div>
   );
-}
+};
 
 export default PurchaseOrderPage;

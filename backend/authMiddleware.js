@@ -1,52 +1,73 @@
 const jwt = require('jsonwebtoken');
+const prisma = require('./prisma/client');
 
 const authenticateToken = (req, res, next) => {
-  console.log('[authenticateToken] Request received.');
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (token == null) {
-    console.log('[authenticateToken] No token provided. Sending 401.');
     return res.sendStatus(401); // Unauthorized
   }
 
-  new Promise((resolve, reject) => {
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) {
-        console.log('[authenticateToken] Invalid token. Sending 403.', err.message);
-        return reject(err);
-      }
-      console.log('[authenticateToken] Token valid. User:', user.userId, user.role);
-      resolve(user);
-    });
-  })
-  .then(user => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.sendStatus(401); // Unauthorized (invalid token)
+    }
     req.user = user;
     next();
-  })
-  .catch(err => {
-    return res.sendStatus(403); // Forbidden (invalid token)
   });
 };
 
 const authorizeRole = (allowedRoles) => {
   return (req, res, next) => {
-    console.log('[authorizeRole] Checking roles. User role:', req.user?.role, 'Allowed roles:', allowedRoles);
     if (!req.user || !req.user.role) {
-      console.log('[authorizeRole] No user or user role. Sending 403.');
-      return res.sendStatus(403); // Forbidden
+      return res.sendStatus(403);
     }
-
     const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-
     if (rolesArray.includes(req.user.role)) {
-      console.log('[authorizeRole] Role allowed. Proceeding.');
-      next(); // Role is allowed, proceed
+      next();
     } else {
-      console.log('[authorizeRole] Role not allowed. Sending 403.');
-      res.sendStatus(403); // Forbidden
+      res.sendStatus(403);
     }
   };
 };
 
-module.exports = { authenticateToken, authorizeRole };
+const authorizeAssignedUserOrAdmin = (allowedRoles, userField) => {
+  return async (req, res, next) => {
+    const { id } = req.params;
+    const requestingUser = req.user;
+
+    if (!id || !requestingUser) {
+      return res.sendStatus(400); // Bad Request
+    }
+
+    try {
+      const order = await prisma.externalProductionOrder.findUnique({
+        where: { id },
+        include: { expectedOutputs: { include: { product: true } } },
+      });
+
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+
+      // Attach order to request for use in the next handler
+      req.order = order;
+
+      const isRoleAllowed = allowedRoles.includes(requestingUser.role);
+      const isUserAssigned = order[userField] === requestingUser.userId;
+
+      if (isRoleAllowed || isUserAssigned) {
+        return next(); // Authorized
+      }
+
+      return res.status(403).json({ error: 'You are not authorized to perform this action.' });
+
+    } catch (error) {
+      console.error("Authorization middleware error:", error);
+      return res.sendStatus(500);
+    }
+  };
+};
+
+module.exports = { authenticateToken, authorizeRole, authorizeAssignedUserOrAdmin };

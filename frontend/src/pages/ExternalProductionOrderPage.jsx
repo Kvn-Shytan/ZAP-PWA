@@ -3,32 +3,63 @@ import { armadorService } from '../services/armadorService';
 import { productService } from '../services/productService';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 
+// Recursive component to display the production plan tree
+const PlanItem = ({ item, level = 0 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isPreAssembled = item.product.type === 'PRE_ASSEMBLED';
+  const hasComponents = item.components && item.components.length > 0;
+
+  const toggleExpand = () => {
+    if (isPreAssembled && hasComponents) {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  const itemStyle = {
+    marginLeft: `${level * 20}px`,
+    fontStyle: level > 0 ? 'italic' : 'normal',
+    fontSize: level > 0 ? '0.9em' : '1em',
+    color: item.hasStock ? 'inherit' : 'red',
+    cursor: (isPreAssembled && hasComponents) ? 'pointer' : 'default',
+  };
+
+  return (
+    <div>
+      <div onClick={toggleExpand} style={itemStyle}>
+        <span>{item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})</span>
+        {!item.hasStock && <strong> (Stock Insuficiente)</strong>}
+        {(isPreAssembled && hasComponents) && <span> {isExpanded ? '▼' : '▶'}</span>}
+      </div>
+      {isExpanded && hasComponents && (
+        <div>
+          {item.components.map(child => <PlanItem key={child.product.id} item={child} level={level + 1} />)}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ExternalProductionOrderPage = () => {
   const [armadores, setArmadores] = useState([]);
   const [products, setProducts] = useState([]);
   
-  // Form state
   const [selectedArmador, setSelectedArmador] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [quantity, setQuantity] = useState('1'); // Use string to allow empty value
+  const [quantity, setQuantity] = useState('1');
   
-  // Production Plan state
-  const [productionPlan, setProductionPlan] = useState(null);
+  const [planResponse, setPlanResponse] = useState(null);
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
   const [planError, setPlanError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [insufficientStock, setInsufficientStock] = useState([]); // New state for stock issues
 
-  // Initial data load
   useEffect(() => {
     const loadData = async () => {
       try {
         const [armadoresData, productsData] = await Promise.all([
           armadorService.getArmadores(),
-          productService.getProducts({ pageSize: 1000 }) // Fetch all products for dropdown
+          productService.getProducts({ pageSize: 1000 })
         ]);
         setArmadores(armadoresData);
-        // Filter for finished or pre-assembled products
         const filteredProducts = productsData.products.filter(p => p.type === 'FINISHED' || p.type === 'PRE_ASSEMBLED');
         setProducts(filteredProducts);
       } catch (err) {
@@ -38,14 +69,12 @@ const ExternalProductionOrderPage = () => {
     loadData();
   }, []);
 
-  // Effect to fetch production plan when product or quantity changes
   useEffect(() => {
     if (!selectedProduct) {
-      setProductionPlan(null);
+      setPlanResponse(null);
       return;
     }
 
-    // Default to 1 for simulation if quantity is empty, 0, or invalid
     let simulationQuantity = parseInt(quantity, 10);
     if (!simulationQuantity || simulationQuantity <= 0) {
         simulationQuantity = 1;
@@ -54,19 +83,15 @@ const ExternalProductionOrderPage = () => {
     const fetchProductionPlan = async () => {
       setIsLoadingPlan(true);
       setPlanError(null);
-      setInsufficientStock([]);
       try {
         const plan = await externalProductionOrderService.createOrder(
           { productId: selectedProduct, quantity: simulationQuantity },
-          'dry-run' // Request a dry-run simulation
+          'dry-run'
         );
-        setProductionPlan(plan);
-        if (plan.insufficientStockItems && plan.insufficientStockItems.length > 0) {
-          setInsufficientStock(plan.insufficientStockItems);
-        }
+        setPlanResponse(plan);
       } catch (err) {
         setPlanError(`Error al simular la orden: ${err.message}`);
-        setProductionPlan(null);
+        setPlanResponse(null);
       } finally {
         setIsLoadingPlan(false);
       }
@@ -79,15 +104,11 @@ const ExternalProductionOrderPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Double-check confirmation
     const isConfirmed = window.confirm("¿Está seguro de que desea crear esta orden de producción externa?");
-    if (!isConfirmed) {
-      return; // Stop if user cancels
-    }
+    if (!isConfirmed) return;
 
     const numericQuantity = parseInt(quantity, 10);
-    if (!selectedArmador || !selectedProduct || !numericQuantity || numericQuantity <= 0 || !productionPlan) {
+    if (!selectedArmador || !selectedProduct || !numericQuantity || numericQuantity <= 0 || !planResponse) {
       alert('Por favor, complete todos los campos y espere a que se genere el plan de producción.');
       return;
     }
@@ -97,14 +118,12 @@ const ExternalProductionOrderPage = () => {
         armadorId: selectedArmador, 
         productId: selectedProduct, 
         quantity: numericQuantity 
-      }, 'commit'); // Commit the order
+      }, 'commit');
       alert('¡Orden de producción creada exitosamente!');
-      // Reset form
       setSelectedArmador('');
       setSelectedProduct('');
       setQuantity('1');
-      setProductionPlan(null);
-      setInsufficientStock([]);
+      setPlanResponse(null);
     } catch (err) {
       alert(`Error al crear la orden: ${err.message}`);
     } finally {
@@ -113,8 +132,7 @@ const ExternalProductionOrderPage = () => {
   };
 
   const numericQuantity = parseInt(quantity, 10);
-  // Disable submit if there are stock issues
-  const canSubmit = !isLoadingPlan && productionPlan && !isSubmitting && numericQuantity > 0 && insufficientStock.length === 0;
+  const canSubmit = !isLoadingPlan && planResponse && !isSubmitting && numericQuantity > 0 && planResponse.insufficientStockItems.length === 0;
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -151,46 +169,32 @@ const ExternalProductionOrderPage = () => {
         {isLoadingPlan && <p>Calculando plan de producción...</p>}
         {planError && <p style={{color: 'red'}}>Error: {planError}</p>}
 
-        {productionPlan && (
+        {planResponse && (
           <div>
             <h4>Resumen del Plan de Producción</h4>
-            {insufficientStock.length > 0 && (
+            {planResponse.insufficientStockItems.length > 0 && (
               <p style={{color: 'red', fontWeight: 'bold'}}>
-                Advertencia: No hay stock suficiente para crear la cantidad deseada.
+                Advertencia: No hay stock suficiente de algunos materiales para crear la cantidad deseada.
               </p>
             )}
-            <h5>Materiales Requeridos a Enviar</h5>
-            {(() => {
-              const insufficientIds = new Set(insufficientStock.map(item => item.product.id));
-              return (
-                productionPlan.requiredMaterials.length > 0 ? (
-                <ul>
-                  {productionPlan.requiredMaterials.map(item => {
-                    const isInsufficient = insufficientIds.has(item.product.id);
-                    const shortItem = isInsufficient ? insufficientStock.find(s => s.product.id === item.product.id) : null;
-                    return (
-                      <li key={item.product.id} style={{ color: isInsufficient ? 'red' : 'inherit' }}>
-                        {item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})
-                        {isInsufficient && <strong>{` (Necesario: ${shortItem.required}, Disponible: ${shortItem.available})`}</strong>}
-                      </li>
-                    );
-                  })}
-                </ul>
-                ) : <p>No se requieren materiales para este producto.</p>
-              );
-            })()}
+            <h5>Plan de Componentes</h5>
+            {planResponse.productionPlan.length > 0 ? (
+              <div>
+                {planResponse.productionPlan.map(item => <PlanItem key={item.product.id} item={item} />)}
+              </div>
+            ) : <p>No se requieren materiales para este producto.</p>}
 
             <h5>Pasos de Ensamblaje a Realizar</h5>
-            {productionPlan.assemblySteps.length > 0 ? (
+            {planResponse.assemblySteps.length > 0 ? (
               <ul>
-                {productionPlan.assemblySteps.map(item => (
+                {planResponse.assemblySteps.map(item => (
                   <li key={item.work.id}>
                     {item.quantity} x {item.work.nombre} @ ${Number(item.work.precio).toFixed(2)} = ${ (item.quantity * Number(item.work.precio)).toFixed(2) }
                   </li>
                 ))}
               </ul>
             ) : <p>Este producto no tiene pasos de ensamblaje definidos.</p>}
-            <p><strong>Costo Total de Ensamblaje Estimado: ${productionPlan.totalAssemblyCost.toFixed(2)}</strong></p>
+            <p><strong>Costo Total de Ensamblaje Estimado: ${planResponse.totalAssemblyCost.toFixed(2)}</strong></p>
           </div>
         )}
 

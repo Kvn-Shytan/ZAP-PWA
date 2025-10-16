@@ -46,75 +46,189 @@ const LogisticsDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // State for assignment modal
   const [users, setUsers] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // State for Modals
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState('');
+  const [assignModalConfig, setAssignModalConfig] = useState({ title: '', type: '', currentUserId: null });
+
+  const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
+  const [incidentNotes, setIncidentNotes] = useState('');
+
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [receptionStep, setReceptionStep] = useState(1);
+  const [receivedItems, setReceivedItems] = useState([]);
+  const [receptionNotes, setReceptionNotes] = useState('');
+  const [isJustified, setIsJustified] = useState(false);
+
 
   const fetchOrders = useCallback(async () => {
-    setLoading(true);
     setError(null);
     try {
       const fetchedOrders = await externalProductionOrderService.getOrders();
       setOrders(fetchedOrders);
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, []);
 
-  // Fetch orders and users on component mount
   useEffect(() => {
-    fetchOrders();
+    setLoading(true);
+    fetchOrders().finally(() => setLoading(false));
     
     const fetchUsers = async () => {
         try {
             const allUsers = await apiFetch('/users');
-            // Filter for EMPLOYEE and SUPERVISOR roles as requested
             const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR');
             setUsers(assignableUsers);
         } catch (err) {
             console.error("Failed to fetch users:", err);
-            setError("No se pudo cargar la lista de usuarios para asignar.");
         }
     };
     fetchUsers();
   }, [fetchOrders]);
 
-  const handleAssignClick = (order) => {
-    setSelectedOrder(order);
-    setSelectedUser(order.deliveryUserId || ''); // Pre-select current user if any
-    setIsModalOpen(true);
-  };
-
+  // --- MODAL HANDLERS ---
   const handleModalClose = () => {
-    setIsModalOpen(false);
+    setIsAssignModalOpen(false);
+    setIsIncidentModalOpen(false);
+    setIsReceiveModalOpen(false);
     setSelectedOrder(null);
     setSelectedUser('');
+    setIncidentNotes('');
+    setReceivedItems([]);
+    setReceptionStep(1);
+    setIsJustified(false);
+  };
+
+  // Assignment Modal
+  const handleOpenAssignModal = (order, type) => {
+    setSelectedOrder(order);
+    if (type === 'delivery') {
+      setAssignModalConfig({ title: `Asignar Reparto #${order.id.substring(0, 8)}`, type: 'delivery' });
+      setSelectedUser(order.deliveryUserId || '');
+    } else {
+      setAssignModalConfig({ title: `Asignar Recogida #${order.id.substring(0, 8)}`, type: 'pickup' });
+      setSelectedUser(order.pickupUserId || '');
+    }
+    setIsAssignModalOpen(true);
   };
 
   const handleConfirmAssignment = async () => {
     if (!selectedOrder || !selectedUser) return;
     try {
       const userIdAsNumber = parseInt(selectedUser, 10);
-      await externalProductionOrderService.assignOrder(selectedOrder.id, userIdAsNumber);
+      if (assignModalConfig.type === 'delivery') {
+        await externalProductionOrderService.assignOrder(selectedOrder.id, userIdAsNumber);
+      } else if (assignModalConfig.type === 'pickup') {
+        await externalProductionOrderService.assignPickup(selectedOrder.id, userIdAsNumber);
+      }
       handleModalClose();
-      fetchOrders(); // Refresh the list
+      fetchOrders();
     } catch (err) {
-      alert(`Error al asignar la orden: ${err.message}`);
+      alert(`Error al asignar: ${err.message}`);
     }
   };
 
   const handleUnassign = async () => {
-    if (!selectedOrder) return;
+    if (!selectedOrder || assignModalConfig.type !== 'delivery') return;
     try {
-      await externalProductionOrderService.assignOrder(selectedOrder.id, null); // Pass null to unassign
+      await externalProductionOrderService.assignOrder(selectedOrder.id, null);
       handleModalClose();
-      fetchOrders(); // Refresh the list
+      fetchOrders();
     } catch (err) {
-      alert(`Error al desasignar la orden: ${err.message}`);
+      alert(`Error al desasignar: ${err.message}`);
+    }
+  };
+
+  // Incident Modal
+  const handleOpenIncidentModal = (order) => {
+    setSelectedOrder(order);
+    setIncidentNotes('');
+    setIsIncidentModalOpen(true);
+  };
+
+  const handleConfirmIncident = async () => {
+    if (!selectedOrder || !incidentNotes) {
+      alert("Por favor, ingrese una nota para la incidencia.");
+      return;
+    }
+    try {
+      await externalProductionOrderService.reportFailure(selectedOrder.id, incidentNotes);
+      handleModalClose();
+      fetchOrders();
+    } catch (err) {
+      alert(`Error al reportar incidencia: ${err.message}`);
+    }
+  };
+
+  // Receive Modal
+  const handleOpenReceiveModal = (order) => {
+    setSelectedOrder(order);
+    // Pre-populate received items with expected items
+    const items = order.expectedOutputs.map(item => ({ 
+        ...item,
+        quantityReceived: item.quantityExpected 
+    }));
+    setReceivedItems(items);
+    setReceptionStep(1);
+    setIsReceiveModalOpen(true);
+  };
+
+  const handleReceivedQuantityChange = (productId, quantity) => {
+    const newItems = receivedItems.map(item => 
+      item.productId === productId ? { ...item, quantityReceived: quantity } : item
+    );
+    setReceivedItems(newItems);
+  };
+
+  const handleContinueReception = () => {
+    const hasDiscrepancy = receivedItems.some(item => Number(item.quantityReceived) !== Number(item.quantityExpected));
+    if (hasDiscrepancy) {
+      setReceptionStep(2);
+    } else {
+      handleFinalizeReception(); // No discrepancy, finalize immediately
+    }
+  };
+
+  const handleFinalizeReception = async () => {
+    const payload = {
+      receivedItems: receivedItems.map(item => ({
+        productId: item.productId,
+        quantityReceived: Number(item.quantityReceived) || 0
+      })),
+      justified: isJustified,
+      notes: receptionNotes,
+    };
+    try {
+      await externalProductionOrderService.receiveOrder(selectedOrder.id, payload);
+      handleModalClose();
+      fetchOrders();
+    } catch (err) {
+      alert(`Error al recibir la orden: ${err.message}`);
+    }
+  };
+
+  // --- BUTTON HANDLERS ---
+  const handleConfirmDelivery = async (orderId) => {
+    if (!window.confirm("¿Confirmar que los materiales fueron entregados al armador?")) return;
+    try {
+      await externalProductionOrderService.confirmDelivery(orderId);
+      fetchOrders();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const handleConfirmAssembly = async (orderId) => {
+    if (!window.confirm("¿Confirmar que el armador ha finalizado la producción?")) return;
+    try {
+      await externalProductionOrderService.confirmAssembly(orderId);
+      fetchOrders();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
     }
   };
 
@@ -123,10 +237,41 @@ const LogisticsDashboardPage = () => {
         try {
             await externalProductionOrderService.cancelOrder(orderId);
             alert('Orden cancelada exitosamente.');
-            fetchOrders(); // Refresh the list
+            fetchOrders();
         } catch (err) {
             alert(`Error al cancelar la orden: ${err.message}`);
         }
+    }
+  };
+
+  // --- RENDER LOGIC ---
+  const renderOrderActions = (order) => {
+    switch (order.status) {
+      case 'PENDING_DELIVERY':
+        return (
+          <>
+            <button onClick={() => handleOpenAssignModal(order, 'delivery')}>Asignar Reparto</button>
+            <button onClick={() => handleCancelOrder(order.id)} style={{ marginLeft: '8px'}}>Cancelar</button>
+          </>
+        );
+      case 'OUT_FOR_DELIVERY':
+        return (
+          <>
+            <button onClick={() => handleConfirmDelivery(order.id)}>Confirmar Entrega</button>
+            <button onClick={() => handleOpenIncidentModal(order)} style={{ marginLeft: '8px'}}>Reportar Incidencia</button>
+            <button onClick={() => handleOpenAssignModal(order, 'delivery')} style={{ marginLeft: '8px'}}>Reasignar</button>
+          </>
+        );
+      case 'DELIVERY_FAILED':
+        return <button onClick={() => handleOpenAssignModal(order, 'delivery')}>Reintentar Asignación</button>;
+      case 'IN_ASSEMBLY':
+        return <button onClick={() => handleConfirmAssembly(order.id)}>Confirmar Fin de Armado</button>;
+      case 'PENDING_PICKUP':
+        return <button onClick={() => handleOpenAssignModal(order, 'pickup')}>Asignar Recogida</button>;
+      case 'RETURN_IN_TRANSIT':
+        return <button onClick={() => handleOpenReceiveModal(order)}>Recibir Mercadería</button>;
+      default:
+        return <span>N/A</span>;
     }
   };
 
@@ -142,35 +287,30 @@ const LogisticsDashboardPage = () => {
             <th>ID Orden</th>
             <th>Armador</th>
             <th>Estado</th>
-            <th>Asignado a</th>
+            <th>Asignado a (Reparto/Recogida)</th>
             <th>Fecha Creación</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {orders.map(order => (
-            <tr key={order.id}>
-              <td>{order.id.substring(0, 8)}...</td>
-              <td>{order.armador.name}</td>
-              <td>{order.status}</td>
-              <td>{order.deliveryUser ? order.deliveryUser.name : 'N/A'}</td>
-              <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-              <td>
-                {['PENDING_DELIVERY', 'OUT_FOR_DELIVERY', 'DELIVERY_FAILED'].includes(order.status) && (
-                  <button onClick={() => handleAssignClick(order)}>
-                    {order.deliveryUser ? 'Reasignar' : 'Asignar'}
-                  </button>
-                )}
-                {order.status === 'PENDING_DELIVERY' && (
-                  <button onClick={() => handleCancelOrder(order.id)} style={{ marginLeft: '8px'}}>Cancelar</button>
-                )}
-              </td>
-            </tr>
-          ))}
+          {orders.map(order => {
+            const assignedUser = order.deliveryUser || order.pickupUser;
+            return (
+              <tr key={order.id}>
+                <td>{order.id.substring(0, 8)}...</td>
+                <td>{order.armador.name}</td>
+                <td>{order.status}</td>
+                <td>{assignedUser ? assignedUser.name : 'N/A'}</td>
+                <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                <td>{renderOrderActions(order)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
-      <Modal isOpen={isModalOpen} onClose={handleModalClose} title={`Asignar Orden #${selectedOrder?.id.substring(0, 8)}...`}>
+      {/* Assignment Modal */}
+      <Modal isOpen={isAssignModalOpen} onClose={handleModalClose} title={assignModalConfig.title}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <label htmlFor="user-select">Asignar a:</label>
             <select id="user-select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
@@ -181,11 +321,71 @@ const LogisticsDashboardPage = () => {
             </select>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
                 <button onClick={handleConfirmAssignment} disabled={!selectedUser}>Confirmar Asignación</button>
-                <button onClick={handleUnassign} disabled={!selectedOrder?.deliveryUserId}>Desasignar</button>
+                <button onClick={handleUnassign} disabled={assignModalConfig.type !== 'delivery' || !selectedOrder?.deliveryUserId}>Desasignar</button>
                 <button onClick={handleModalClose}>Cancelar</button>
             </div>
         </div>
       </Modal>
+
+      {/* Incident Report Modal */}
+      <Modal isOpen={isIncidentModalOpen} onClose={handleModalClose} title={`Reportar Incidencia en Orden #${selectedOrder?.id.substring(0, 8)}...`}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <label htmlFor="incident-notes">Notas de la incidencia:</label>
+          <textarea
+            id="incident-notes"
+            value={incidentNotes}
+            onChange={e => setIncidentNotes(e.target.value)}
+            rows={4}
+            placeholder="Ej: El cliente no se encontraba en el domicilio."
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+            <button onClick={handleConfirmIncident} disabled={!incidentNotes}>Confirmar Incidencia</button>
+            <button onClick={handleModalClose} style={{ marginLeft: '8px' }}>Cancelar</button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Receive Order Modal */}
+      <Modal isOpen={isReceiveModalOpen} onClose={handleModalClose} title={`Recibir Mercadería de Orden #${selectedOrder?.id.substring(0, 8)}...`}>
+        {receptionStep === 1 && (
+          <div>
+            <h4>Paso 1: Confirmar cantidades recibidas</h4>
+            {receivedItems.map(item => (
+              <div key={item.productId} style={{ marginBottom: '1rem' }}>
+                <label>{item.product.description} (Esperado: {item.quantityExpected})</label>
+                <input 
+                  type="number"
+                  value={item.quantityReceived}
+                  onChange={(e) => handleReceivedQuantityChange(item.productId, e.target.value)}
+                  style={{ marginLeft: '1rem', width: '80px' }}
+                />
+              </div>
+            ))}
+            <button onClick={handleContinueReception}>Continuar</button>
+          </div>
+        )}
+        {receptionStep === 2 && (
+          <div>
+            <h4>Paso 2: Justificar discrepancia</h4>
+            <p>Se detectó una diferencia entre la cantidad esperada y la recibida.</p>
+            <div style={{ margin: '1rem 0' }}>
+              <input type="checkbox" id="justified" checked={isJustified} onChange={e => setIsJustified(e.target.checked)} />
+              <label htmlFor="justified">¿La discrepancia está justificada? (Ej: el armador devolvió material sobrante)</label>
+            </div>
+            <textarea
+              value={receptionNotes}
+              onChange={e => setReceptionNotes(e.target.value)}
+              rows={3}
+              placeholder="Añada notas adicionales sobre la recepción..."
+              style={{ width: '100%' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button onClick={handleFinalizeReception}>Finalizar Recepción</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
     </div>
   );
 };

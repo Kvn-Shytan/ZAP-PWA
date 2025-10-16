@@ -19,11 +19,17 @@ export const apiFetch = async (endpoint, options = {}) => {
   // Si la sesión es inválida, deslogueamos al usuario.
   // Nota: Esto es una simplificación. En una app más compleja, se usaría un interceptor
   // que maneje el refresh token o un evento global para desloguear.
-  if (response.status === 401 || response.status === 403) {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    window.location.href = '/login'; // Redirigir al login
-    throw new Error('Sesión expirada o no autorizada.');
+  if (response.status === 401) {
+    // Dispara el evento global para que AuthContext maneje el logout.
+    window.dispatchEvent(new CustomEvent('logout-request'));
+    // Rechaza la promesa para detener la ejecución actual.
+    throw new Error('Sesión expirada.');
+  }
+
+  if (response.status === 403) {
+    // Lanza un error específico para que el componente que llama pueda manejarlo.
+    const errorBody = await response.json().catch(() => ({ error: 'Acceso denegado.' }));
+    throw new Error(errorBody.error || 'No tienes permiso para realizar esta acción.');
   }
 
   if (!response.ok) {

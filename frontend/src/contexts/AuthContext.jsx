@@ -15,6 +15,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    const handleLogout = () => {
+      logout();
+    };
+
+    window.addEventListener('logout-request', handleLogout);
+
+    return () => {
+      window.removeEventListener('logout-request', handleLogout);
+    };
+  }, [logout]);
+
+  useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (token && storedUser) {
       try {
