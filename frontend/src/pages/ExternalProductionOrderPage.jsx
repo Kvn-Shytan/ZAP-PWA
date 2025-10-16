@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom'; // Import useLocation
 import { armadorService } from '../services/armadorService';
 import { productService } from '../services/productService';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
@@ -15,24 +16,43 @@ const PlanItem = ({ item, level = 0 }) => {
     }
   };
 
+  const handleCreateNewOrder = () => {
+    const url = `/external-production-orders/new?productId=${item.product.id}&quantity=${item.quantity}`;
+    window.open(url, '_blank');
+  };
+
   const itemStyle = {
     marginLeft: `${level * 20}px`,
+    padding: '4px',
+    borderRadius: '4px',
+    background: level > 0 ? '#f9f9f9' : 'transparent',
     fontStyle: level > 0 ? 'italic' : 'normal',
     fontSize: level > 0 ? '0.9em' : '1em',
     color: item.hasStock ? 'inherit' : 'red',
-    cursor: (isPreAssembled && hasComponents) ? 'pointer' : 'default',
+  };
+
+  const clickableStyle = {
+    cursor: 'pointer',
+    userSelect: 'none',
   };
 
   return (
-    <div>
-      <div onClick={toggleExpand} style={itemStyle}>
+    <div style={{ borderLeft: level > 0 ? '2px solid #eee' : 'none', paddingLeft: level > 0 ? '10px' : '0' }}>
+      <div onClick={toggleExpand} style={{ ...itemStyle, ...(isPreAssembled && hasComponents && clickableStyle) }} >
         <span>{item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})</span>
         {!item.hasStock && <strong> (Stock Insuficiente)</strong>}
         {(isPreAssembled && hasComponents) && <span> {isExpanded ? '▼' : '▶'}</span>}
       </div>
       {isExpanded && hasComponents && (
-        <div>
+        <div style={{ marginLeft: '20px', marginTop: '5px' }}>
           {item.components.map(child => <PlanItem key={child.product.id} item={child} level={level + 1} />)}
+          {!item.hasStock && (
+            <div style={{ marginTop: '10px' }}>
+              <button onClick={handleCreateNewOrder}>Crear orden nueva para este sub-ensamble</button>
+              {/* Placeholder for the second button */}
+              {/* <button style={{ marginLeft: '10px' }}>Agregar a esta orden</button> */}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -42,7 +62,9 @@ const PlanItem = ({ item, level = 0 }) => {
 const ExternalProductionOrderPage = () => {
   const [armadores, setArmadores] = useState([]);
   const [products, setProducts] = useState([]);
+  const location = useLocation(); // Get location object
   
+  // Form state
   const [selectedArmador, setSelectedArmador] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -52,8 +74,9 @@ const ExternalProductionOrderPage = () => {
   const [planError, setPlanError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initial data load & URL param handling
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       try {
         const [armadoresData, productsData] = await Promise.all([
           armadorService.getArmadores(),
@@ -62,13 +85,27 @@ const ExternalProductionOrderPage = () => {
         setArmadores(armadoresData);
         const filteredProducts = productsData.products.filter(p => p.type === 'FINISHED' || p.type === 'PRE_ASSEMBLED');
         setProducts(filteredProducts);
+
+        // Check for URL parameters to pre-fill the form
+        const params = new URLSearchParams(location.search);
+        const productIdFromUrl = params.get('productId');
+        const quantityFromUrl = params.get('quantity');
+
+        if (productIdFromUrl) {
+          setSelectedProduct(productIdFromUrl);
+        }
+        if (quantityFromUrl) {
+          setQuantity(quantityFromUrl);
+        }
+
       } catch (err) {
         setPlanError(`Error al cargar datos iniciales: ${err.message}`);
       }
     };
-    loadData();
-  }, []);
+    loadInitialData();
+  }, [location.search]); // Rerun if URL search params change
 
+  // Effect to fetch production plan when product or quantity changes
   useEffect(() => {
     if (!selectedProduct) {
       setPlanResponse(null);
