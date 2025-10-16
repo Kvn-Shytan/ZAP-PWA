@@ -106,7 +106,7 @@ router.use(authenticateToken);
 // POST /api/external-production-orders - Crear o Simular una orden
 router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { mode } = req.query; // 'dry-run' or 'commit'
-  const { armadorId, productId, quantity, expectedCompletionDate, notes } = req.body;
+  const { armadorId, productId, quantity, expectedCompletionDate, notes, includeSubAssemblies = [] } = req.body;
   const userId = req.user.userId;
 
   if (!productId || !quantity || quantity <= 0) {
@@ -116,16 +116,48 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   // --- DRY RUN / SIMULATION MODE ---
   if (mode === 'dry-run') {
     try {
-      const { planTree, flatWorkItems, flatInsufficientStock } = await getProductionPlan(prisma, productId, quantity);
+      // Start with the main product
+      const mainPlan = await getProductionPlan(prisma, productId, quantity);
+      
+      // Create a map for quick lookup of top-level plan items
+      const planMap = new Map(mainPlan.planTree.map(item => [item.product.id, item]));
 
-      const workList = Array.from(flatWorkItems.values());
+      // Calculate plans for all additionally included sub-assemblies
+      for (const subAssembly of includeSubAssemblies) {
+        const subPlan = await getProductionPlan(prisma, subAssembly.productId, subAssembly.quantity);
+        
+        // Merge sub-plan results into the main plan
+        subPlan.planTree.forEach(subItem => {
+          if (planMap.has(subItem.product.id)) {
+            // If item already exists, just add quantity
+            const existingItem = planMap.get(subItem.product.id);
+            existingItem.quantity += subItem.quantity;
+          } else {
+            // If it's a new item, add it to the plan and the map
+            mainPlan.planTree.push(subItem);
+            planMap.set(subItem.product.id, subItem);
+          }
+        });
+
+        subPlan.flatRawMaterials.forEach((value, key) => {
+          const current = mainPlan.flatRawMaterials.get(key) || { product: value.product, quantity: 0 };
+          mainPlan.flatRawMaterials.set(key, { ...current, quantity: current.quantity + value.quantity });
+        });
+        subPlan.flatWorkItems.forEach((value, key) => {
+          const current = mainPlan.flatWorkItems.get(key) || { work: value.work, quantity: 0 };
+          mainPlan.flatWorkItems.set(key, { ...current, quantity: current.quantity + value.quantity });
+        });
+        mainPlan.flatInsufficientStock.push(...subPlan.flatInsufficientStock);
+      }
+
+      const workList = Array.from(mainPlan.flatWorkItems.values());
       const totalCost = workList.reduce((acc, item) => acc + (Number(item.work.precio) * item.quantity), 0);
 
       return res.json({
-        productionPlan: planTree,
+        productionPlan: mainPlan.planTree,
         assemblySteps: workList,
         totalAssemblyCost: totalCost,
-        insufficientStockItems: flatInsufficientStock,
+        insufficientStockItems: mainPlan.flatInsufficientStock,
       });
 
     } catch (error) {
@@ -140,10 +172,31 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const { flatRawMaterials, flatInsufficientStock } = await getProductionPlan(tx, productId, quantity);
+      // Consolidate main product and sub-assemblies into one list to plan
+      const productsToPlan = [{ productId, quantity }, ...includeSubAssemblies];
+      
+      // Placeholders for the consolidated plan
+      const consolidated = {
+        flatRawMaterials: new Map(),
+        flatWorkItems: new Map(),
+        flatInsufficientStock: [],
+      };
 
-      if (flatInsufficientStock.length > 0) {
-        const errorItem = flatInsufficientStock[0];
+      for (const item of productsToPlan) {
+        const plan = await getProductionPlan(tx, item.productId, item.quantity);
+        plan.flatRawMaterials.forEach((value, key) => {
+          const current = consolidated.flatRawMaterials.get(key) || { product: value.product, quantity: 0 };
+          consolidated.flatRawMaterials.set(key, { ...current, quantity: current.quantity + value.quantity });
+        });
+        plan.flatWorkItems.forEach((value, key) => {
+          const current = consolidated.flatWorkItems.get(key) || { work: value.work, quantity: 0 };
+          consolidated.flatWorkItems.set(key, { ...current, quantity: current.quantity + value.quantity });
+        });
+        consolidated.flatInsufficientStock.push(...plan.flatInsufficientStock);
+      }
+
+      if (consolidated.flatInsufficientStock.length > 0) {
+        const errorItem = consolidated.flatInsufficientStock[0];
         throw new Error(`Stock insuficiente para ${errorItem.product.description}. Necesario: ${errorItem.required}, Disponible: ${errorItem.available}`);
       }
 
@@ -157,9 +210,19 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
         },
       });
 
+      // Create the expected production record for the main product
+      await tx.expectedProduction.create({
+        data: {
+          externalProductionOrderId: order.id,
+          productId: productId, // The main product ID
+          quantityExpected: quantity, // The main product quantity
+        },
+      });
+
       const eventId = crypto.randomUUID();
 
-      for (const [, { product, quantity: requiredQty }] of flatRawMaterials) {
+      // 1. Save sent materials and create inventory movements
+      for (const [, { product, quantity: requiredQty }] of consolidated.flatRawMaterials) {
         await tx.externalProductionOrderItem.create({
           data: {
             externalProductionOrderId: order.id,
@@ -182,6 +245,17 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
         await tx.product.update({
           where: { id: product.id },
           data: { stock: { decrement: requiredQty } },
+        });
+      }
+
+      // 2. Save the required assembly steps for the order
+      for (const [, { work, quantity: workQty }] of consolidated.flatWorkItems) {
+        await tx.orderAssemblyStep.create({
+          data: {
+            externalProductionOrderId: order.id,
+            trabajoDeArmadoId: work.id,
+            quantity: workQty,
+          },
         });
       }
 
@@ -220,12 +294,89 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
 
 // PUT /api/external-production-orders/:id/assign - Asignar un repartidor
 router.put('/:id/assign', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  // ... (implementation is the same)
+  const { id } = req.params;
+  const { deliveryUserId } = req.body;
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({ where: { id } });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    if (!['PENDING_DELIVERY', 'OUT_FOR_DELIVERY', 'DELIVERY_FAILED'].includes(order.status)) {
+      return res.status(400).json({ error: `Cannot assign order in ${order.status} state.` });
+    }
+
+    const updatedOrder = await prisma.externalProductionOrder.update({
+      where: { id },
+      data: {
+        deliveryUserId: deliveryUserId || null,
+        status: deliveryUserId ? 'OUT_FOR_DELIVERY' : 'PENDING_DELIVERY',
+      },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error(`Error assigning order ${id}:`, error.message);
+    res.status(500).json({ error: 'Failed to assign order.' });
+  }
 });
 
 // POST /api/external-production-orders/:id/cancel - Cancelar una orden
 router.post('/:id/cancel', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  // ... (implementation is the same)
+  const { id } = req.params;
+  const userPerformingReversalId = req.user.userId;
+
+  try {
+    const orderToCancel = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+
+    if (!orderToCancel) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    if (orderToCancel.status !== 'PENDING_DELIVERY') {
+      return res.status(400).json({ error: `Order cannot be cancelled in ${orderToCancel.status} state. It must be PENDING_DELIVERY.` });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const eventId = crypto.randomUUID();
+
+      for (const item of orderToCancel.items) {
+        await tx.inventoryMovement.create({
+          data: {
+            productId: item.productId,
+            type: 'ADJUSTMENT_IN',
+            quantity: item.quantitySent,
+            userId: userPerformingReversalId,
+            notes: `Reversión por cancelación de orden externa #${id}`,
+            eventId,
+          },
+        });
+
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantitySent } },
+        });
+      }
+
+      const cancelledOrder = await tx.externalProductionOrder.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+      });
+
+      return cancelledOrder;
+    });
+
+    res.json(result);
+
+  } catch (error) {
+    console.error(`Error cancelling order ${id}:`, error.message);
+    res.status(500).json({ error: 'Failed to cancel order.' });
+  }
 });
 
 // POST /:id/confirm-delivery - Confirmar entrega de materiales al armador
@@ -327,7 +478,7 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    if (order.status !== 'PENDING_PICKUP') {
+    if (!['PENDING_PICKUP', 'PARTIALLY_RECEIVED'].includes(order.status)) {
       return res.status(400).json({ error: `Cannot assign pickup for an order with status ${order.status}` });
     }
 
@@ -352,9 +503,8 @@ router.post(
   authorizeAssignedUserOrAdmin(['ADMIN', 'SUPERVISOR'], 'pickupUserId'),
   async (req, res) => {
     const { id } = req.params;
-    const { receivedItems, justified, notes } = req.body;
-    const userId = req.user.id;
-    const { order } = req; // Use the order from middleware
+    const { receivedItems, justified, notes } = req.body; // receivedItems is an array of { productId, quantity: quantityInThisDelivery }
+    const userId = req.user.userId; // Correctly access userId from the JWT payload
 
     if (!receivedItems || !Array.isArray(receivedItems)) {
       return res.status(400).json({ error: 'receivedItems must be an array.' });
@@ -362,30 +512,89 @@ router.post(
 
     try {
       const result = await prisma.$transaction(async (tx) => {
-        if (order.status !== 'RETURN_IN_TRANSIT') {
+        const order = await tx.externalProductionOrder.findUnique({
+          where: { id },
+          include: { expectedOutputs: true },
+        });
+
+        if (!order) {
+          throw new Error('Order not found');
+        }
+
+        if (!['RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'].includes(order.status)) {
           throw new Error(`Cannot receive items for an order with status ${order.status}`);
         }
 
         const eventId = crypto.randomUUID();
-        let isDiscrepancy = false;
-        const receivedMap = new Map(receivedItems.map(item => [item.productId, item.quantityReceived]));
 
-        for (const expected of order.expectedOutputs) {
-          const receivedQty = receivedMap.get(expected.productId) || 0;
-          if (receivedQty !== Number(expected.quantityExpected)) {
-            isDiscrepancy = true;
+        console.log('--- DEBUG: Starting reception transaction ---');
+        console.log('Received items from frontend:', JSON.stringify(receivedItems, null, 2));
+
+        // Validate quantities before making any changes
+        for (const receivedItem of receivedItems) {
+          const expectedItem = order.expectedOutputs.find(e => e.productId === receivedItem.productId);
+          if (!expectedItem) {
+            throw new Error(`Producto inesperado recibido: ID ${receivedItem.productId}`);
           }
-          if (receivedQty > 0) {
-            await tx.product.update({ where: { id: expected.productId }, data: { stock: { increment: receivedQty } } });
-            await tx.inventoryMovement.create({ data: { productId: expected.productId, type: 'RECEIVED_FROM_ASSEMBLER', quantity: receivedQty, userId: userId, notes: `Recepción de orden externa #${order.id}`, eventId } });
+
+          const pendingQuantity = Number(expectedItem.quantityExpected) - Number(expectedItem.quantityReceived);
+          if (Number(receivedItem.quantity) > pendingQuantity) {
+            throw new Error(`La cantidad recibida (${receivedItem.quantity}) para el producto ${expectedItem.productId} es mayor a la cantidad pendiente (${pendingQuantity}).`);
           }
         }
 
-        let finalStatus;
-        if (!isDiscrepancy) {
-          finalStatus = 'COMPLETED';
+        // Process valid receptions
+        for (const receivedItem of receivedItems) {
+          const quantityInThisDelivery = Number(receivedItem.quantity);
+          if (quantityInThisDelivery <= 0) continue;
+
+          console.log(`--- DEBUG: Processing item ${receivedItem.productId} ---`);
+          console.log('Quantity for this delivery:', quantityInThisDelivery);
+          console.log('User ID:', userId);
+
+          try {
+            // 1. Update stock
+            await tx.product.update({
+              where: { id: receivedItem.productId },
+              data: { stock: { increment: quantityInThisDelivery } },
+            });
+
+            // 2. Create inventory movement
+            console.log('Attempting to create inventory movement...');
+            await tx.inventoryMovement.create({
+              data: {
+                productId: receivedItem.productId,
+                type: 'RECEIVED_FROM_ASSEMBLER',
+                quantity: quantityInThisDelivery,
+                userId: userId,
+                notes: `Recepción parcial/total de orden externa #${order.id}`,
+                eventId,
+              },
+            });
+            console.log('...Inventory movement created successfully.');
+
+            // 3. Update the quantityReceived on the ExpectedProduction record
+            await tx.expectedProduction.update({
+              where: { id: order.expectedOutputs.find(e => e.productId === receivedItem.productId).id },
+              data: { quantityReceived: { increment: quantityInThisDelivery } },
+            });
+          } catch (e) {
+            console.error(`--- DEBUG: ERROR processing item ${receivedItem.productId} ---`);
+            console.error(e);
+            throw new Error(`Falló el procesamiento para el producto ${receivedItem.productId}.`); // Re-throw to abort transaction
+          }
+        }
+
+        // Check if the order is fully completed
+        const updatedExpectedOutputs = await tx.expectedProduction.findMany({ where: { externalProductionOrderId: order.id } });
+        const isFullyComplete = updatedExpectedOutputs.every(e => Number(e.quantityReceived) >= Number(e.quantityExpected));
+
+        let finalStatus = order.status;
+        if (isFullyComplete) {
+            const hasDiscrepancy = updatedExpectedOutputs.some(e => String(e.quantityReceived) !== String(e.quantityExpected));
+            finalStatus = hasDiscrepancy ? (justified ? 'COMPLETED_WITH_NOTES' : 'COMPLETED_WITH_DISCREPANCY') : 'COMPLETED';
         } else {
-          finalStatus = justified ? 'COMPLETED_WITH_NOTES' : 'COMPLETED_WITH_DISCREPANCY';
+            finalStatus = 'PARTIALLY_RECEIVED';
         }
 
         const updatedOrder = await tx.externalProductionOrder.update({

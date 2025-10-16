@@ -104,6 +104,7 @@ model TrabajoDeArmado {
 
   // Relación a la tabla intermedia
   productos   ProductoTrabajoArmado[]
+  orderAssemblySteps OrderAssemblyStep[] // Relación a los pasos de orden
 }
 
 model ProductoTrabajoArmado {
@@ -134,6 +135,7 @@ model ExternalProductionOrder {
   armador         Armador                     @relation(fields: [armadorId], references: [id])
   items           ExternalProductionOrderItem[]
   expectedOutputs ExpectedProduction[]
+  assemblySteps   OrderAssemblyStep[] // Relación a los pasos de ensamblaje
 }
 
 model ExternalProductionOrderItem {
@@ -153,12 +155,27 @@ model ExpectedProduction {
   externalProductionOrderId String
   productId                 String
   quantityExpected          Decimal
+  quantityReceived          Decimal  @default(0)
   createdAt                 DateTime @default(now())
 
   order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
   product Product                 @relation(fields: [productId], references: [id])
 
   @@unique([externalProductionOrderId, productId])
+}
+
+model OrderAssemblyStep {
+  id                        String   @id @default(cuid())
+  quantity                  Int
+
+  externalProductionOrderId String
+  externalProductionOrder   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
+
+  trabajoDeArmadoId         String
+  trabajoDeArmado           TrabajoDeArmado @relation(fields: [trabajoDeArmadoId], references: [id])
+
+  @@index([externalProductionOrderId])
+  @@index([trabajoDeArmadoId])
 }
 
 model AssemblerPayment {
@@ -259,6 +276,7 @@ enum ExternalProductionOrderStatus {
   IN_ASSEMBLY
   PENDING_PICKUP
   RETURN_IN_TRANSIT
+  PARTIALLY_RECEIVED // The order has been partially received
   COMPLETED
   COMPLETED_WITH_NOTES
   COMPLETED_WITH_DISCREPANCY

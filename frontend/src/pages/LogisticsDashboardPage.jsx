@@ -55,6 +55,7 @@ const LogisticsDashboardPage = () => {
   const [assignModalConfig, setAssignModalConfig] = useState({ title: '', type: '', currentUserId: null });
 
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
+  const [incidentStep, setIncidentStep] = useState(1); // 1: Choice, 2: Custom note
   const [incidentNotes, setIncidentNotes] = useState('');
 
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
@@ -98,6 +99,7 @@ const LogisticsDashboardPage = () => {
     setSelectedOrder(null);
     setSelectedUser('');
     setIncidentNotes('');
+    setIncidentStep(1); // Reset incident step
     setReceivedItems([]);
     setReceptionStep(1);
     setIsJustified(false);
@@ -147,6 +149,7 @@ const LogisticsDashboardPage = () => {
   const handleOpenIncidentModal = (order) => {
     setSelectedOrder(order);
     setIncidentNotes('');
+    setIncidentStep(1); // Reset to the first step
     setIsIncidentModalOpen(true);
   };
 
@@ -164,28 +167,52 @@ const LogisticsDashboardPage = () => {
     }
   };
 
+  // New handler for quick incident reporting
+  const handleQuickIncident = async (note) => {
+    if (!selectedOrder) return;
+    try {
+      await externalProductionOrderService.reportFailure(selectedOrder.id, note);
+      handleModalClose();
+      fetchOrders();
+    } catch (err) {
+      alert(`Error al reportar incidencia: ${err.message}`);
+    }
+  };
+
   // Receive Modal
   const handleOpenReceiveModal = (order) => {
     setSelectedOrder(order);
-    // Pre-populate received items with expected items
-    const items = order.expectedOutputs.map(item => ({ 
+    // The state will now hold the quantity *for this specific delivery*
+    const itemsToReceive = order.expectedOutputs.map(item => {
+      const pending = Number(item.quantityExpected) - Number(item.quantityReceived);
+      return {
         ...item,
-        quantityReceived: item.quantityExpected 
-    }));
-    setReceivedItems(items);
+        quantityForThisDelivery: pending, // Pre-fill with the pending amount
+        pending: pending,
+      }
+    });
+    setReceivedItems(itemsToReceive);
     setReceptionStep(1);
     setIsReceiveModalOpen(true);
   };
 
   const handleReceivedQuantityChange = (productId, quantity) => {
-    const newItems = receivedItems.map(item => 
-      item.productId === productId ? { ...item, quantityReceived: quantity } : item
-    );
+    const newItems = receivedItems.map(item => {
+      if (item.productId === productId) {
+        let newQuantity = Number(quantity);
+        // Validation: cannot be negative or more than pending
+        if (newQuantity < 0) newQuantity = 0;
+        if (newQuantity > item.pending) newQuantity = item.pending;
+        return { ...item, quantityForThisDelivery: newQuantity };
+      }
+      return item;
+    });
     setReceivedItems(newItems);
   };
 
   const handleContinueReception = () => {
-    const hasDiscrepancy = receivedItems.some(item => Number(item.quantityReceived) !== Number(item.quantityExpected));
+    // Check for any discrepancy in this specific delivery
+    const hasDiscrepancy = receivedItems.some(item => item.quantityForThisDelivery !== item.pending);
     if (hasDiscrepancy) {
       setReceptionStep(2);
     } else {
@@ -195,9 +222,10 @@ const LogisticsDashboardPage = () => {
 
   const handleFinalizeReception = async () => {
     const payload = {
+      // Send only the quantity for this specific delivery
       receivedItems: receivedItems.map(item => ({
         productId: item.productId,
-        quantityReceived: Number(item.quantityReceived) || 0
+        quantity: Number(item.quantityForThisDelivery) || 0
       })),
       justified: isJustified,
       notes: receptionNotes,
@@ -245,6 +273,14 @@ const LogisticsDashboardPage = () => {
   };
 
   // --- RENDER LOGIC ---
+  const getAssignedUser = (order) => {
+    const pickupStatuses = ['PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED', 'COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'];
+    if (pickupStatuses.includes(order.status)) {
+      return order.pickupUser;
+    }
+    return order.deliveryUser;
+  };
+
   const renderOrderActions = (order) => {
     switch (order.status) {
       case 'PENDING_DELIVERY':
@@ -269,7 +305,13 @@ const LogisticsDashboardPage = () => {
       case 'PENDING_PICKUP':
         return <button onClick={() => handleOpenAssignModal(order, 'pickup')}>Asignar Recogida</button>;
       case 'RETURN_IN_TRANSIT':
-        return <button onClick={() => handleOpenReceiveModal(order)}>Recibir Mercadería</button>;
+      case 'PARTIALLY_RECEIVED': // Add this case
+        return (
+          <>
+            <button onClick={() => handleOpenReceiveModal(order)}>Recibir Mercadería</button>
+            <button onClick={() => handleOpenAssignModal(order, 'pickup')} style={{ marginLeft: '8px'}}>Reasignar Recogida</button>
+          </>
+        );
       default:
         return <span>N/A</span>;
     }
@@ -294,7 +336,7 @@ const LogisticsDashboardPage = () => {
         </thead>
         <tbody>
           {orders.map(order => {
-            const assignedUser = order.deliveryUser || order.pickupUser;
+            const assignedUser = getAssignedUser(order);
             return (
               <tr key={order.id}>
                 <td>{order.id.substring(0, 8)}...</td>
@@ -328,35 +370,50 @@ const LogisticsDashboardPage = () => {
       </Modal>
 
       {/* Incident Report Modal */}
-      <Modal isOpen={isIncidentModalOpen} onClose={handleModalClose} title={`Reportar Incidencia en Orden #${selectedOrder?.id.substring(0, 8)}...`}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <label htmlFor="incident-notes">Notas de la incidencia:</label>
-          <textarea
-            id="incident-notes"
-            value={incidentNotes}
-            onChange={e => setIncidentNotes(e.target.value)}
-            rows={4}
-            placeholder="Ej: El cliente no se encontraba en el domicilio."
-          />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-            <button onClick={handleConfirmIncident} disabled={!incidentNotes}>Confirmar Incidencia</button>
-            <button onClick={handleModalClose} style={{ marginLeft: '8px' }}>Cancelar</button>
+      <Modal isOpen={isIncidentModalOpen} onClose={handleModalClose} title="Reportar incidencia en entrega">
+        {incidentStep === 1 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <p>¿Cuál fue el problema?</p>
+            <button onClick={() => handleQuickIncident('El armador no se encuentra en domicilio')}>El armador no se encuentra en domicilio</button>
+            <button onClick={() => setIncidentStep(2)}>Otro...</button>
+            <button onClick={handleModalClose} style={{ marginTop: '1rem' }}>Cancelar</button>
           </div>
-        </div>
+        )}
+        {incidentStep === 2 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <label htmlFor="incident-notes">Por favor, describa la incidencia:</label>
+            <textarea
+              id="incident-notes"
+              value={incidentNotes}
+              onChange={e => setIncidentNotes(e.target.value)}
+              rows={4}
+              placeholder="Ej: Se visitó el domicilio pero estaba cerrado."
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button onClick={handleConfirmIncident} disabled={!incidentNotes}>Confirmar Incidencia</button>
+              <button onClick={handleModalClose} style={{ marginLeft: '8px' }}>Cancelar</button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Receive Order Modal */}
-      <Modal isOpen={isReceiveModalOpen} onClose={handleModalClose} title={`Recibir Mercadería de Orden #${selectedOrder?.id.substring(0, 8)}...`}>
+      <Modal isOpen={isReceiveModalOpen} onClose={handleModalClose} title="Recepción de mercadería">
         {receptionStep === 1 && (
           <div>
             <h4>Paso 1: Confirmar cantidades recibidas</h4>
             {receivedItems.map(item => (
               <div key={item.productId} style={{ marginBottom: '1rem' }}>
-                <label>{item.product.description} (Esperado: {item.quantityExpected})</label>
+                <label>
+                  {item.product.description}<br/>
+                  <small>Esperado: {Number(item.quantityExpected)} | Recibido: {Number(item.quantityReceived)} | <strong>Pendiente: {item.pending}</strong></small>
+                </label>
                 <input 
                   type="number"
-                  value={item.quantityReceived}
+                  value={item.quantityForThisDelivery}
                   onChange={(e) => handleReceivedQuantityChange(item.productId, e.target.value)}
+                  max={item.pending}
+                  min={0}
                   style={{ marginLeft: '1rem', width: '80px' }}
                 />
               </div>
@@ -367,10 +424,10 @@ const LogisticsDashboardPage = () => {
         {receptionStep === 2 && (
           <div>
             <h4>Paso 2: Justificar discrepancia</h4>
-            <p>Se detectó una diferencia entre la cantidad esperada y la recibida.</p>
+            <p>Se detectó una diferencia entre la cantidad pendiente y la recibida en esta entrega.</p>
             <div style={{ margin: '1rem 0' }}>
               <input type="checkbox" id="justified" checked={isJustified} onChange={e => setIsJustified(e.target.checked)} />
-              <label htmlFor="justified">¿La discrepancia está justificada? (Ej: el armador devolvió material sobrante)</label>
+              <label htmlFor="justified">¿La discrepancia está justificada? (Ej: merma acordada, etc.)</label>
             </div>
             <textarea
               value={receptionNotes}
