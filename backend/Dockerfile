@@ -13,6 +13,9 @@ COPY prisma ./prisma/
 # Install any needed packages
 RUN npm install
 
+# Generate Prisma Client to ensure schema is in sync
+RUN npx prisma generate
+
 # Copy the rest of the application code
 COPY . .
 

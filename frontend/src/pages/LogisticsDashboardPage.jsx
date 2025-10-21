@@ -109,10 +109,10 @@ const LogisticsDashboardPage = () => {
   const handleOpenAssignModal = (order, type) => {
     setSelectedOrder(order);
     if (type === 'delivery') {
-      setAssignModalConfig({ title: `Asignar Reparto #${order.id.substring(0, 8)}`, type: 'delivery' });
+      setAssignModalConfig({ title: `Asignar Reparto #${order.orderNumber}`, type: 'delivery' });
       setSelectedUser(order.deliveryUserId || '');
     } else {
-      setAssignModalConfig({ title: `Asignar Recogida #${order.id.substring(0, 8)}`, type: 'pickup' });
+      setAssignModalConfig({ title: `Asignar Recogida #${order.orderNumber}`, type: 'pickup' });
       setSelectedUser(order.pickupUserId || '');
     }
     setIsAssignModalOpen(true);
@@ -312,9 +312,23 @@ const LogisticsDashboardPage = () => {
             <button onClick={() => handleOpenAssignModal(order, 'pickup')} style={{ marginLeft: '8px'}}>Reasignar Recogida</button>
           </>
         );
+      case 'COMPLETED':
+      case 'COMPLETED_WITH_NOTES':
+      case 'COMPLETED_WITH_DISCREPANCY':
+      case 'CANCELLED':
+        return <em>Orden cerrada - {new Date(order.updatedAt).toLocaleDateString()}</em>;
       default:
         return <span>N/A</span>;
     }
+  };
+
+  const renderStatus = (order) => {
+    if (order.status === 'PARTIALLY_RECEIVED' && order.expectedOutputs?.length > 0) {
+      const totalExpected = order.expectedOutputs.reduce((acc, item) => acc + Number(item.quantityExpected), 0);
+      const totalReceived = order.expectedOutputs.reduce((acc, item) => acc + Number(item.quantityReceived), 0);
+      return `PARCIALMENTE RECIBIDO (${totalReceived}/${totalExpected})`;
+    }
+    return order.status;
   };
 
   if (loading && orders.length === 0) return <p>Cargando órdenes...</p>;
@@ -339,9 +353,9 @@ const LogisticsDashboardPage = () => {
             const assignedUser = getAssignedUser(order);
             return (
               <tr key={order.id}>
-                <td>{order.id.substring(0, 8)}...</td>
+                <td>{order.orderNumber}</td>
                 <td>{order.armador.name}</td>
-                <td>{order.status}</td>
+                <td>{renderStatus(order)}</td>
                 <td>{assignedUser ? assignedUser.name : 'N/A'}</td>
                 <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td>{renderOrderActions(order)}</td>

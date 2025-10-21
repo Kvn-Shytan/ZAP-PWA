@@ -32,7 +32,6 @@ services:
       - ./.env
     volumes:
       - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
     depends_on:
       - db
     command: node index.js

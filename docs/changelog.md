@@ -1,5 +1,16 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-16
+-   **[FEAT] Implementación Completa de Recepción Parcial:**
+    -   **DB:** Añadido `quantityReceived` a `ExpectedProduction` y `PARTIALLY_RECEIVED` a `ExternalProductionOrderStatus`.
+    -   **Backend:** Reescripto el endpoint `POST /:id/receive` para soportar recepciones incrementales, validar cantidades y actualizar estados (`PARTIALLY_RECEIVED`, `COMPLETED`).
+    -   **Frontend:** Rediseñado el modal de recepción para mostrar cantidades detalladas (esperado, recibido, pendiente) y limitar la entrada de cantidad.
+-   **[FIX] Creación de `ExpectedProduction`:** Corregido bug donde no se creaban registros `ExpectedProduction` al confirmar una orden.
+-   **[FIX] Error de `InventoryMovement`:** Resuelto el error `tx.inventorymovement.create() invocation failed` en la recepción de mercadería.
+-   **[FIX] Asignación de Recogida:** Permitida la reasignación de recogida para órdenes en estado `PARTIALLY_RECEIVED`.
+-   **[FIX] Visualización de Asignado a:** Corregida la columna "Asignado a" en el Panel de Logística para mostrar el usuario correcto según el estado de la orden.
+-   **[FIX] Typo en `userId`:** Corregido el typo `req.user.id` a `req.user.userId` en el endpoint de recepción.
+
 ## 2025-10-11
 -   **[FEAT] Validación de Entradas para Categorías (Fase 9.3 - Parcial):**
     -   Implementada la validación de entradas usando `zod` para las rutas `POST /api/categories` y `PUT /api/categories/:id`.

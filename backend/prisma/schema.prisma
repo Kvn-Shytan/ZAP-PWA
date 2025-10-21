@@ -118,6 +118,7 @@ model ProductoTrabajoArmado {
 
 model ExternalProductionOrder {
   id                       String                      @id @default(cuid())
+  orderNumber              String                      @unique
   armadorId                String
   dateSent                 DateTime
   expectedCompletionDate   DateTime?
@@ -234,6 +235,11 @@ model InventoryMovement {
   user      User         @relation(fields: [userId], references: [id])
 
   @@index([eventId])
+}
+
+model OrderSequence {
+  date         String @id // YYYY-MM-DD
+  lastSequence Int
 }
 
 // --- ENUMS ---

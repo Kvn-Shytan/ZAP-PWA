@@ -200,8 +200,21 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
         throw new Error(`Stock insuficiente para ${errorItem.product.description}. Necesario: ${errorItem.required}, Disponible: ${errorItem.available}`);
       }
 
+      // --- Order Number Generation ---
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const sequence = await tx.orderSequence.upsert({
+        where: { date: today },
+        update: { lastSequence: { increment: 1 } },
+        create: { date: today, lastSequence: 1 },
+      });
+      const year = new Date().getFullYear().toString().slice(-2);
+      const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+      const day = new Date().getDate().toString().padStart(2, '0');
+      const orderNumber = `OE-${year}${month}${day}-${String(sequence.lastSequence).padStart(4, '0')}`;
+
       const order = await tx.externalProductionOrder.create({
         data: {
+          orderNumber, // Add the generated order number
           armadorId,
           dateSent: new Date(),
           expectedCompletionDate: expectedCompletionDate ? new Date(expectedCompletionDate) : null,
@@ -291,6 +304,47 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
     res.status(500).json({ error: 'Failed to fetch external production orders.' });
   }
 });
+
+// GET /api/external-production-orders/:id - Get a single order by ID
+router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await prisma.externalProductionOrder.findUnique({
+      where: { id },
+      include: {
+        armador: true,
+        deliveryUser: { select: { id: true, name: true } },
+        pickupUser: { select: { id: true, name: true } },
+        items: { 
+          include: { 
+            product: { select: { description: true, internalCode: true, unit: true } } 
+          } 
+        },
+        expectedOutputs: { 
+          include: { 
+            product: { select: { description: true, internalCode: true, unit: true } } 
+          } 
+        },
+        assemblySteps: {
+          include: {
+            trabajoDeArmado: true
+          }
+        }
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error(`Error fetching order ${id}:`, error.message);
+    res.status(500).json({ error: 'Failed to fetch order.' });
+  }
+});
+
 
 // PUT /api/external-production-orders/:id/assign - Asignar un repartidor
 router.put('/:id/assign', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {

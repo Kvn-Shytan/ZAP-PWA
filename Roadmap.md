@@ -58,7 +58,9 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **5.1: Modelos de Datos y API Core (Rediseño Aprobado)**
         *   `[x]` **(REDISEÑO)** Modificar `schema.prisma`: `TrabajoDeArmado` pasa a ser un catálogo genérico y se crea la tabla intermedia `ProductoTrabajoArmado` (muchos a muchos).
         *   `[x]` **(NUEVO)** Rediseñar el flujo de estados (`ExternalProductionOrderStatus`) y el manejo de productos esperados (nuevo modelo `ExpectedProduction`).
+            *   Ahora incluye `quantityReceived` en `ExpectedProduction` y el estado `PARTIALLY_RECEIVED`.
         *   `[x]` Generar y ejecutar la nueva migración de base de datos.
+            *   Incluye migraciones para `OrderAssemblyStep`, `quantityReceived` y `PARTIALLY_RECEIVED`.
         *   `[x]` **(REFACTOR)** Mover endpoints de `Armador` a su propio archivo de rutas para consistencia arquitectónica.
         *   `[x]` Implementar endpoints CRUD para el nuevo modelo `TrabajoDeArmado` (el "catálogo de trabajos").
         *   `[x]` Implementar endpoints para gestionar la asignación de trabajos a productos (la "receta de armado").
@@ -66,23 +68,25 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **5.2: Flujo de Producción Externa y Lógica de Negocio**
         *   `[x]` **Creación de Orden (`SUPERVISOR`):**
             *   `[x]` El backend soporta modo "simulación" (`dry-run`) para calcular el plan de producción anidado sin afectar el inventario.
+                *   Ahora soporta `includeSubAssemblies` y devuelve un plan anidado.
             *   `[x]` El backend soporta modo "confirmación" (`commit`) para ejecutar la transacción real de la orden.
-            *   `[x]` La UI consulta al backend en modo "simulación" y muestra el "Plan de Producción Anidado" (materiales base, pasos de ensamblaje, costos).
-            *   `[x]` La UI permite confirmar la orden, enviando la solicitud al backend en modo "confirmación".
-            *   `[x]` El backend realiza un movimiento de inventario atómico (`SENT_TO_ASSEMBLER`) al confirmar la orden.
+                *   Ahora guarda `OrderAssemblyStep` y `ExpectedProduction` al confirmar.
         *   `[x]` **(NUEVO) Backend: Máquina de Estados de la Orden:**
             *   `[x]` Implementado endpoint `confirm-delivery` (OUT_FOR_DELIVERY -> IN_ASSEMBLY).
             *   `[x]` Implementado endpoint `report-failure` (OUT_FOR_DELIVERY -> DELIVERY_FAILED).
             *   `[x]` Implementado endpoint `confirm-assembly` (IN_ASSEMBLY -> PENDING_PICKUP).
             *   `[x]` Implementado endpoint `assign-pickup` (PENDING_PICKUP -> RETURN_IN_TRANSIT).
+                *   Ahora permite el estado `PARTIALLY_RECEIVED`.
         *   `[x]` **Gestión de Errores (`SUPERVISOR`):**
             *   `[x]` (Backend) Permitir "Reasignar" una orden en estado `OUT_FOR_DELIVERY`.
             *   `[x]` (Backend) Permitir "Cancelar" una orden en estado `PENDING_DELIVERY`, lo que debe disparar una reversión automática del movimiento de inventario.
             *   `[x]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
             *   `[x]` (UI) Implementar confirmación para "Cancelar" orden.
         *   `[x]` **Recepción de Mercadería (`EMPLOYEE`):**
-            *   `[ ]` La UI debe permitir al empleado registrar la cantidad *real* recibida.
-            *   `[x]` El backend debe incrementar el stock del producto terminado (`RECEIVED_FROM_ASSEMBLER`) y manejar discrepancias.
+            *   `[x]` La UI permite al empleado registrar la cantidad *real* recibida.
+                *   Implementado flujo completo de recepción parcial (DB, API, Frontend).
+                *   Backend valida cantidad, actualiza `quantityReceived`, crea `InventoryMovement`, establece `PARTIALLY_RECEIVED` o `COMPLETED`.
+                *   Frontend modal muestra esperado/recibido/pendiente, limita la entrada.
         *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
             *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
 
@@ -94,6 +98,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   Panel de "Producción Externa" para monitorear órdenes en tiempo real.
             *   Filtros por estado (ej. "Pendiente de Entrega", "En Reparto", "Entrega Fallida").
             *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
+                *   Acciones ahora visibles para órdenes `PARTIALLY_RECEIVED`.
+            *   `[x]` **(NUEVO)** Implementar UI anidada para plan de producción.
+            *   `[x]` **(NUEVO)** Implementar botón "Crear orden nueva" para sub-ensambles faltantes.
+            *   `[x]` **(NUEVO)** Implementar botón "Agregar a esta orden" para sub-ensambles faltantes.
         *   `[ ]` **`ADMIN` (Finanzas):**
             *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
             *   UI para visualizar y registrar liquidaciones de pago.
