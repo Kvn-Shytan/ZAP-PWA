@@ -50,7 +50,13 @@ function ProductList() {
   }, [filters]);
 
   useEffect(() => {
-    fetchProducts();
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 500); // Debounce search
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [fetchProducts]);
 
   const handleFilterChange = (e) => {

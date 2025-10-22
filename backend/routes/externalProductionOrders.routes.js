@@ -286,19 +286,72 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
 
 // GET /api/external-production-orders - Listar todas las órdenes
 router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { 
+    status, 
+    armadorId, 
+    dateFrom, 
+    dateTo, 
+    search, 
+    page = 1, 
+    pageSize = 25 
+  } = req.query;
+
+  const pageNum = parseInt(page, 10);
+  const pageSizeNum = parseInt(pageSize, 10);
+  const skip = (pageNum - 1) * pageSizeNum;
+  const take = pageSizeNum;
+
   try {
-    const orders = await prisma.externalProductionOrder.findMany({
-      where: req.query.status ? { status: { in: req.query.status.split(',') } } : {},
-      include: {
-        armador: true,
-        deliveryUser: { select: { id: true, name: true } },
-        pickupUser: { select: { id: true, name: true } },
-        items: { include: { product: { select: { description: true, internalCode: true } } } },
-        expectedOutputs: { include: { product: true } },
+    const where = {};
+    if (status) {
+      where.status = { in: status.split(',') };
+    }
+    if (armadorId) {
+      where.armadorId = armadorId;
+    }
+    if (dateFrom && dateTo) {
+      where.createdAt = {
+        gte: new Date(dateFrom),
+        lte: new Date(dateTo),
+      };
+    }
+    if (search) {
+      where.OR = [
+        { orderNumber: { contains: search, mode: 'insensitive' } },
+        { items: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
+        { items: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
+        { expectedOutputs: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
+        { expectedOutputs: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
+      ];
+    }
+
+    const [orders, totalOrders] = await prisma.$transaction([
+      prisma.externalProductionOrder.findMany({
+        where,
+        include: {
+          armador: true,
+          deliveryUser: { select: { id: true, name: true } },
+          pickupUser: { select: { id: true, name: true } },
+          items: { include: { product: { select: { description: true, internalCode: true } } } },
+          expectedOutputs: { include: { product: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      prisma.externalProductionOrder.count({ where }),
+    ]);
+
+    res.json({
+      orders,
+      pagination: {
+        total: totalOrders,
+        totalPages: Math.ceil(totalOrders / pageSizeNum),
+        currentPage: pageNum,
+        pageSize: pageSizeNum,
       },
-      orderBy: { createdAt: 'desc' },
     });
-    res.json(orders);
+
   } catch (error) {
     console.error("Error fetching external production orders:", error.message);
     res.status(500).json({ error: 'Failed to fetch external production orders.' });

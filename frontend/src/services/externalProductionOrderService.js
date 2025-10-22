@@ -82,4 +82,13 @@ export const externalProductionOrderService = {
       body: JSON.stringify(payload),
     });
   },
+
+  /**
+   * Obtiene una orden de producción externa por su ID.
+   * @param {string} id - El ID de la orden.
+   * @returns {Promise<object>} - La orden encontrada.
+   */
+  getById(id) {
+    return apiFetch(`/external-production-orders/${id}`);
+  },
 };

@@ -1,5 +1,18 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-21
+-   **[FEAT] Panel de Logística Mejorado:**
+    -   **Backend:** Implementado filtrado (por rango de fechas, armador, búsqueda de texto) y paginación en el endpoint de órdenes de producción externa.
+    -   **Frontend:** Añadidos controles de filtro y paginación al Panel de Logística.
+    -   **[FIX] UX Filtro de Búsqueda:** Implementado "debounce" en el filtro de búsqueda del Panel de Logística y en el Listado de Productos para evitar interrupciones al escribir.
+    -   **[FIX] UX Foco de Input:** Corregido el problema de pérdida de foco en el input de búsqueda del Panel de Logística al reestructurar el renderizado condicional.
+-   **[FEAT] Vista de Detalle de Orden de Producción Externa:**
+    -   Implementada página de detalle de orden (`/external-orders/:id`) con vista de solo lectura y botón de impresión.
+    -   Añadido enlace desde el Panel de Logística a la página de detalle.
+-   **[FEAT] Mejora UX Modal de Recepción de Mercadería:**
+    -   Rediseñado el Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación para una mejor experiencia de usuario.
+-   **[FIX] Errores de Importación en `App.jsx`:** Corregidos errores de importación duplicados y rutas incorrectas en `App.jsx`.
+
 ## 2025-10-16
 -   **[FEAT] Implementación Completa de Recepción Parcial:**
     -   **DB:** Añadido `quantityReceived` a `ExpectedProduction` y `PARTIALLY_RECEIVED` a `ExternalProductionOrderStatus`.

@@ -8,17 +8,18 @@ import { useAuth } from './contexts/AuthContext';
 import UserManagementPage from './pages/UserManagementPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import InventoryHistoryPage from './pages/InventoryHistoryPage';
-import ProductEditPage from './pages/ProductEditPage'; // Import the new page
+import ProductEditPage from './pages/ProductEditPage';
 import ProductionOrderPage from './pages/ProductionOrderPage';
 import ProductComponentsPage from './pages/ProductComponentsPage';
-import PurchaseOrderPage from './pages/PurchaseOrderPage'; // Import the new page
-import AdminToolsPage from './pages/AdminToolsPage'; // Import the Admin Tools page
-import ClassifyProductsPage from './pages/ClassifyProductsPage'; // Import the Classify Products page
-import AssemblerManagementPage from './pages/AssemblerManagementPage'; // Import the new page
-import OverheadCostPage from './pages/OverheadCostPage'; // Import the new page
+import PurchaseOrderPage from './pages/PurchaseOrderPage';
+import AdminToolsPage from './pages/AdminToolsPage';
+import ClassifyProductsPage from './pages/ClassifyProductsPage';
+import AssemblerManagementPage from './pages/AssemblerManagementPage';
+import OverheadCostPage from './pages/OverheadCostPage';
 import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
-import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
 import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
+import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
+import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
 import './App.css';
 
 function App() {
@@ -140,6 +141,7 @@ function App() {
           path="/logistics-dashboard"
           element={<ProtectedRoute element={<LogisticsDashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
+          <Route path="/external-orders/:id" element={<ProtectedRoute element={<ExternalProductionOrderDetailPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
         <Route
           path="/change-password"
           element={<ProtectedRoute element={<ChangePasswordPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />} 

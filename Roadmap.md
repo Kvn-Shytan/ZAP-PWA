@@ -71,6 +71,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                 *   Ahora soporta `includeSubAssemblies` y devuelve un plan anidado.
             *   `[x]` El backend soporta modo "confirmación" (`commit`) para ejecutar la transacción real de la orden.
                 *   Ahora guarda `OrderAssemblyStep` y `ExpectedProduction` al confirmar.
+            *   `[x]` **(NUEVO)** El backend genera un número de orden secuencial y legible (ej. `OE-251021-0001`) al crear la orden.
         *   `[x]` **(NUEVO) Backend: Máquina de Estados de la Orden:**
             *   `[x]` Implementado endpoint `confirm-delivery` (OUT_FOR_DELIVERY -> IN_ASSEMBLY).
             *   `[x]` Implementado endpoint `report-failure` (OUT_FOR_DELIVERY -> DELIVERY_FAILED).
@@ -82,12 +83,12 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` (Backend) Permitir "Cancelar" una orden en estado `PENDING_DELIVERY`, lo que debe disparar una reversión automática del movimiento de inventario.
             *   `[x]` (UI) Implementar interfaz para "Reasignar" (modal de selección de empleado).
             *   `[x]` (UI) Implementar confirmación para "Cancelar" orden.
-        *   `[x]` **Recepción de Mercadería (`EMPLOYEE`):**
-            *   `[x]` La UI permite al empleado registrar la cantidad *real* recibida.
-                *   Implementado flujo completo de recepción parcial (DB, API, Frontend).
-                *   Backend valida cantidad, actualiza `quantityReceived`, crea `InventoryMovement`, establece `PARTIALLY_RECEIVED` o `COMPLETED`.
-                *   Frontend modal muestra esperado/recibido/pendiente, limita la entrada.
-        *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
+                    *   `[x]` **Recepción de Mercadería (`EMPLOYEE`):**
+                        *   `[x]` La UI permite al empleado registrar la cantidad *real* recibida.
+                            *   Implementado flujo completo de recepción parcial (DB, API, Frontend).
+                            *   Backend valida cantidad, actualiza `quantityReceived`, crea `InventoryMovement`, establece `PARTIALLY_RECEIVED` o `COMPLETED`.
+                            *   Frontend modal muestra esperado/recibido/pendiente, limita la entrada.
+                        *   `[x]` **(MEJORA UX)** Rediseño del Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación.        *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
             *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
 
     *   **5.3: Interfaz de Usuario y Experiencia por Rol**
@@ -95,6 +96,12 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   UI móvil simple con "Mis Tareas" (Entregas/Recolecciones).
             *   Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
         *   `[x]` **`SUPERVISOR` (Logística):**
+            *   `[ ]` **Panel de "Producción Externa" Mejorado:**
+                *   `[x]` Implementar filtros en el servidor por rango de fechas, armador y término de búsqueda (Nro. Orden / Producto).
+                *   `[x]` Añadir paginación para manejar grandes volúmenes de órdenes.
+                *   `[x]` Convertir el número de orden en un enlace a una vista de detalle.
+            *   `[x]` **Vista de Detalle de Orden:**
+                *   `[x]` Crear una vista de solo lectura/imprimible que muestre toda la información de una orden de producción externa.
             *   Panel de "Producción Externa" para monitorear órdenes en tiempo real.
             *   Filtros por estado (ej. "Pendiente de Entrega", "En Reparto", "Entrega Fallida").
             *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
