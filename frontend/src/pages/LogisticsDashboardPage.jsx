@@ -320,7 +320,7 @@ const LogisticsDashboardPage = () => {
       })),
       justified: finalJustified,
       notes: finalNotes,
-      isFinalDelivery: receptionChoice === 'returns' || receptionChoice === 'other_notes' || receptionChoice === '',
+      isFinalDelivery: finalChoice === 'returns' || finalChoice === 'other_notes' || finalChoice === '',
     };
     try {
       await externalProductionOrderService.receiveOrder(selectedOrder.id, payload);

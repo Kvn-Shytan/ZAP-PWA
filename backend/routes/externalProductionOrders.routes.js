@@ -379,6 +379,12 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
             product: { select: { description: true, internalCode: true, unit: true } } 
           } 
         },
+        orderNotes: {
+          include: {
+            author: { select: { name: true } }
+          },
+          orderBy: { createdAt: 'asc' }
+        },
         assemblySteps: {
           include: {
             trabajoDeArmado: true
@@ -530,9 +536,18 @@ router.post(
         where: { id },
         data: {
           status: 'DELIVERY_FAILED',
-          notes: order.notes ? `${order.notes}\n${notes}` : notes,
         },
       });
+
+      if (notes) {
+        await prisma.orderNote.create({
+          data: {
+            content: notes,
+            authorId: req.user.userId,
+            externalProductionOrderId: id,
+          },
+        });
+      }
 
       res.json(updatedOrder);
     } catch (error) {
@@ -715,9 +730,19 @@ router.post(
           }
         }
 
+        if (notes) {
+          await tx.orderNote.create({
+            data: {
+              content: notes,
+              authorId: userId,
+              externalProductionOrderId: id,
+            },
+          });
+        }
+
         const updatedOrder = await tx.externalProductionOrder.update({
           where: { id },
-          data: { status: finalStatus, notes: order.notes ? `${order.notes}\n${notes || ''}` : notes || null },
+          data: { status: finalStatus },
         });
 
         return updatedOrder;

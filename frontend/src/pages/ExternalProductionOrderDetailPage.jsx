@@ -72,6 +72,27 @@ const ExternalProductionOrderDetailPage = () => {
     </div>
   );
 
+  // Helper to render notes history
+  const renderNotes = (notes) => (
+    <div style={{ marginTop: '1.5rem' }}>
+      <h3>Historial de Notas</h3>
+      {notes && notes.length > 0 ? (
+        <ul style={{ listStyleType: 'none', padding: 0, border: '1px solid #eee', borderRadius: '8px' }}>
+          {notes.map((note) => (
+            <li key={note.id} style={{ padding: '0.75rem', borderBottom: '1px solid #eee' }}>
+              <p style={{ margin: 0 }}>{note.content}</p>
+              <small style={{ color: '#888' }}>
+                - {note.author?.name || 'Sistema'} el {new Date(note.createdAt).toLocaleString()}
+              </small>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No hay notas para esta orden.</p>
+      )}
+    </div>
+  );
+
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -89,12 +110,12 @@ const ExternalProductionOrderDetailPage = () => {
         {order.expectedCompletionDate && <p><strong>Fecha de Finalización Esperada:</strong> {new Date(order.expectedCompletionDate).toLocaleDateString()}</p>}
         {order.deliveryUser && <p><strong>Asignado para Entrega:</strong> {order.deliveryUser.name}</p>}
         {order.pickupUser && <p><strong>Asignado para Recogida:</strong> {order.pickupUser.name}</p>}
-        {order.notes && <p><strong>Notas:</strong> {order.notes}</p>}
       </div>
 
       {renderProductList(order.items, 'Materiales Enviados al Armador')}
       {renderProductList(order.expectedOutputs, 'Productos Esperados del Armador')}
       {renderAssemblySteps(order.assemblySteps)}
+      {renderNotes(order.orderNotes)}
 
       <div style={{ marginTop: '2rem', textAlign: 'center', color: '#888' }}>
         <p>Generado el {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</p>
