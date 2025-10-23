@@ -140,7 +140,7 @@ const LogisticsDashboardPage = () => {
     setReceivedItems([]);
     setReceptionStep(1);
     setIsJustified(false);
-    setIsFinalDiscrepancy(false); // Reset new state
+    // setIsFinalDiscrepancy(false); // This was removed as it is obsolete
     setShowOtherNotesInput(false); // Reset new state
     setReceptionChoice(''); // Reset new state
   };
@@ -290,22 +290,23 @@ const LogisticsDashboardPage = () => {
       setIsJustified(justifiedValue);
       setReceptionNotes(notesValue);
       setReceptionChoice(choice); // Store choice to use in handleFinalizeReception
-      handleFinalizeReception();
+      handleFinalizeReception(choice);
     }
   };
 
-  const handleFinalizeReception = async () => {
+  const handleFinalizeReception = async (choiceOverride) => {
     let finalJustified = isJustified;
     let finalNotes = receptionNotes;
+    const finalChoice = choiceOverride || receptionChoice;
 
-    // Override justified/notes based on receptionChoice if it's from the new step 2 flow
-    if (receptionChoice === 'returns') {
+    // Override justified/notes based on the definitive choice
+    if (finalChoice === 'returns') {
       finalJustified = true;
       finalNotes = finalNotes || 'Entrega final con devoluciones.';
-    } else if (receptionChoice === 'other_notes') {
+    } else if (finalChoice === 'other_notes') {
       finalJustified = false;
       // finalNotes is already set by the textarea
-    } else if (receptionChoice === 'partial') {
+    } else if (finalChoice === 'partial') {
       finalJustified = false; // Not justified, as it's just partial
       finalNotes = finalNotes || 'Entrega parcial.';
     }
@@ -319,6 +320,7 @@ const LogisticsDashboardPage = () => {
       })),
       justified: finalJustified,
       notes: finalNotes,
+      isFinalDelivery: receptionChoice === 'returns' || receptionChoice === 'other_notes' || receptionChoice === '',
     };
     try {
       await externalProductionOrderService.receiveOrder(selectedOrder.id, payload);

@@ -610,7 +610,7 @@ router.post(
   authorizeAssignedUserOrAdmin(['ADMIN', 'SUPERVISOR'], 'pickupUserId'),
   async (req, res) => {
     const { id } = req.params;
-    const { receivedItems, justified, notes } = req.body; // receivedItems is an array of { productId, quantity: quantityInThisDelivery }
+    const { receivedItems, justified, notes, isFinalDelivery } = req.body; // receivedItems is an array of { productId, quantity: quantityInThisDelivery }
     const userId = req.user.userId; // Correctly access userId from the JWT payload
 
     if (!receivedItems || !Array.isArray(receivedItems)) {
@@ -694,14 +694,25 @@ router.post(
 
         // Check if the order is fully completed
         const updatedExpectedOutputs = await tx.expectedProduction.findMany({ where: { externalProductionOrderId: order.id } });
-        const isFullyComplete = updatedExpectedOutputs.every(e => Number(e.quantityReceived) >= Number(e.quantityExpected));
+        const isNumericallyComplete = updatedExpectedOutputs.every(e => Number(e.quantityReceived) >= Number(e.quantityExpected));
 
         let finalStatus = order.status;
-        if (isFullyComplete) {
-            const hasDiscrepancy = updatedExpectedOutputs.some(e => String(e.quantityReceived) !== String(e.quantityExpected));
-            finalStatus = hasDiscrepancy ? (justified ? 'COMPLETED_WITH_NOTES' : 'COMPLETED_WITH_DISCREPANCY') : 'COMPLETED';
+
+        if (isFinalDelivery) {
+          // User intends to close the order, regardless of numeric completion.
+          const hasDiscrepancy = updatedExpectedOutputs.some(e => String(e.quantityReceived) !== String(e.quantityExpected));
+          if (hasDiscrepancy) {
+            finalStatus = justified ? 'COMPLETED_WITH_NOTES' : 'COMPLETED_WITH_DISCREPANCY';
+          } else {
+            finalStatus = 'COMPLETED';
+          }
         } else {
+          // This is explicitly a partial delivery, so only check for numeric completion.
+          if (isNumericallyComplete) {
+            finalStatus = 'COMPLETED';
+          } else {
             finalStatus = 'PARTIALLY_RECEIVED';
+          }
         }
 
         const updatedOrder = await tx.externalProductionOrder.update({
