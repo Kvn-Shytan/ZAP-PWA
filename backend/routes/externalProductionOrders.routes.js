@@ -252,6 +252,7 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
             userId: userId,
             notes: `Envío para orden de producción externa #${order.id}`,
             eventId: eventId,
+            externalProductionOrderId: order.id, // NEW
           },
         });
 
@@ -690,7 +691,8 @@ router.post(
                 quantity: quantityInThisDelivery,
                 userId: userId,
                 notes: `Recepción parcial/total de orden externa #${order.id}`,
-                eventId,
+                eventId: eventId,
+                externalProductionOrderId: order.id, // NEW
               },
             });
             console.log('...Inventory movement created successfully.');
@@ -728,6 +730,16 @@ router.post(
           } else {
             finalStatus = 'PARTIALLY_RECEIVED';
           }
+        }
+
+        if (notes) {
+          await tx.orderNote.create({
+            data: {
+              content: notes,
+              authorId: userId,
+              externalProductionOrderId: id,
+            },
+          });
         }
 
         if (notes) {

@@ -137,6 +137,8 @@ model ExternalProductionOrder {
   items           ExternalProductionOrderItem[]
   expectedOutputs ExpectedProduction[]
   assemblySteps   OrderAssemblyStep[] // Relación a los pasos de ensamblaje
+  inventoryMovements InventoryMovement[] // New inverse relation
+  orderNotes OrderNote[] // NEW
 }
 
 model ExternalProductionOrderItem {
@@ -179,6 +181,16 @@ model OrderAssemblyStep {
   @@index([trabajoDeArmadoId])
 }
 
+model OrderNote {
+  id                        String   @id @default(cuid())
+  content                   String
+  authorId                  Int
+  author                    User     @relation(fields: [authorId], references: [id])
+  externalProductionOrderId String
+  externalProductionOrder   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
+  createdAt                 DateTime @default(now())
+}
+
 model AssemblerPayment {
   id          String   @id @default(cuid())
   armadorId   String
@@ -219,6 +231,7 @@ model User {
   movements          InventoryMovement[]
   assignedDeliveries ExternalProductionOrder[] @relation("Deliveries")
   assignedPickups    ExternalProductionOrder[] @relation("Pickups")
+  orderNotes         OrderNote[] // NEW
 }
 
 model InventoryMovement {
@@ -230,11 +243,14 @@ model InventoryMovement {
   notes     String?
   createdAt DateTime     @default(now())
   eventId   String?
+  externalProductionOrderId String? // New field
 
   product   Product      @relation(fields: [productId], references: [id])
   user      User         @relation(fields: [userId], references: [id])
+  externalProductionOrder ExternalProductionOrder? @relation(fields: [externalProductionOrderId], references: [id]) // New relation
 
   @@index([eventId])
+  @@index([externalProductionOrderId]) // New index for the relation
 }
 
 model OrderSequence {

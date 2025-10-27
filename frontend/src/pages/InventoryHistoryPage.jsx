@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom'; // NEW
 
 const MOVEMENT_TYPES = [
   { value: 'PURCHASE', label: 'Compra' },
@@ -166,7 +167,15 @@ const InventoryHistoryPage = () => {
           <td>{mov.type}</td>
           <td>{['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type) ? '+' : '-'}{mov.quantity}</td>
           <td>{mov.user.name || mov.user.email}</td>
-          <td>{mov.notes}</td>
+          <td>
+            {mov.externalProductionOrder ? (
+              <Link to={`/external-orders/${mov.externalProductionOrder.id}`}>
+                {mov.externalProductionOrder.orderNumber}
+              </Link>
+            ) : (
+              mov.notes
+            )}
+          </td>
           <td>
             {showAnnulButton && (
               <button onClick={() => handleReversal(mov.id)} disabled={isSubmitting} style={annulButtonStyle}>

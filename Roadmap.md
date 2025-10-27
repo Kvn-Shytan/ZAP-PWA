@@ -55,11 +55,15 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         -   `[x]` Lógica de botón "Anular" refinada para mostrar solo en movimientos `PRODUCTION_IN` de eventos de producción interna.
         -   `[x]` Estilos visuales para movimientos de Compra (verde) y Órdenes de Producción Externa (azul).
         -   `[x]` Refinamiento del filtro por tipos con etiquetas amigables y nuevos tipos de movimiento.
-    -   `[ ]` **(NUEVO)** Enlace a Órdenes de Producción Externa en Historial de Movimientos:
-        -   `[ ]` Modificar `InventoryMovement` en `schema.prisma` para incluir `externalProductionOrderId`.
-        -   `[ ]` Actualizar creación de movimientos `SENT_TO_ASSEMBLER` y `RECEIVED_FROM_ASSEMBLER` para usar el nuevo campo.
-        -   `[ ]` Modificar endpoint `/inventory/movements` para incluir `ExternalProductionOrder` en la respuesta.
-        -   `[ ]` Actualizar `InventoryHistoryPage.jsx` para mostrar `orderNumber` como enlace a la página de detalle de la orden.
+    -   `[x]` **(NUEVO)** Enlace a Órdenes de Producción Externa en Historial de Movimientos:
+        -   `[x]` Modificar `InventoryMovement` en `schema.prisma` para incluir `externalProductionOrderId`.
+        -   `[x]` Actualizar creación de movimientos `SENT_TO_ASSEMBLER` y `RECEIVED_FROM_ASSEMBLER` para usar el nuevo campo.
+        -   `[x]` Modificar endpoint `/inventory/movements` para incluir `ExternalProductionOrder` en la respuesta.
+        -   `[x]` Actualizar `InventoryHistoryPage.jsx` para mostrar `orderNumber` como enlace a la página de detalle de la orden.
+    -   `[x]` **(NUEVO)** Restauración de la funcionalidad de Notas de Orden (OrderNote):
+        -   `[x]` Reintroducción del modelo `OrderNote` en `schema.prisma` y sus relaciones inversas.
+        -   `[x]` Restauración del bloque de creación de `OrderNote` en el endpoint `POST /external-production-orders/:id/receive`.
+        -   `[x]` Verificación de la inclusión de `orderNotes` en el endpoint `GET /external-production-orders/:id`.
 
 -   **Fase 5: Módulo de Armadores (Diseño Detallado)**
     > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa con trazabilidad total y simplicidad para el operario.
@@ -183,6 +187,12 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 ---
 
 ## 2. Changelog (Registro de Cambios)
+
+-   **2025-10-27:**
+    -   **Funcionalidad de Órdenes de Producción Externa:**
+        -   Se restauró el modelo `OrderNote` y su funcionalidad asociada, incluyendo la creación y visualización de notas.
+        -   Se implementó el enlace directo a las órdenes de producción externa desde el historial de movimientos de inventario, mostrando el número de orden y permitiendo la navegación al detalle de la orden.
+        -   Se corrigieron errores relacionados con la carga de órdenes de producción externa y la funcionalidad de entrega parcial.
 
 -   **2025-10-27:**
     -   **Historial de Movimientos (UI/UX):**
