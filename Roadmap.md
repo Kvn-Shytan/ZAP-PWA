@@ -51,6 +51,15 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   [x] **Interfaz de Usuario:** Historial de Movimientos, gestión de Lista de Materiales, UI para Órdenes de Producción y Compras.
     -   `[x]` **(NUEVO)** Implementar vista "Utilizado En" en la página de gestión de componentes.
     -   `[x]` **(NUEVO)** Implementar navegación recursiva (drill-down) en las recetas.
+    -   `[x]` **(NUEVO)** Mejoras en UI/UX del Historial de Movimientos:
+        -   `[x]` Lógica de botón "Anular" refinada para mostrar solo en movimientos `PRODUCTION_IN` de eventos de producción interna.
+        -   `[x]` Estilos visuales para movimientos de Compra (verde) y Órdenes de Producción Externa (azul).
+        -   `[x]` Refinamiento del filtro por tipos con etiquetas amigables y nuevos tipos de movimiento.
+    -   `[ ]` **(NUEVO)** Enlace a Órdenes de Producción Externa en Historial de Movimientos:
+        -   `[ ]` Modificar `InventoryMovement` en `schema.prisma` para incluir `externalProductionOrderId`.
+        -   `[ ]` Actualizar creación de movimientos `SENT_TO_ASSEMBLER` y `RECEIVED_FROM_ASSEMBLER` para usar el nuevo campo.
+        -   `[ ]` Modificar endpoint `/inventory/movements` para incluir `ExternalProductionOrder` en la respuesta.
+        -   `[ ]` Actualizar `InventoryHistoryPage.jsx` para mostrar `orderNumber` como enlace a la página de detalle de la orden.
 
 -   **Fase 5: Módulo de Armadores (Diseño Detallado)**
     > **Filosofía:** Gestionar el ciclo de vida completo de la producción externa con trazabilidad total y simplicidad para el operario.
@@ -59,7 +68,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[x]` **(REDISEÑO)** Modificar `schema.prisma`: `TrabajoDeArmado` pasa a ser un catálogo genérico y se crea la tabla intermedia `ProductoTrabajoArmado` (muchos a muchos).
         *   `[x]` **(NUEVO)** Rediseñar el flujo de estados (`ExternalProductionOrderStatus`) y el manejo de productos esperados (nuevo modelo `ExpectedProduction`).
             *   Ahora incluye `quantityReceived` en `ExpectedProduction` y el estado `PARTIALLY_RECEIVED`.
-        *   `[x]` Generar y ejecutar la nueva migración de base de datos.
+        *   `[x]` Generar y ejecutar la nueva migración de base de datos para aplicar los cambios.
             *   Incluye migraciones para `OrderAssemblyStep`, `quantityReceived` y `PARTIALLY_RECEIVED`.
         *   `[x]` **(REFACTOR)** Mover endpoints de `Armador` a su propio archivo de rutas para consistencia arquitectónica.
         *   `[x]` Implementar endpoints CRUD para el nuevo modelo `TrabajoDeArmado` (el "catálogo de trabajos").
@@ -174,6 +183,13 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 ---
 
 ## 2. Changelog (Registro de Cambios)
+
+-   **2025-10-27:**
+    -   **Historial de Movimientos (UI/UX):**
+        -   Se corrigió un bug que impedía anular órdenes de producción interna.
+        -   Se refinó la visibilidad del botón "Anular" para mostrarlo solo en movimientos de tipo `PRODUCTION_IN` dentro de eventos de producción interna.
+        -   Se implementaron estilos visuales para diferenciar movimientos de Compra (verde) y Órdenes de Producción Externa (azul).
+        -   Se mejoró el filtro por tipos, añadiendo etiquetas más amigables y los nuevos tipos de movimiento (`SENT_TO_ASSEMBLER`, `RECEIVED_FROM_ASSEMBLER`).
 
 -   **2025-09-15:**
     -   Se actualizó el roadmap para priorizar la gestión de usuarios antes de la lógica de stock.

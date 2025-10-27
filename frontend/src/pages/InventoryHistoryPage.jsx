@@ -3,14 +3,16 @@ import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const MOVEMENT_TYPES = [
-  'PURCHASE',
-  'PRODUCTION_IN',
-  'CUSTOMER_RETURN',
-  'ADJUSTMENT_IN',
-  'PRODUCTION_OUT',
-  'SALE',
-  'WASTAGE',
-  'ADJUSTMENT_OUT',
+  { value: 'PURCHASE', label: 'Compra' },
+  { value: 'PRODUCTION_IN', label: 'Producción Interna (Entrada)' },
+  { value: 'CUSTOMER_RETURN', label: 'Devolución de Cliente' },
+  { value: 'ADJUSTMENT_IN', label: 'Ajuste de Entrada' },
+  { value: 'PRODUCTION_OUT', label: 'Producción Interna (Salida)' },
+  { value: 'SALE', label: 'Venta' },
+  { value: 'WASTAGE', label: 'Merma' },
+  { value: 'ADJUSTMENT_OUT', label: 'Ajuste de Salida' },
+  { value: 'SENT_TO_ASSEMBLER', label: 'Envío a Armador' },
+  { value: 'RECEIVED_FROM_ASSEMBLER', label: 'Recepción de Armador' },
 ];
 
 const InventoryHistoryPage = () => {
@@ -133,7 +135,6 @@ const InventoryHistoryPage = () => {
       const isAnnulled = annulledOriginalIds.has(mov.id);
       const isComponent = mov.type === 'PRODUCTION_OUT';
       const isReversal = mov.notes?.startsWith('Anulación');
-      const isSystemEvent = !!mov.eventId; // Check if it's a system event
 
       // 2. Define dynamic styles
       const rowStyle = {};
@@ -142,22 +143,21 @@ const InventoryHistoryPage = () => {
         rowStyle.color = '#999';
         rowStyle.fontStyle = 'italic';
         rowStyle.fontSize = '0.9em';
-      } else if (isSystemEvent) {
+      } else if (isReversal) { // Las reversiones tienen prioridad sobre otros colores si no están anuladas
+        rowStyle.color = 'red';
+        rowStyle.textDecoration = 'none';
+        rowStyle.fontStyle = 'normal';
+      } else if (mov.type === 'PURCHASE') { // Nuevo: Verde para Compras
+        rowStyle.color = '#28a745'; // Green
+      } else if (mov.eventId && ['SENT_TO_ASSEMBLER', 'RECEIVED_FROM_ASSEMBLER'].includes(mov.type)) { // Nuevo: Azul para Eventos de Producción Externa
         rowStyle.color = '#4682B4'; // SteelBlue
-      }
-
-      if (isComponent && !isAnnulled) { // Prevent style override
+      } else if (isComponent) { // Estilo existente para componentes
         rowStyle.fontStyle = 'italic';
         rowStyle.fontSize = '0.9em';
       }
-      if (isReversal) {
-        rowStyle.color = 'red';
-        rowStyle.textDecoration = 'none'; // Ensure it's not crossed out
-        rowStyle.fontStyle = 'normal';
-      }
 
       // 3. Define button visibility - NEW LOGIC
-      const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && !isSystemEvent;
+      const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && (!mov.eventId || mov.type === 'PRODUCTION_IN');
 
       return (
         <tr key={mov.id} style={rowStyle}>
@@ -194,7 +194,7 @@ const InventoryHistoryPage = () => {
         </select>
         <select name="type" value={filterInputs.type} onChange={handleInputChange} style={inputStyle}>
           <option value="">Todos los Tipos</option>
-          {MOVEMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          {MOVEMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <input type="date" name="startDate" value={filterInputs.startDate} onChange={handleInputChange} style={inputStyle} />
         <input type="date" name="endDate" value={filterInputs.endDate} onChange={handleInputChange} style={inputStyle} />
