@@ -184,6 +184,23 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` Crear un script de prueba que aplica migraciones y ejecuta los tests contra la base de datos de prueba.
             *   `[x]` Escribir y pasar el primer test de integración para el endpoint de productos.
 
+-   **Fase 10: Refactorización del Flujo de Costos de Armado y Liquidaciones (En Progreso)**
+    > *Esta fase corrige una inconsistencia arquitectónica fundamental para asegurar la integridad de los datos de costos y habilitar un flujo de liquidación de pagos robusto y auditable.*
+
+    *   **10.1: Corrección Arquitectónica del Backend**
+        *   `[x]` **Acción (Backend):** Identificar y deprecian el endpoint obsoleto `POST /api/product-design/:id/assembly-cost` que opera sobre un modelo de datos antiguo (relación 1-a-1).
+        *   `[x]` **Acción (Backend):** Crear un nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado` que vincule un `Product` con un `TrabajoDeArmado` del catálogo, creando o actualizando la entrada correspondiente en la tabla intermedia `ProductoTrabajoArmado`.
+
+    *   **10.2: Implementación de UI para Vinculación de Costos**
+        *   `[x]` **Acción (Frontend):** Modificar la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`).
+        *   `[x]` **Acción (Frontend):** Añadir un campo desplegable "Trabajo de Armado" que será **obligatorio** para productos de tipo `PRE_ASSEMBLED` o `FINISHED`.
+        *   `[ ]` **Acción (Frontend):** Implementar un botón "Crear Nuevo Trabajo..." junto al desplegable, que abrirá un modal para la creación de un nuevo `TrabajoDeArmado` sobre la marcha, mejorando el flujo de trabajo del usuario y asegurando la integridad de los datos.
+        *   `[x]` **Acción (Frontend):** Conectar el guardado del formulario al nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado`.
+
+    *   **10.3: Refactorización y Corrección del Flujo de Liquidación**
+        *   `[x]` **Acción (Backend):** Refactorizar la lógica de cálculo en el endpoint `GET /api/armadores/payment-summary-batch` para que utilice el `precioUnitario` guardado en `OrderAssemblyStep`, en lugar de recalcularlo con consultas a la base de datos. Esto soluciona el error 500 y mejora la eficiencia.
+        *   `[x]` **Acción (Backend):** Reforzar la validación en el endpoint de creación de órdenes de producción externa (`POST /api/external-production-orders`) para rechazar órdenes si el trabajo de armado seleccionado no tiene un precio definido en el catálogo.
+
 ---
 
 ## 2. Changelog (Registro de Cambios)

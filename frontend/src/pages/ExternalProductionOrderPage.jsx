@@ -289,7 +289,7 @@ const ExternalProductionOrderPage = () => {
                 ))}
               </ul>
             ) : <p>Este producto no tiene pasos de ensamblaje definidos.</p>}
-            <p><strong>Costo Total de Ensamblaje Estimado: ${planResponse.totalAssemblyCost.toFixed(2)}</strong></p>
+            <p><strong>Costo Total de Ensamblaje Estimado: ${(planResponse.totalAssemblyCost ?? 0).toFixed(2)}</strong></p>
           </div>
         )}
 

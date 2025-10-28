@@ -40,7 +40,7 @@ const getProductionPlan = async (tx, prodId, requiredQty, visited = new Set()) =
   });
 
   directAssemblyWork.forEach(aw => {
-    const totalWorkQty = aw.quantity * requiredQty;
+    const totalWorkQty = 1 * requiredQty;
     const currentQty = flatWorkItems.get(aw.trabajo.id)?.quantity || 0;
     flatWorkItems.set(aw.trabajo.id, { work: aw.trabajo, quantity: currentQty + totalWorkQty });
   });
@@ -200,6 +200,14 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
         throw new Error(`Stock insuficiente para ${errorItem.product.description}. Necesario: ${errorItem.required}, Disponible: ${errorItem.available}`);
       }
 
+      // NEW VALIDATION: Check if all associated assembly works have a price
+      for (const [, { work }] of consolidated.flatWorkItems) {
+        if (!work.precio || Number(work.precio) <= 0) {
+          throw new Error(`El trabajo de armado '${work.nombre}' no tiene un precio definido o es cero. Por favor, defina un precio en la gestión de trabajos de armado.`);
+        }
+      }
+      // END NEW VALIDATION
+
       // --- Order Number Generation ---
       const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
       const sequence = await tx.orderSequence.upsert({
@@ -269,6 +277,7 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
             externalProductionOrderId: order.id,
             trabajoDeArmadoId: work.id,
             quantity: workQty,
+            precioUnitario: work.precio, // NEW
           },
         });
       }

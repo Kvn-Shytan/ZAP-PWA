@@ -109,7 +109,7 @@ model TrabajoDeArmado {
 
 model ProductoTrabajoArmado {
   producto    Product         @relation(fields: [productId], references: [id])
-  productId   String
+  productId   String   @unique
   trabajo     TrabajoDeArmado @relation(fields: [trabajoId], references: [id])
   trabajoId   String
 
@@ -139,6 +139,9 @@ model ExternalProductionOrder {
   assemblySteps   OrderAssemblyStep[] // Relación a los pasos de ensamblaje
   inventoryMovements InventoryMovement[] // New inverse relation
   orderNotes OrderNote[] // NEW
+
+  assemblerPaymentId String?
+  assemblerPayment   AssemblerPayment? @relation(fields: [assemblerPaymentId], references: [id])
 }
 
 model ExternalProductionOrderItem {
@@ -170,6 +173,7 @@ model ExpectedProduction {
 model OrderAssemblyStep {
   id                        String   @id @default(cuid())
   quantity                  Int
+  precioUnitario            Decimal // NEW
 
   externalProductionOrderId String
   externalProductionOrder   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
@@ -202,6 +206,7 @@ model AssemblerPayment {
   createdAt   DateTime @default(now())
 
   armador Armador @relation(fields: [armadorId], references: [id])
+  orders  ExternalProductionOrder[] // Relation to paid orders
 }
 
 model Armador {

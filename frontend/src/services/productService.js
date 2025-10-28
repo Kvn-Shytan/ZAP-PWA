@@ -17,7 +17,7 @@ export const productService = {
    * @returns {Promise<object>} - El producto encontrado.
    */
   getProductById(id) {
-    return apiFetch(`/products/${id}`);
+    return apiFetch(`/product-design/${id}`);
   },
 
   /**

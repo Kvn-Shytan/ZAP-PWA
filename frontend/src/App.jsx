@@ -20,6 +20,7 @@ import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
 import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
 import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
 import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
+import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage'; // NEW
 import './App.css';
 
 function App() {
@@ -52,6 +53,9 @@ function App() {
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/logistics-dashboard">Panel de Logística</Link>
+          )}
+          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            <Link to="/assembler-payment-batch">Liquidación por Lotes</Link> // NEW
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
@@ -142,6 +146,10 @@ function App() {
           element={<ProtectedRoute element={<LogisticsDashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
           <Route path="/external-orders/:id" element={<ProtectedRoute element={<ExternalProductionOrderDetailPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
+        <Route
+          path="/assembler-payment-batch" // NEW
+          element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />} // NEW
+        />
         <Route
           path="/change-password"
           element={<ProtectedRoute element={<ChangePasswordPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />} 

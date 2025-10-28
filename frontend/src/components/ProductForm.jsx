@@ -1,13 +1,18 @@
 import React from 'react';
+import Select from 'react-select'; // Import react-select
 
 const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 
-const ProductForm = ({ product, setProduct, categories, suppliers, isEdit = false }) => {
+const ProductForm = ({ product, setProduct, categories, suppliers, trabajosOptions, isEdit = false }) => {
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const val = type === 'number' ? parseFloat(value) : value;
     setProduct(prev => ({ ...prev, [name]: val }));
+  };
+
+  const handleTrabajoChange = (selectedOption) => {
+    setProduct(prev => ({ ...prev, trabajoDeArmado: selectedOption }));
   };
 
   return (
@@ -38,6 +43,24 @@ const ProductForm = ({ product, setProduct, categories, suppliers, isEdit = fals
           {PRODUCT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
         </select>
       </div>
+
+      {/* Conditional Assembly Job Dropdown using react-select */}
+      {(product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
+        <div style={inputGroupStyle}>
+          <label>Trabajo de Armado Requerido</label>
+          <Select
+            name="trabajoDeArmado"
+            value={product.trabajoDeArmado}
+            onChange={handleTrabajoChange}
+            options={trabajosOptions}
+            placeholder="Seleccione o busque un trabajo..."
+            isClearable
+            required
+          />
+          {/* TODO: Add "Create New" button and modal */}
+        </div>
+      )}
+
       <div style={inputGroupStyle}>
         <label>Umbral de Bajo Stock</label>
         <input type="number" name="lowStockThreshold" value={product.lowStockThreshold || 0} onChange={handleChange} style={inputStyle} min="0" />

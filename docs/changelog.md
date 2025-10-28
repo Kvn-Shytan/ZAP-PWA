@@ -1,5 +1,19 @@
 # Changelog (Registro de Cambios)
 
+## 2025-10-28
+-   **[FEAT] Flujo Completo de Gestión de Costos de Armado y Liquidaciones:**
+    -   **[REFACTOR] DB:** Se corrigió el modelo de datos `ProductoTrabajoArmado` (`schema.prisma`) para asegurar una relación 1:1 entre Producto y Trabajo de Armado, aplicando una nueva migración.
+    -   **[REFACTOR] Backend:** Se deprecó el endpoint obsoleto `POST /product-design/:id/assembly-cost` y se implementó el nuevo endpoint `PUT /product-design/:productId/trabajo-armado` para vincular productos con trabajos de armado.
+    -   **[REFACTOR] Backend:** Se corrigió el endpoint `GET /product-design/:id` para incluir correctamente la relación `trabajosDeArmado`.
+    -   **[FEAT] Frontend:** Se añadió un campo de selección de "Trabajo de Armado" (usando `react-select`) en la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`), visible para productos `PRE_ASSEMBLED` y `FINISHED`.
+    -   **[FIX] Backend:** Se corrigieron múltiples errores en el endpoint `POST /external-production-orders` relacionados con el cálculo de cantidades y el acceso a propiedades de `TrabajoDeArmado`.
+    -   **[FIX] Backend:** Se corrigieron errores de sintaxis de Prisma en el `upsert` del endpoint `PUT /product-design/:productId/trabajo-armado`.
+    -   **[FIX] Backend:** Se corrigió la lógica de cálculo en el endpoint `GET /assemblers/payment-summary-batch` para usar el `precioUnitario` guardado en `OrderAssemblyStep`.
+    -   **[FIX] Backend:** Se añadió el filtro `assemblerPaymentId: null` al endpoint `GET /assemblers/payment-summary-batch` para mostrar solo órdenes no pagadas.
+    -   **[FIX] Frontend:** Se corrigió un error `TypeError` en `ExternalProductionOrderPage` al mostrar `totalAssemblyCost` cuando era `null`.
+    -   **[FIX] Routing:** Se corrigieron inconsistencias en las rutas del backend (`/api/armadores` vs `/api/assemblers`) y se reordenaron las rutas en `armadores.routes.js` para evitar conflictos.
+    -   **[CHORE] Performance:** Se configuró `nodemon.json` para mejorar el rendimiento del backend en desarrollo.
+
 ## 2025-10-21
 -   **[FEAT] Panel de Logística Mejorado:**
     -   **Backend:** Implementado filtrado (por rango de fechas, armador, búsqueda de texto) y paginación en el endpoint de órdenes de producción externa.

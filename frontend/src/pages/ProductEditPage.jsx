@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { apiFetch } from '../services/api';
 import ProductForm from '../components/ProductForm';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { supplierService } from '../services/supplierService';
+import { trabajoDeArmadoService } from '../services/trabajoDeArmadoService'; // Import the new service
 
 const ProductEditPage = () => {
   const { id } = useParams();
@@ -15,6 +17,7 @@ const ProductEditPage = () => {
   const [product, setProduct] = useState({ type: 'RAW_MATERIAL', lowStockThreshold: 0 });
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [trabajosOptions, setTrabajosOptions] = useState([]); // New state for react-select options
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,18 +27,31 @@ const ProductEditPage = () => {
       setLoading(true);
       const catPromise = categoryService.getCategories();
       const supPromise = supplierService.getSuppliers();
+      const trabajoPromise = trabajoDeArmadoService.getAll(); // Fetch assembly jobs
       let prodPromise = Promise.resolve(null);
 
       if (isEdit) {
         prodPromise = productService.getProductById(id);
       }
 
-      const [catData, supData, prodData] = await Promise.all([catPromise, supPromise, prodPromise]);
+      const [catData, supData, prodData, trabajoData] = await Promise.all([catPromise, supPromise, prodPromise, trabajoPromise]);
 
       setCategories(catData || []);
       setSuppliers(supData || []);
+      
+      // Transform trabajos for react-select
+      const options = (trabajoData || []).map(t => ({
+        value: t.id,
+        label: `${t.nombre} ($${Number(t.precio).toFixed(2)})`
+      }));
+      setTrabajosOptions(options);
+
       if (prodData) {
-        setProduct(prodData);
+        // Find the selected trabajo option object from the fetched list
+        const currentTrabajo = (prodData.trabajosDeArmado && prodData.trabajosDeArmado[0])
+          ? options.find(opt => opt.value === prodData.trabajosDeArmado[0].trabajoId)
+          : null;
+        setProduct({ ...prodData, trabajoDeArmado: currentTrabajo });
       }
 
     } catch (err) {
@@ -54,25 +70,43 @@ const ProductEditPage = () => {
     e.preventDefault();
     if (isSubmitting) return;
 
+    // Updated validation for react-select object
+    if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && !product.trabajoDeArmado) {
+        setError('Para productos pre-ensamblados o finales, es obligatorio seleccionar un trabajo de armado.');
+        return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
       
-      const payload = {
-        ...product,
-        categoryId: product.categoryId ? parseInt(product.categoryId) : null,
-        supplierId: product.supplierId ? parseInt(product.supplierId) : null,
-        priceARS: product.priceARS ? parseFloat(product.priceARS) : null,
-        priceUSD: product.priceUSD ? parseFloat(product.priceUSD) : null,
-        lowStockThreshold: product.lowStockThreshold ? parseFloat(product.lowStockThreshold) : 0,
-      };
+      const payload = { ...product };
+      // Delete relation objects before sending to product endpoint
+      delete payload.trabajoDeArmado;
+      delete payload.trabajosDeArmado;
+      delete payload.components;
+      delete payload.componentOf;
+      delete payload.movements;
+      delete payload.overheadCosts;
+      delete payload.externalProductionItems;
+      delete payload.expectedInOrders;
 
-      console.log('Create/Update Payload:', payload);
-
+      let savedProduct;
       if (isEdit) {
         await productService.updateProduct(id, payload);
+        savedProduct = { ...payload, id }; 
       } else {
-        await productService.createProduct(payload);
+        savedProduct = await productService.createProduct(payload);
+      }
+
+      const productId = savedProduct.id;
+
+      // After saving the product, if it's an assemblable one, save the assembly job link.
+      if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && product.trabajoDeArmado) {
+        await apiFetch(`/product-design/${productId}/trabajo-armado`, {
+            method: 'PUT',
+            body: JSON.stringify({ trabajoDeArmadoId: product.trabajoDeArmado.value }) // Extract value from react-select object
+        });
       }
 
       alert(`Producto ${isEdit ? 'actualizado' : 'creado'} correctamente.`);
@@ -122,6 +156,7 @@ const ProductEditPage = () => {
         setProduct={setProduct} 
         categories={categories} 
         suppliers={suppliers} 
+        trabajosOptions={trabajosOptions} // Pass react-select options
         isEdit={isEdit}
       />
       {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>}

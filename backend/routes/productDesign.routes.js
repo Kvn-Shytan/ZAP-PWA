@@ -23,8 +23,12 @@ router.get('/:id', async (req, res) => {
             },
           },
         },
-        // Incluir el costo de armado
-        trabajoDeArmado: true,
+        // Incluir el costo de armado a través de la tabla intermedia
+        trabajosDeArmado: {
+          include: {
+            trabajo: true, // Incluir los detalles del TrabajoDeArmado
+          },
+        },
         // Incluir los costos indirectos asignados
         overheadCosts: {
           orderBy: { overheadCost: { name: 'asc' } },
@@ -137,39 +141,38 @@ router.delete('/:id/components/:componentId', async (req, res) => {
   }
 });
 
-// Crear o actualizar el costo de armado de un producto
-router.post('/:id/assembly-cost', async (req, res) => {
-  const { id: productId } = req.params;
-  const { precio, nombre, descripcion } = req.body;
+router.put('/:productId/trabajo-armado', async (req, res) => {
+  const { productId } = req.params;
+  const { trabajoDeArmadoId } = req.body;
 
-  if (precio === undefined || precio < 0) {
-    return res.status(400).json({ error: 'El precio es requerido y no puede ser negativo.' });
+  if (!trabajoDeArmadoId) {
+    return res.status(400).json({ error: 'El campo trabajoDeArmadoId es requerido.' });
   }
 
   try {
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) {
-      return res.status(404).json({ error: 'Producto no encontrado.' });
-    }
-
-    const assemblyCost = await prisma.trabajoDeArmado.upsert({
-      where: { productoId: productId },
+    // Use upsert to create or update the many-to-many relationship
+    const productoTrabajoArmado = await prisma.productoTrabajoArmado.upsert({
+      where: {
+        productId: productId,
+      },
       update: {
-        precio: precio,
-        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
-        descripcion: descripcion,
+        trabajo: {
+          connect: { id: trabajoDeArmadoId }
+        }
       },
       create: {
-        productoId: productId,
-        precio: precio,
-        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
-        descripcion: descripcion,
+        producto: {
+          connect: { id: productId }
+        },
+        trabajo: {
+          connect: { id: trabajoDeArmadoId }
+        }
       },
     });
-    res.status(201).json(assemblyCost);
+    res.status(201).json(productoTrabajoArmado);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al guardar el costo de armado.' });
+    console.error(`Error al asignar trabajo de armado al producto ${productId}:`, error);
+    res.status(500).json({ error: 'Error al asignar el trabajo de armado.' });
   }
 });
 
