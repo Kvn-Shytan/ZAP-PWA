@@ -124,7 +124,8 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` **(NUEVO)** Implementar botón "Agregar a esta orden" para sub-ensambles faltantes.
         *   `[ ]` **`ADMIN` (Finanzas):**
             *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
-            *   UI para visualizar y registrar liquidaciones de pago.
+            *   `[x]` UI para visualizar y registrar liquidaciones de pago.
+            *   `[x]` Mejorada la UI de registro de liquidaciones para filtrar armadores sin pago pendiente y mostrar un mensaje de estado vacío.
 
 -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   `[ ]` Implementar Service Workers para el funcionamiento offline.

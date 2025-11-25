@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2025-11-25
+-   **[FIX] Módulo de Liquidación de Pagos:**
+    -   Solucionado un bug crítico que impedía cerrar la quincena y registrar pagos (`POST /api/assemblers/close-fortnight-batch`).
+    -   La causa raíz era una inconsistencia entre el frontend (que enviaba `assemblerIds`) y el backend (que esperaba `armadorIds`). Se aplicó una capa de traducción en la API como solución pragmática.
+    -   Solucionado un error `net::ERR_EMPTY_RESPONSE` que causaba la caída del servidor al calcular liquidaciones, provocado por un inicio prematuro de la aplicación por parte del usuario.
+-   **[FEAT] UI/UX Mejorada en Liquidación de Pagos:**
+    -   La página de "Liquidación de Pagos a Armadores por Lotes" ahora solo muestra en la tabla a los armadores que tienen un monto de pago pendiente mayor a cero.
+    -   Se ha añadido un mensaje claro ("No se encontraron armadores con pagos pendientes...") cuando no hay liquidaciones para mostrar en el período de fechas seleccionado.
+-   **[CHORE] Gestión de Deuda Técnica:**
+    -   Creado el archivo `TECH_DEBT.md` para documentar formalmente las tareas de refactorización y estandarización pendientes.
+    -   Establecida la convención de que todo el código nuevo debe escribirse en inglés para mejorar la consistencia del proyecto a largo plazo.
+
 ## 2025-10-28
 -   **[FEAT] Flujo Completo de Gestión de Costos de Armado y Liquidaciones:**
     -   **[REFACTOR] DB:** Se corrigió el modelo de datos `ProductoTrabajoArmado` (`schema.prisma`) para asegurar una relación 1:1 entre Producto y Trabajo de Armado, aplicando una nueva migración.

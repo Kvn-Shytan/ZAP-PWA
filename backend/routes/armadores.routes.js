@@ -65,6 +65,7 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
     const batchPaymentSummary = [];
 
     for (const armador of allArmadores) {
+      console.log('Processing armador:', armador);
       const orders = await prisma.externalProductionOrder.findMany({
         where: {
           armadorId: armador.id,
@@ -91,6 +92,7 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
         },
         orderBy: { createdAt: 'asc' },
       });
+      console.log(`Found ${orders.length} orders for armador ${armador.name}`);
 
       let armadorTotalPayment = 0;
       const armadorPaymentDetails = [];
@@ -114,17 +116,20 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
         }
         armadorTotalPayment += orderTotal;
       }
+      console.log(`Total payment for armador ${armador.name}: ${armadorTotalPayment}`);
 
-      if (armadorTotalPayment > 0) {
         batchPaymentSummary.push({
-          armadorId: armador.id,
-          armadorName: armador.name,
+          assemblerId: armador.id,
+          assemblerName: armador.name,
           paymentTerms: armador.paymentTerms,
-          totalPayment: armadorTotalPayment,
+          pendingPayment: armadorTotalPayment,
+          totalJobs: armadorPaymentDetails.length,
+          totalPaid: 0,
           paymentDetails: armadorPaymentDetails,
         });
-      }
     }
+
+    console.log('Final batch summary:', JSON.stringify(batchPaymentSummary, null, 2));
 
     res.json({
       startDate: startDate,
@@ -140,10 +145,10 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
 
 // POST /api/assemblers/close-fortnight-batch - Cierra la quincena y registra pagos
 router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
-  const { armadorIds, startDate, endDate } = req.body;
+  const { assemblerIds, startDate, endDate } = req.body;
 
-  if (!armadorIds || !Array.isArray(armadorIds) || armadorIds.length === 0 || !startDate || !endDate) {
-    return res.status(400).json({ error: 'armadorIds (array), startDate, and endDate are required.' });
+  if (!assemblerIds || !Array.isArray(assemblerIds) || assemblerIds.length === 0 || !startDate || !endDate) {
+    return res.status(400).json({ error: 'assemblerIds (array), startDate, and endDate are required.' });
   }
 
   try {
@@ -154,10 +159,10 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
 
       const processedPayments = [];
 
-      for (const armadorId of armadorIds) {
+      for (const assemblerId of assemblerIds) {
         const orders = await tx.externalProductionOrder.findMany({
           where: {
-            armadorId: armadorId,
+            armadorId: assemblerId, // Database field remains 'armadorId'
             createdAt: {
               gte: start,
               lte: end,
@@ -173,7 +178,7 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
           },
         });
 
-        let armadorTotalPayment = 0;
+        let totalPaymentForAssembler = 0;
         const paidOrderIds = [];
 
         for (const order of orders) {
@@ -197,19 +202,19 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
               orderTotal += quantityToPayFor * trabajoPrecio;
             }
           }
-          armadorTotalPayment += orderTotal;
+          totalPaymentForAssembler += orderTotal;
           paidOrderIds.push(order.id);
         }
 
-        if (armadorTotalPayment > 0) {
+        if (totalPaymentForAssembler > 0) {
           const newPayment = await tx.assemblerPayment.create({
             data: {
-              armadorId: armadorId,
+              armadorId: assemblerId, // Database field remains 'armadorId'
               datePaid: new Date(),
-              amount: armadorTotalPayment,
+              amount: totalPaymentForAssembler,
               periodStart: start,
               periodEnd: end,
-              notes: `Liquidación de quincena para ${(await tx.armador.findUnique({ where: { id: armadorId } }))?.name} (${startDate} - ${endDate})`,
+              notes: `Liquidación de quincena para ${(await tx.armador.findUnique({ where: { id: assemblerId } }))?.name} (${startDate} - ${endDate})`,
             },
           });
 
@@ -219,9 +224,9 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
           });
 
           processedPayments.push({
-            armadorId: armadorId,
-            armadorName: (await tx.armador.findUnique({ where: { id: armadorId } }))?.name,
-            totalPayment: armadorTotalPayment,
+            assemblerId: assemblerId,
+            assemblerName: (await tx.armador.findUnique({ where: { id: assemblerId } }))?.name,
+            totalPayment: totalPaymentForAssembler,
             paymentId: newPayment.id,
           });
         }

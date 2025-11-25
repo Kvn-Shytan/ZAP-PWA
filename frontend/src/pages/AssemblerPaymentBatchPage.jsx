@@ -7,9 +7,10 @@ const AssemblerPaymentBatchPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [batchSummary, setBatchSummary] = useState(null);
-  const [selectedArmadores, setSelectedArmadores] = useState(new Set());
+  const [selectedAssemblers, setSelectedAssemblers] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [expandedArmadoresDetails, setExpandedArmadoresDetails] = useState(new Set()); // New state for expanded details
 
   const calculateBatchPayment = useCallback(async () => {
     if (!startDate || !endDate) {
@@ -19,7 +20,8 @@ const AssemblerPaymentBatchPage = () => {
     setLoading(true);
     setError(null);
     setBatchSummary(null);
-    setSelectedArmadores(new Set()); // Reset selection on new calculation
+    setSelectedAssemblers(new Set()); // Reset selection on new calculation
+    setExpandedArmadoresDetails(new Set()); // Reset expanded details on new calculation
 
     try {
       const query = new URLSearchParams({
@@ -28,37 +30,52 @@ const AssemblerPaymentBatchPage = () => {
       }).toString();
       const data = await apiFetch(`/assemblers/payment-summary-batch?${query}`);
       setBatchSummary(data.summary);
-      // Automatically select all armadores with payments
-      const initialSelection = new Set(data.summary.map(item => item.armadorId));
-      setSelectedArmadores(initialSelection);
+      // Automatically select all assemblers with payments
+      const initialSelection = new Set(data.summary.map(item => item.assemblerId));
+      setSelectedAssemblers(initialSelection);
     } catch (err) {
       console.error('Error calculating batch payment summary:', err);
-      setError(`Error al calcular la liquidación por lotes: ${err.message || 'Error desconocido'}`);
+      setError(`Error calculating batch payment: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
   }, [startDate, endDate]);
 
-  const handleToggleArmador = (armadorId) => {
-    setSelectedArmadores(prev => {
+  const handleToggleAssembler = (assemblerId) => {
+    setSelectedAssemblers(prev => {
       const newSelection = new Set(prev);
-      if (newSelection.has(armadorId)) {
-        newSelection.delete(armadorId);
+      if (newSelection.has(assemblerId)) {
+        newSelection.delete(assemblerId);
       } else {
-        newSelection.add(armadorId);
+        newSelection.add(assemblerId);
       }
       return newSelection;
     });
   };
 
-  const handleCloseFortnightBatch = useCallback(async () => {
-    if (selectedArmadores.size === 0) {
-      alert('Por favor, selecciona al menos un armador para cerrar la quincena.');
+  const handleToggleDetails = (assemblerId) => {
+    setExpandedArmadoresDetails(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(assemblerId)) {
+        newExpanded.delete(assemblerId);
+      } else {
+        newExpanded.add(assemblerId);
+      }
+      return newExpanded;
+    });
+  };
+  const handleCloseBatch = useCallback(async () => {
+    if (!startDate || !endDate) {
+      alert('Por favor, selecciona un rango de fechas antes de cerrar la quincena.');
+      return;
+    }
+    if (selectedAssemblers.size === 0) {
+      alert('Please select at least one assembler to close the batch.');
       return;
     }
 
     const confirmed = window.confirm(
-      `¿Estás seguro de que quieres cerrar la quincena para ${selectedArmadores.size} armador(es)? Esta acción registrará los pagos.`
+      `Are you sure you want to close the batch for ${selectedAssemblers.size} assembler(s)? This action will register the payments.`
     );
     if (!confirmed) return;
 
@@ -67,7 +84,7 @@ const AssemblerPaymentBatchPage = () => {
 
     try {
       const payload = {
-        armadorIds: Array.from(selectedArmadores),
+        assemblerIds: Array.from(selectedAssemblers),
         startDate,
         endDate,
       };
@@ -75,20 +92,24 @@ const AssemblerPaymentBatchPage = () => {
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      alert('Quincena cerrada y pagos registrados exitosamente.');
+      alert('Batch closed and payments registered successfully.');
       calculateBatchPayment(); // Recalculate to update status
     } catch (err) {
       console.error('Error closing fortnight batch:', err);
-      setError(`Error al cerrar la quincena: ${err.message || 'Error desconocido'}`);
+      setError(`Error closing batch: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
-  }, [selectedArmadores, startDate, endDate, calculateBatchPayment]);
+  }, [selectedAssemblers, startDate, endDate, calculateBatchPayment]);
 
   const totalBatchPayment = batchSummary
-    ? batchSummary.filter(item => selectedArmadores.has(item.armadorId))
-                  .reduce((acc, item) => acc + Number(item.totalPayment), 0)
+    ? batchSummary.filter(item => selectedAssemblers.has(item.assemblerId))
+                  .reduce((acc, item) => acc + (Number(item.pendingPayment) || 0), 0)
     : 0;
+
+  const filteredBatchSummary = batchSummary
+    ? batchSummary.filter(item => (Number(item.pendingPayment) || 0) > 0)
+    : [];
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -120,7 +141,7 @@ const AssemblerPaymentBatchPage = () => {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {batchSummary && batchSummary.length > 0 && (
+      {filteredBatchSummary.length > 0 ? (
         <div style={{ marginTop: '2rem' }}>
           <h3>Resumen de Liquidación por Lotes</h3>
           <p><strong>Período:</strong> {startDate} al {endDate}</p>
@@ -131,46 +152,59 @@ const AssemblerPaymentBatchPage = () => {
               <tr>
                 <th style={tableHeaderStyle}>Seleccionar</th>
                 <th style={tableHeaderStyle}>Armador</th>
-                <th style={tableHeaderStyle}>Términos de Pago</th>
                 <th style={tableHeaderStyle}>Total a Pagar</th>
                 <th style={tableHeaderStyle}>Detalles</th>
               </tr>
             </thead>
             <tbody>
-              {batchSummary.map((item) => (
-                <React.Fragment key={item.armadorId}>
+              {filteredBatchSummary.map((item) => (
+                <React.Fragment key={item.assemblerId}>
                   <tr>
                     <td>
                       <input
                         type="checkbox"
-                        checked={selectedArmadores.has(item.armadorId)}
-                        onChange={() => handleToggleArmador(item.armadorId)}
+                        checked={selectedAssemblers.has(item.assemblerId)}
+                        onChange={() => handleToggleAssembler(item.assemblerId)}
                       />
                     </td>
-                    <td>{item.armadorName}</td>
-                    <td>{item.paymentTerms}</td>
-                    <td>${item.totalPayment.toFixed(2)}</td>
+                    <td>{item.assemblerName}</td>
+                    <td>${(item.pendingPayment ?? 0).toFixed(2)}</td>
                     <td>
-                      <button onClick={() => alert('Ver detalles de ' + item.armadorName)} style={smallButtonStyle}>
-                        Ver Detalles
+                      <button onClick={() => handleToggleDetails(item.assemblerId)} style={smallButtonStyle}>
+                        {expandedArmadoresDetails.has(item.assemblerId) ? 'Ocultar Detalles' : 'Ver Detalles'}
                       </button>
                     </td>
                   </tr>
-                  {/* Optional: Render detailed breakdown per armador */}
-                  {/* {selectedArmadores.has(item.armadorId) && item.paymentDetails.map((detail, idx) => (
-                    <tr key={`${item.armadorId}-detail-${idx}`} style={{ backgroundColor: '#f0f0f0' }}>
-                      <td colSpan="2"></td>
-                      <td>{detail.orderNumber}</td>
-                      <td>{detail.productDescription}</td>
-                      <td>{detail.trabajoDeArmado}</td>
-                      <td>${detail.trabajoPrecio.toFixed(2)}</td>
-                      <td>{detail.quantityExpected}</td>
-                      <td>{detail.quantityReceived}</td>
-                      <td>{detail.quantityToPayFor}</td>
-                      <td>${detail.itemPayment.toFixed(2)}</td>
-                      <td>{detail.orderStatus}</td>
-                    </tr>
-                  ))} */}
+                  {expandedArmadoresDetails.has(item.assemblerId) && item.paymentDetails.length > 0 && (
+                    <React.Fragment>
+                      <tr style={{ backgroundColor: '#e0e0e0' }}>
+                        <td colSpan="2"></td>
+                        <th style={tableHeaderStyle}>Orden #</th>
+                        <th style={tableHeaderStyle}>Producto</th>
+                        <th style={tableHeaderStyle}>Trabajo</th>
+                        <th style={tableHeaderStyle}>Precio Unit.</th>
+                        <th style={tableHeaderStyle}>Cant. Esperada</th>
+                        <th style={tableHeaderStyle}>Cant. Recibida</th>
+                        <th style={tableHeaderStyle}>Cant. a Pagar</th>
+                        <th style={tableHeaderStyle}>Pago Item</th>
+                        <th style={tableHeaderStyle}>Estado</th>
+                      </tr>
+                      {item.paymentDetails.map((detail, idx) => (
+                        <tr key={`${item.assemblerId}-detail-${idx}`} style={{ backgroundColor: '#f0f0f0' }}>
+                          <td colSpan="2"></td>
+                          <td>{detail.orderNumber}</td>
+                          <td>{detail.productDescription}</td>
+                          <td>{detail.trabajoDeArmado}</td>
+                          <td>${(Number(detail.trabajoPrecio) ?? 0).toFixed(2)}</td>
+                          <td>{detail.quantityExpected}</td>
+                          <td>{detail.quantityReceived}</td>
+                          <td>{detail.quantityToPayFor}</td>
+                          <td>${(Number(detail.itemPayment) ?? 0).toFixed(2)}</td>
+                          <td>{detail.orderStatus}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  )}
                 </React.Fragment>
               ))}
             </tbody>
@@ -178,18 +212,18 @@ const AssemblerPaymentBatchPage = () => {
 
           {user.role === 'ADMIN' && (
             <button
-              onClick={handleCloseFortnightBatch}
-              disabled={loading || selectedArmadores.size === 0}
+              onClick={handleCloseBatch}
+              disabled={loading || selectedAssemblers.size === 0}
               style={{ ...buttonStyle, backgroundColor: '#28a745', marginTop: '1rem' }}
             >
               {loading ? 'Cerrando Quincena...' : 'Cerrar Quincena y Registrar Pagos'}
             </button>
           )}
         </div>
-      )}
-
-      {batchSummary && batchSummary.length === 0 && !loading && (
-        <p style={{ marginTop: '2rem' }}>No se encontraron pagos pendientes para el período seleccionado.</p>
+      ) : ( // else part for filteredBatchSummary.length === 0
+        batchSummary && !loading && ( // only show message if batchSummary was actually fetched and is empty
+          <p style={{ marginTop: '2rem' }}>No se encontraron armadores con pagos pendientes en el período seleccionado.</p>
+        )
       )}
     </div>
   );
