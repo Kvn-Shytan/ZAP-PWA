@@ -126,6 +126,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
             *   `[x]` UI para visualizar y registrar liquidaciones de pago.
             *   `[x]` Mejorada la UI de registro de liquidaciones para filtrar armadores sin pago pendiente y mostrar un mensaje de estado vacío.
+            *   `[x]` Implementada página de "Historial de Pagos" con filtros, tarjetas de resumen y vista de detalle.
 
 -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
     -   `[ ]` Implementar Service Workers para el funcionamiento offline.
@@ -140,6 +141,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 -   **Fase 8: Mejoras Futuras y Escalabilidad (Pendiente)**
     -   `[ ]` **(NUEVO - Auditoría)** Mejorar la robustez de los CSV de importación añadiendo columnas explícitas de `Categoría` y `Tipo` para eliminar la lógica frágil basada en números de línea.
     -   `[ ]` **(NUEVO - Auditoría)** Implementar un sistema de notificaciones "toast" para mejorar el feedback al usuario.
+    -   `[ ]` **(NUEVO)** Herramienta de "Estados de Cuenta": Implementar un sistema para gestionar estados de cuenta con clientes y proveedores clave, permitiendo el seguimiento de pagos parciales, saldos y un historial detallado de transacciones.
     -   `[ ]` Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
     -   `[ ]` Desarrollar UI para la gestión dinámica de permisos por rol.
     -   `[ ]` Diseño de un "Dashboard" personalizado por rol.

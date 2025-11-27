@@ -20,7 +20,8 @@ import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
 import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
 import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
 import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
-import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage'; // NEW
+import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
+import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage'; // NEW
 import './App.css';
 
 function App() {
@@ -55,7 +56,10 @@ function App() {
             <Link to="/logistics-dashboard">Panel de Logística</Link>
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/assembler-payment-batch">Liquidación por Lotes</Link> // NEW
+            <Link to="/assembler-payment-batch">Liquidación por Lotes</Link>
+          )}
+          {user && user.role === 'ADMIN' && (
+            <Link to="/assembler-payments-history">Historial de Pagos</Link> // NEW
           )}
           {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
             <Link to="/users">Usuarios</Link>
@@ -147,8 +151,12 @@ function App() {
         />
           <Route path="/external-orders/:id" element={<ProtectedRoute element={<ExternalProductionOrderDetailPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
         <Route
-          path="/assembler-payment-batch" // NEW
-          element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />} // NEW
+          path="/assembler-payment-batch"
+          element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/assembler-payments-history" // NEW
+          element={<ProtectedRoute element={<AssemblerPaymentsHistoryPage />} allowedRoles={['ADMIN']} />} // NEW
         />
         <Route
           path="/change-password"

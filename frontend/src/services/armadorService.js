@@ -45,4 +45,13 @@ export const armadorService = {
       method: 'DELETE',
     });
   },
+
+  /**
+   * Obtiene el historial de pagos a armadores.
+   * @param {URLSearchParams} queryParams - Los parámetros de consulta para filtrar y paginar.
+   * @returns {Promise<object>} - Un objeto con los datos de los pagos y la paginación.
+   */
+  getPaymentHistory(queryParams) {
+    return apiFetch(`/assemblers/payments?${queryParams.toString()}`);
+  },
 };

@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2025-11-26
+-   **[FEAT] Nueva Página de "Historial de Pagos a Armadores":**
+    -   Implementada una nueva sección para `ADMIN` que permite visualizar el historial de todos los pagos realizados a los armadores.
+    -   **Backend:** Creado un nuevo endpoint `GET /api/assemblers/payments` optimizado para obtener datos históricos y agregados de forma concurrente y eficiente.
+    -   **UI/UX:**
+        -   Los filtros de fecha cargan por defecto el primer y último día del mes actual para una visualización inmediata.
+        -   Añadidas tarjetas de resumen ("Total Pagado en Período" y "Total de Unidades Producidas") que se actualizan con los filtros.
+        -   La tabla de pagos es paginada y permite expandir cada pago para ver en detalle las órdenes de producción que lo componen.
+-   **[FIX] Corrección de Bugs en Desarrollo:**
+    -   Solucionado un error `TypeError: Cannot read properties of null (reading 'role')` añadiendo una verificación del objeto `user` antes de acceder a sus propiedades.
+    -   Corregido un error `TypeError: .toFixed is not a function` al convertir el `totalPaid` (que llega como string desde la API) a número antes de formatearlo.
+
 ## 2025-11-25
 -   **[FIX] Módulo de Liquidación de Pagos:**
     -   Solucionado un bug crítico que impedía cerrar la quincena y registrar pagos (`POST /api/assemblers/close-fortnight-batch`).

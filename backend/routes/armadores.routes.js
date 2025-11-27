@@ -242,6 +242,85 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
   }
 });
 
+// GET /api/assemblers/payments - Obtener historial de pagos a armadores
+router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
+  try {
+    const { assemblerId, startDate, endDate, page = 1, limit = 10 } = req.query;
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // 1. Define the main 'where' clause for AssemblerPayment
+    const paymentWhere = {};
+    if (assemblerId) {
+      paymentWhere.armadorId = assemblerId;
+    }
+    if (startDate) {
+      // Ensure we query from the start of the day
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      paymentWhere.datePaid = { ...paymentWhere.datePaid, gte: start };
+    }
+    if (endDate) {
+      // Ensure we query until the end of the day
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      paymentWhere.datePaid = { ...paymentWhere.datePaid, lte: end };
+    }
+
+    // 2. Define the 'where' clause for related ExpectedProduction by traversing the relation backwards
+    const unitsWhere = {
+      order: {
+        assemblerPayment: paymentWhere
+      }
+    };
+
+    // 3. Execute all database queries concurrently for maximum efficiency
+    const [
+      payments,
+      totalPayments,
+      totalPaidAggregate,
+      totalUnitsAggregate
+    ] = await prisma.$transaction([
+      prisma.assemblerPayment.findMany({
+        where: paymentWhere,
+        include: { 
+          armador: { select: { id: true, name: true } }, 
+          orders: { select: { id: true, orderNumber: true, status: true } } 
+        },
+        orderBy: { datePaid: 'desc' },
+        skip,
+        take: parsedLimit,
+      }),
+      prisma.assemblerPayment.count({ where: paymentWhere }),
+      prisma.assemblerPayment.aggregate({
+        _sum: { amount: true },
+        where: paymentWhere,
+      }),
+      prisma.expectedProduction.aggregate({
+        _sum: { quantityReceived: true },
+        where: unitsWhere,
+      })
+    ]);
+    
+    // 4. Construct the final response
+    res.json({
+      data: payments,
+      currentPage: parsedPage,
+      totalPages: Math.ceil(totalPayments / parsedLimit),
+      totalCount: totalPayments,
+      aggregates: {
+        totalPaid: totalPaidAggregate._sum.amount || 0,
+        totalUnitsProduced: totalUnitsAggregate._sum.quantityReceived || 0,
+      }
+    });
+
+  } catch (error) {
+    console.error(`Error fetching assembler payments:`, error.message);
+    res.status(500).json({ error: 'Failed to fetch assembler payments.' });
+  }
+});
+
 // === GENERIC / PARAMETERIZED ROUTES LAST ===
 
 // Obtener un armador por ID
