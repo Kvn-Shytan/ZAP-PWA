@@ -1,18 +1,13 @@
 import React from 'react';
-import Select from 'react-select'; // Import react-select
 
 const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 
-const ProductForm = ({ product, setProduct, categories, suppliers, trabajosOptions, isEdit = false }) => {
+const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignModal, isEdit = false }) => {
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     const val = type === 'number' ? parseFloat(value) : value;
     setProduct(prev => ({ ...prev, [name]: val }));
-  };
-
-  const handleTrabajoChange = (selectedOption) => {
-    setProduct(prev => ({ ...prev, trabajoDeArmado: selectedOption }));
   };
 
   return (
@@ -44,20 +39,22 @@ const ProductForm = ({ product, setProduct, categories, suppliers, trabajosOptio
         </select>
       </div>
 
-      {/* Conditional Assembly Job Dropdown using react-select */}
+      {/* Conditional Assembly Job Display */}
       {(product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
         <div style={inputGroupStyle}>
-          <label>Trabajo de Armado Requerido</label>
-          <Select
-            name="trabajoDeArmado"
-            value={product.trabajoDeArmado}
-            onChange={handleTrabajoChange}
-            options={trabajosOptions}
-            placeholder="Seleccione o busque un trabajo..."
-            isClearable
-            required
-          />
-          {/* TODO: Add "Create New" button and modal */}
+          <label>Trabajo de Armado</label>
+          <div style={trabajoDisplayBoxStyle}>
+            {product.trabajoDeArmado ? (
+              <span>
+                {product.trabajoDeArmado.label}
+              </span>
+            ) : (
+              <span style={{ fontStyle: 'italic', color: '#666' }}>Ninguno asignado</span>
+            )}
+            <button type="button" onClick={onOpenAssignModal} style={assignButtonStyle}>
+              {product.trabajoDeArmado ? 'Cambiar' : 'Asignar'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -96,5 +93,22 @@ const ProductForm = ({ product, setProduct, categories, suppliers, trabajosOptio
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '600px', margin: 'auto' };
 const inputGroupStyle = { display: 'flex', flexDirection: 'column' };
 const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px' };
+const trabajoDisplayBoxStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '10px',
+  border: '1px solid #ccc',
+  borderRadius: '4px',
+  backgroundColor: '#f9f9f9',
+};
+const assignButtonStyle = {
+  padding: '5px 10px',
+  border: '1px solid #007bff',
+  backgroundColor: 'white',
+  color: '#007bff',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
 
 export default ProductForm;

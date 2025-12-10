@@ -3,31 +3,35 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../services/api';
 import ProductForm from '../components/ProductForm';
+import AssignTrabajoModal from '../components/AssignTrabajoModal'; // Import the new modal
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { supplierService } from '../services/supplierService';
-import { trabajoDeArmadoService } from '../services/trabajoDeArmadoService'; // Import the new service
+import { trabajoDeArmadoService } from '../services/trabajoDeArmadoService';
 
 const ProductEditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get user role
+  const { user } = useAuth();
   
   const isEdit = Boolean(id);
   const [product, setProduct] = useState({ type: 'RAW_MATERIAL', lowStockThreshold: 0 });
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [trabajosOptions, setTrabajosOptions] = useState([]); // New state for react-select options
+  const [trabajosOptions, setTrabajosOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // New state for modal management
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const catPromise = categoryService.getCategories();
       const supPromise = supplierService.getSuppliers();
-      const trabajoPromise = trabajoDeArmadoService.getAll(); // Fetch assembly jobs
+      const trabajoPromise = trabajoDeArmadoService.getAll();
       let prodPromise = Promise.resolve(null);
 
       if (isEdit) {
@@ -39,7 +43,6 @@ const ProductEditPage = () => {
       setCategories(catData || []);
       setSuppliers(supData || []);
       
-      // Transform trabajos for react-select
       const options = (trabajoData || []).map(t => ({
         value: t.id,
         label: `${t.nombre} ($${Number(t.precio).toFixed(2)})`
@@ -47,7 +50,6 @@ const ProductEditPage = () => {
       setTrabajosOptions(options);
 
       if (prodData) {
-        // Find the selected trabajo option object from the fetched list
         const currentTrabajo = (prodData.trabajosDeArmado && prodData.trabajosDeArmado[0])
           ? options.find(opt => opt.value === prodData.trabajosDeArmado[0].trabajoId)
           : null;
@@ -66,13 +68,26 @@ const ProductEditPage = () => {
     loadData();
   }, [loadData]);
 
+  // Modal Handlers
+  const handleOpenAssignModal = () => setIsAssignModalOpen(true);
+  const handleCloseAssignModal = () => setIsAssignModalOpen(false);
+
+  const handleTrabajoAssigned = (assignedTrabajo) => {
+    setProduct(prev => ({ ...prev, trabajoDeArmado: assignedTrabajo }));
+    handleCloseAssignModal();
+  };
+  
+  const handleTrabajoDisassociated = () => {
+    setProduct(prev => ({ ...prev, trabajoDeArmado: null }));
+    handleCloseAssignModal();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    // Updated validation for react-select object
     if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && !product.trabajoDeArmado) {
-        setError('Para productos pre-ensamblados o finales, es obligatorio seleccionar un trabajo de armado.');
+        setError('Para productos pre-ensamblados o finales, es obligatorio asignar un trabajo de armado.');
         return;
     }
 
@@ -81,7 +96,6 @@ const ProductEditPage = () => {
       setError(null);
       
       const payload = { ...product };
-      // Delete relation objects before sending to product endpoint
       delete payload.trabajoDeArmado;
       delete payload.trabajosDeArmado;
       delete payload.components;
@@ -101,13 +115,12 @@ const ProductEditPage = () => {
 
       const productId = savedProduct.id;
 
-      // After saving the product, if it's an assemblable one, save the assembly job link.
-      if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && product.trabajoDeArmado) {
-        await apiFetch(`/product-design/${productId}/trabajo-armado`, {
-            method: 'PUT',
-            body: JSON.stringify({ trabajoDeArmadoId: product.trabajoDeArmado.value }) // Extract value from react-select object
-        });
-      }
+      await apiFetch(`/product-design/${productId}/trabajo-armado`, {
+          method: 'PUT',
+          body: JSON.stringify({ 
+            trabajoDeArmadoId: product.trabajoDeArmado ? product.trabajoDeArmado.value : null 
+          })
+      });
 
       alert(`Producto ${isEdit ? 'actualizado' : 'creado'} correctamente.`);
       navigate('/products');
@@ -132,7 +145,8 @@ const ProductEditPage = () => {
       await productService.deleteProduct(id);
       alert('Producto eliminado correctamente.');
       navigate('/products');
-    } catch (err) {
+    } catch (err)
+ {
       setError(err.message || 'Ocurrió un error al eliminar el producto.');
       console.error(err);
     } finally {
@@ -156,21 +170,33 @@ const ProductEditPage = () => {
         setProduct={setProduct} 
         categories={categories} 
         suppliers={suppliers} 
-        trabajosOptions={trabajosOptions} // Pass react-select options
+        onOpenAssignModal={handleOpenAssignModal} // Pass the modal opener
         isEdit={isEdit}
       />
+
+      {isEdit && (
+        <div style={manageComponentsContainerStyle}>
+          <Link to={`/products/${id}/components`} style={manageComponentsButtonStyle}>
+            Gestionar Componentes
+          </Link>
+        </div>
+      )}
+
+      <AssignTrabajoModal
+        isOpen={isAssignModalOpen}
+        onClose={handleCloseAssignModal}
+        onAssign={handleTrabajoAssigned}
+        onDisassociate={handleTrabajoDisassociated}
+        existingTrabajos={trabajosOptions}
+        currentTrabajo={product.trabajoDeArmado}
+      />
+
       {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>}
       <div style={actionsContainerStyle}>
         <div>
           <button onClick={handleSubmit} disabled={isSubmitting} style={buttonStyle}>
             {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
           </button>
-
-          {isEdit && (
-            <Link to={`/products/${id}/components`} style={buttonStyle}>
-              Gestionar Componentes
-            </Link>
-          )}
 
           <button onClick={() => navigate('/products')} style={cancelButtonStyle}>
             Cancelar
@@ -191,5 +217,12 @@ const actionsContainerStyle = { marginTop: '1rem', display: 'flex', justifyConte
 const buttonStyle = { padding: '10px 15px', border: 'none', backgroundColor: '#007bff', color: 'white', borderRadius: '4px', cursor: 'pointer', marginRight: '1rem' };
 const cancelButtonStyle = { ...buttonStyle, backgroundColor: '#6c757d' };
 const deleteButtonStyle = { ...buttonStyle, backgroundColor: '#dc3545', marginRight: 0 };
+
+const manageComponentsContainerStyle = { marginTop: '1rem', textAlign: 'right' };
+const manageComponentsButtonStyle = {
+  ...buttonStyle,
+  backgroundColor: '#17a2b8', // A different color for differentiation
+  marginRight: 0,
+};
 
 export default ProductEditPage;

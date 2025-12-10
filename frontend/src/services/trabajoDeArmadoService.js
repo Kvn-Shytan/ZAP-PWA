@@ -55,4 +55,13 @@ export const trabajoDeArmadoService = {
       method: 'DELETE',
     });
   },
+
+  /**
+   * Obtiene todos los productos vinculados a un trabajo de armado específico.
+   * @param {string} id - El ID del trabajo.
+   * @returns {Promise<Array<object>>}
+   */
+  getLinkedProducts(id) {
+    return apiFetch(`${BASE_URL}/${id}/linked-products`);
+  },
 };

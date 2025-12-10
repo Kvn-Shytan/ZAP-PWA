@@ -1,5 +1,23 @@
 # Changelog (Registro de Cambios)
 
+## 2025-12-09
+-   **[FEAT] Rediseño del Módulo de Gestión de Trabajos de Armado:**
+    -   La página de "Gestión de Trabajos de Armado" ha sido completamente rediseñada como un "Panel Maestro" de dos columnas para una experiencia de usuario superior.
+    -   **UI/UX:** La nueva interfaz presenta una lista de selección a la izquierda y un panel de detalles dinámico a la derecha para la edición y visualización.
+    -   **Backend:** Creado un nuevo endpoint `GET /api/trabajos-armado/:id/linked-products` para obtener productos vinculados. El endpoint principal ahora incluye un contador de productos asociados para cada trabajo de armado.
+    -   **Funcionalidad:** Al seleccionar un trabajo, ahora se muestra una lista de todos los productos que lo utilizan, proporcionando un contexto crucial antes de cualquier modificación.
+    -   **Funcionalidad:** Se añadieron indicadores visuales (puntos verde/gris) para identificar rápidamente si un trabajo está en uso o es "huérfano".
+-   **[FEAT] Mejora del Flujo de Asignación de Trabajos en Productos:**
+    -   En la página de edición de productos, se eliminó el menú desplegable para asignar trabajos de armado.
+    -   Se implementó un nuevo flujo con un botón contextual (`Asignar`/`Cambiar`) que abre un modal "Selector/Creador", mejorando la integridad de los datos y la experiencia de usuario.
+-   **[FIX] Corrección de Múltiples Bugs:**
+    -   Solucionado un bug que impedía que la selección de un trabajo de armado en el modal se mantuviera en la página de edición.
+    -   Solucionado un crasheo en la página de gestión de trabajos al editar un ítem con valores `null`.
+    -   Corregido un `ReferenceError` que ocurría después de guardar una actualización en el nuevo panel maestro.
+    -   Mejorada la UX del campo de precio para permitir que sea vaciado y adaptado para el uso de números enteros.
+-   **[CHORE] Documentación:**
+    -   Actualizado el `Roadmap.md` para reflejar las tareas completadas y los nuevos rediseños.
+
 ## 2025-11-26
 -   **[FEAT] Nueva Página de "Historial de Pagos a Armadores":**
     -   Implementada una nueva sección para `ADMIN` que permite visualizar el historial de todos los pagos realizados a los armadores.

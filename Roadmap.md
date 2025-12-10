@@ -124,6 +124,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
             *   `[x]` **(NUEVO)** Implementar botón "Agregar a esta orden" para sub-ensambles faltantes.
         *   `[ ]` **`ADMIN` (Finanzas):**
             *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
+                *   `[x]` **(NUEVO - Rediseño)** Reimplementada como un "Panel Maestro" de dos columnas con visualización de productos vinculados e indicadores de estado.
             *   `[x]` UI para visualizar y registrar liquidaciones de pago.
             *   `[x]` Mejorada la UI de registro de liquidaciones para filtrar armadores sin pago pendiente y mostrar un mensaje de estado vacío.
             *   `[x]` Implementada página de "Historial de Pagos" con filtros, tarjetas de resumen y vista de detalle.
@@ -197,7 +198,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **10.2: Implementación de UI para Vinculación de Costos**
         *   `[x]` **Acción (Frontend):** Modificar la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`).
         *   `[x]` **Acción (Frontend):** Añadir un campo desplegable "Trabajo de Armado" que será **obligatorio** para productos de tipo `PRE_ASSEMBLED` o `FINISHED`.
-        *   `[ ]` **Acción (Frontend):** Implementar un botón "Crear Nuevo Trabajo..." junto al desplegable, que abrirá un modal para la creación de un nuevo `TrabajoDeArmado` sobre la marcha, mejorando el flujo de trabajo del usuario y asegurando la integridad de los datos.
+        *   `[x]` **(NUEVO - Rediseño)** Implementado un flujo de asignación contextual desde la página de producto, reemplazando el desplegable por un modal "Selector/Creador" para mejorar la UX y la integridad de los datos.
         *   `[x]` **Acción (Frontend):** Conectar el guardado del formulario al nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado`.
 
     *   **10.3: Refactorización y Corrección del Flujo de Liquidación**

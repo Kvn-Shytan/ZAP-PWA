@@ -12,6 +12,11 @@ router.get('/', async (req, res) => {
   try {
     const trabajos = await prisma.trabajoDeArmado.findMany({
       orderBy: { nombre: 'asc' },
+      include: {
+        _count: {
+          select: { productos: true },
+        },
+      },
     });
     res.json(trabajos);
   } catch (error) {
@@ -34,6 +39,36 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     console.error(`Error fetching Trabajo de Armado ${id}:`, error);
     res.status(500).json({ error: 'No se pudo obtener el trabajo de armado.' });
+  }
+});
+
+// GET /api/trabajos-armado/:id/linked-products - Get all products linked to a specific assembly job
+router.get('/:id/linked-products', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        trabajosDeArmado: {
+          some: {
+            trabajoId: id,
+          },
+        },
+      },
+      select: {
+        id: true,
+        internalCode: true,
+        description: true,
+      },
+      orderBy: {
+        internalCode: 'asc',
+      }
+    });
+
+    res.json(products);
+  } catch (error) {
+    console.error(`Error fetching linked products for Trabajo de Armado ${id}:`, error);
+    res.status(500).json({ error: 'No se pudieron obtener los productos vinculados.' });
   }
 });
 
