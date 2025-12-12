@@ -5,9 +5,30 @@ const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignModal, isEdit = false }) => {
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    const val = type === 'number' ? parseFloat(value) : value;
-    setProduct(prev => ({ ...prev, [name]: val }));
+    const { name, value } = e.target;
+
+    const numericFields = [
+      'priceARS', 
+      'priceUSD', 
+      'lowStockThreshold', 
+      'categoryId', 
+      'supplierId'
+    ];
+
+    let processedValue = value;
+
+    if (numericFields.includes(name)) {
+      // If the field is empty, set to null to allow optional/nullable fields
+      // Otherwise, parse it as a float.
+      processedValue = value === '' ? null : parseFloat(value);
+      
+      // Zod validation might fail on NaN if parseFloat results in it from invalid input
+      if (isNaN(processedValue)) {
+          processedValue = null;
+      }
+    }
+
+    setProduct(prev => ({ ...prev, [name]: processedValue }));
   };
 
   return (
@@ -60,7 +81,7 @@ const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignM
 
       <div style={inputGroupStyle}>
         <label>Umbral de Bajo Stock</label>
-        <input type="number" name="lowStockThreshold" value={product.lowStockThreshold || 0} onChange={handleChange} style={inputStyle} min="0" />
+        <input type="number" name="lowStockThreshold" value={product.lowStockThreshold || ''} onChange={handleChange} style={inputStyle} min="0" />
       </div>
       <div style={inputGroupStyle}>
         <label>Categoría</label>

@@ -22,6 +22,7 @@ import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
 import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
 import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
 import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage'; // NEW
+import DashboardPage from './pages/DashboardPage'; // Importar el nuevo DashboardPage
 import './App.css';
 
 function App() {
@@ -78,8 +79,11 @@ function App() {
 
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        {/* Default route - if user is logged in, show welcome, otherwise redirect to login */}
-        <Route path="/" element={user ? <div>Bienvenido, {user.name || user.email}!</div> : <LoginPage />} />
+        {/* Default route - show DashboardPage for authenticated users */}
+        <Route
+          path="/"
+          element={<ProtectedRoute element={<DashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />}
+        />
         
         <Route
           path="/products"

@@ -115,12 +115,15 @@ const ProductEditPage = () => {
 
       const productId = savedProduct.id;
 
-      await apiFetch(`/product-design/${productId}/trabajo-armado`, {
-          method: 'PUT',
-          body: JSON.stringify({ 
-            trabajoDeArmadoId: product.trabajoDeArmado ? product.trabajoDeArmado.value : null 
-          })
-      });
+      // Only attempt to assign a trabajo de armado if the product type requires it
+      if (product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') {
+        await apiFetch(`/product-design/${productId}/trabajo-armado`, {
+            method: 'PUT',
+            body: JSON.stringify({ 
+              trabajoDeArmadoId: product.trabajoDeArmado ? product.trabajoDeArmado.value : null 
+            })
+        });
+      }
 
       alert(`Producto ${isEdit ? 'actualizado' : 'creado'} correctamente.`);
       navigate('/products');

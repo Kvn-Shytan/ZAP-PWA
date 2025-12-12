@@ -11,6 +11,7 @@ const externalProductionOrdersRoutes = require('./routes/externalProductionOrder
 const overheadCostsRoutes = require('./routes/overheadCosts.routes.js');
 const productDesignRoutes = require('./routes/productDesign.routes.js');
 const authRoutes = require('./routes/auth.routes.js');
+const dashboardRoutes = require('./routes/dashboard.routes.js'); // NUEVO: Importar dashboardRoutes
 const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
@@ -56,6 +57,9 @@ app.use('/api/users', usersRoutes);
 
 // Use inventory routes
 app.use('/api/inventory', inventoryRoutes);
+
+// NUEVO: Usar dashboard routes
+app.use('/api/dashboard', dashboardRoutes);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {

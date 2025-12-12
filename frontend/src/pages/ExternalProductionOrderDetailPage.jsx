@@ -105,6 +105,8 @@ const ExternalProductionOrderDetailPage = () => {
       <div style={{ border: '1px solid #eee', padding: '1.5rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
         <h3>Información General</h3>
         <p><strong>Armador:</strong> {order.armador?.name}</p>
+        {order.armador?.address && <p><strong>Dirección:</strong> {order.armador.address}</p>}
+        {order.armador?.phone && <p><strong>Teléfono:</strong> {order.armador.phone}</p>}
         <p><strong>Estado:</strong> {order.status}</p>
         <p><strong>Fecha de Envío:</strong> {new Date(order.dateSent).toLocaleDateString()}</p>
         {order.expectedCompletionDate && <p><strong>Fecha de Finalización Esperada:</strong> {new Date(order.expectedCompletionDate).toLocaleDateString()}</p>}

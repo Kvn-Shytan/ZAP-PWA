@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,18 +10,18 @@ const AssemblerPaymentBatchPage = () => {
   const [selectedAssemblers, setSelectedAssemblers] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [expandedArmadoresDetails, setExpandedArmadoresDetails] = useState(new Set()); // New state for expanded details
+  const [expandedArmadoresDetails, setExpandedArmadoresDetails] = useState(new Set());
 
   const calculateBatchPayment = useCallback(async () => {
     if (!startDate || !endDate) {
-      setError('Por favor, selecciona un rango de fechas.');
+      setError('Por favor, selecciona un rango de fechas para calcular la liquidación.');
       return;
     }
     setLoading(true);
     setError(null);
     setBatchSummary(null);
-    setSelectedAssemblers(new Set()); // Reset selection on new calculation
-    setExpandedArmadoresDetails(new Set()); // Reset expanded details on new calculation
+    setSelectedAssemblers(new Set());
+    setExpandedArmadoresDetails(new Set());
 
     try {
       const query = new URLSearchParams({
@@ -30,16 +30,55 @@ const AssemblerPaymentBatchPage = () => {
       }).toString();
       const data = await apiFetch(`/assemblers/payment-summary-batch?${query}`);
       setBatchSummary(data.summary);
-      // Automatically select all assemblers with payments
       const initialSelection = new Set(data.summary.map(item => item.assemblerId));
       setSelectedAssemblers(initialSelection);
     } catch (err) {
       console.error('Error calculating batch payment summary:', err);
-      setError(`Error calculating batch payment: ${err.message || 'Unknown error'}`);
+      setError(`Error al calcular la liquidación por lotes: ${err.message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
   }, [startDate, endDate]);
+
+  // Nueva lógica para establecer la quincena por defecto
+  useEffect(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // 0-indexed
+
+    let defaultStartDate, defaultEndDate;
+
+    if (today.getDate() <= 15) {
+      // Primera quincena (1 al 15)
+      defaultStartDate = new Date(year, month, 1);
+      defaultEndDate = new Date(year, month, 15);
+    } else {
+      // Segunda quincena (16 al último día del mes)
+      defaultStartDate = new Date(year, month, 16);
+      defaultEndDate = new Date(year, month + 1, 0); // Día 0 del siguiente mes es el último día del mes actual
+    }
+
+    // Formatear las fechas a 'YYYY-MM-DD'
+    const format = (date) => date.toISOString().split('T')[0];
+
+    const formattedStartDate = format(defaultStartDate);
+    const formattedEndDate = format(defaultEndDate);
+
+    // Solo establecer si los estados aún no están definidos
+    if (!startDate && !endDate) {
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
+    }
+  }, []); // El array vacío asegura que se ejecute solo una vez al montar el componente
+
+  useEffect(() => {
+    // Este useEffect se ejecutará cuando startDate y endDate cambien, incluyendo la inicialización.
+    // Aseguramos que no se ejecute en el primer render si startDate y endDate son inicialmente vacíos.
+    if (startDate && endDate) {
+      calculateBatchPayment();
+    }
+  }, [startDate, endDate, calculateBatchPayment]); // Dependencias: startDate, endDate, y calculateBatchPayment
+
 
   const handleToggleAssembler = (assemblerId) => {
     setSelectedAssemblers(prev => {

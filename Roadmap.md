@@ -101,22 +101,24 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                             *   Implementado flujo completo de recepción parcial (DB, API, Frontend).
                             *   Backend valida cantidad, actualiza `quantityReceived`, crea `InventoryMovement`, establece `PARTIALLY_RECEIVED` o `COMPLETED`.
                             *   Frontend modal muestra esperado/recibido/pendiente, limita la entrada.
-                        *   `[x]` **(MEJORA UX)** Rediseño del Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación.        *   `[ ]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
+                        *   `[x]` **(MEJORA UX)** Rediseño del Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación.        *   `[x]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
             *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
 
-    *   **5.3: Interfaz de Usuario y Experiencia por Rol**
-        *   `[ ]` **`EMPLOYEE` (Repartidor):**
-            *   UI móvil simple con "Mis Tareas" (Entregas/Recolecciones).
-            *   Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
+    *   **5.3: Interfaz de Usuario y Experiencia por Rol (En Progreso)**
+        *   `[x]` **`EMPLOYEE` (Repartidor):**
+            *   `[x]` (Backend) Implementada la lógica de datos para el dashboard de "Mis Tareas" (Entregas/Recolecciones).
+            *   `[x]` (NUEVO) La vista de detalle de orden ahora muestra la dirección y teléfono del armador para facilitar la entrega.
+            *   `[ ]` (Frontend) Refinar la UI del dashboard para una experiencia móvil óptima.
+            *   `[ ]` Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
         *   `[x]` **`SUPERVISOR` (Logística):**
-            *   `[ ]` **Panel de "Producción Externa" Mejorado:**
+            *   `[x]` **Panel de "Producción Externa" Mejorado:**
                 *   `[x]` Implementar filtros en el servidor por rango de fechas, armador y término de búsqueda (Nro. Orden / Producto).
                 *   `[x]` Añadir paginación para manejar grandes volúmenes de órdenes.
                 *   `[x]` Convertir el número de orden en un enlace a una vista de detalle.
             *   `[x]` **Vista de Detalle de Orden:**
                 *   `[x]` Crear una vista de solo lectura/imprimible que muestre toda la información de una orden de producción externa.
-            *   Panel de "Producción Externa" para monitorear órdenes en tiempo real.
-            *   Filtros por estado (ej. "Pendiente de Entrega", "En Reparto", "Entrega Fallida").
+            *   `[x]` (Backend) Implementada la lógica de datos para el dashboard (Tareas, Alertas de Stock, KPIs).
+            *   `[ ]` (Frontend) Refinar la UI del dashboard del supervisor.
             *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
                 *   Acciones ahora visibles para órdenes `PARTIALLY_RECEIVED`.
             *   `[x]` **(NUEVO)** Implementar UI anidada para plan de producción.
@@ -145,7 +147,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   `[ ]` **(NUEVO)** Herramienta de "Estados de Cuenta": Implementar un sistema para gestionar estados de cuenta con clientes y proveedores clave, permitiendo el seguimiento de pagos parciales, saldos y un historial detallado de transacciones.
     -   `[ ]` Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
     -   `[ ]` Desarrollar UI para la gestión dinámica de permisos por rol.
-    -   `[ ]` Diseño de un "Dashboard" personalizado por rol.
+    -   `[x]` Diseño e implementación inicial de un "Dashboard" personalizado por rol (Backend completo, Frontend con esqueleto funcional).
     -   `[ ]` Desarrollar Calculadora de Estructura de Costos.
 
 -   **Fase 9: Refactorización Arquitectónica (En Curso)**
