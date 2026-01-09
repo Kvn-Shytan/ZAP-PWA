@@ -104,112 +104,253 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                         *   `[x]` **(MEJORA UX)** Rediseño del Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación.        *   `[x]` **Liquidación de Pagos (`ADMIN`/`SUPERVISOR`):**
             *   La UI debe calcular automáticamente el monto a pagar a un armador basado en la cantidad de trabajos *recibidos* y sus precios.
 
-    *   **5.3: Interfaz de Usuario y Experiencia por Rol (En Progreso)**
-        *   `[x]` **`EMPLOYEE` (Repartidor):**
-            *   `[x]` (Backend) Implementada la lógica de datos para el dashboard de "Mis Tareas" (Entregas/Recolecciones).
-            *   `[x]` (NUEVO) La vista de detalle de orden ahora muestra la dirección y teléfono del armador para facilitar la entrega.
-            *   `[ ]` (Frontend) Refinar la UI del dashboard para una experiencia móvil óptima.
-            *   `[ ]` Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
-        *   `[x]` **`SUPERVISOR` (Logística):**
-            *   `[x]` **Panel de "Producción Externa" Mejorado:**
-                *   `[x]` Implementar filtros en el servidor por rango de fechas, armador y término de búsqueda (Nro. Orden / Producto).
-                *   `[x]` Añadir paginación para manejar grandes volúmenes de órdenes.
-                *   `[x]` Convertir el número de orden en un enlace a una vista de detalle.
-            *   `[x]` **Vista de Detalle de Orden:**
-                *   `[x]` Crear una vista de solo lectura/imprimible que muestre toda la información de una orden de producción externa.
-            *   `[x]` (Backend) Implementada la lógica de datos para el dashboard (Tareas, Alertas de Stock, KPIs).
-            *   `[ ]` (Frontend) Refinar la UI del dashboard del supervisor.
-            *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
-                *   Acciones ahora visibles para órdenes `PARTIALLY_RECEIVED`.
-            *   `[x]` **(NUEVO)** Implementar UI anidada para plan de producción.
-            *   `[x]` **(NUEVO)** Implementar botón "Crear orden nueva" para sub-ensambles faltantes.
-            *   `[x]` **(NUEVO)** Implementar botón "Agregar a esta orden" para sub-ensambles faltantes.
-        *   `[ ]` **`ADMIN` (Finanzas):**
-            *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
-                *   `[x]` **(NUEVO - Rediseño)** Reimplementada como un "Panel Maestro" de dos columnas con visualización de productos vinculados e indicadores de estado.
-            *   `[x]` UI para visualizar y registrar liquidaciones de pago.
-            *   `[x]` Mejorada la UI de registro de liquidaciones para filtrar armadores sin pago pendiente y mostrar un mensaje de estado vacío.
-            *   `[x]` Implementada página de "Historial de Pagos" con filtros, tarjetas de resumen y vista de detalle.
+        *   **5.3: Interfaz de Usuario y Experiencia por Rol (Completada)**
 
--   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
-    -   `[ ]` Implementar Service Workers para el funcionamiento offline.
-    -   `[ ]` Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio.
+            *   **NOTA:** La refactorización principal de la UI/UX se moverá a la Fase 11.
 
--   **Fase 7: Despliegue y Pruebas (Pendiente)**
-    -   `[ ]` **(NUEVO - Auditoría)** Reescribir `backend/Dockerfile` y `frontend/Dockerfile` usando builds multi-etapa para producción.
-    -   `[ ]` **(NUEVO - Auditoría)** Crear un archivo `docker-compose.prod.yml` para despliegue.
-    -   `[ ]` Desplegar la aplicación en un entorno de producción.
-    -   `[ ]` Realizar pruebas con los colaboradores y recoger feedback.
+            *   `[x]` **`EMPLOYEE` (Repartidor):**
 
--   **Fase 8: Mejoras Futuras y Escalabilidad (Pendiente)**
-    -   `[ ]` **(NUEVO - Auditoría)** Mejorar la robustez de los CSV de importación añadiendo columnas explícitas de `Categoría` y `Tipo` para eliminar la lógica frágil basada en números de línea.
-    -   `[ ]` **(NUEVO - Auditoría)** Implementar un sistema de notificaciones "toast" para mejorar el feedback al usuario.
-    -   `[ ]` **(NUEVO)** Herramienta de "Estados de Cuenta": Implementar un sistema para gestionar estados de cuenta con clientes y proveedores clave, permitiendo el seguimiento de pagos parciales, saldos y un historial detallado de transacciones.
-    -   `[ ]` Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
-    -   `[ ]` Desarrollar UI para la gestión dinámica de permisos por rol.
-    -   `[x]` Diseño e implementación inicial de un "Dashboard" personalizado por rol (Backend completo, Frontend con esqueleto funcional).
-    -   `[ ]` Desarrollar Calculadora de Estructura de Costos.
+                *   `[x]` (Backend) Implementada la lógica de datos para el dashboard de "Mis Tareas" (Entregas/Recolecciones).
 
--   **Fase 9: Refactorización Arquitectónica (En Curso)**
-    > *Esta fase se enfoca en mejorar la robustez y escalabilidad de la aplicación mediante la aplicación de patrones arquitectónicos profesionales.*
+                *   `[x]` (NUEVO) La vista de detalle de orden ahora muestra la dirección y teléfono del armador para facilitar la entrega.
 
-    *   **9.1: Centralización de la Conexión a Base de Datos (PrismaClient Único)**
-        *   **Objetivo:** Asegurar que toda la aplicación use una única instancia de `PrismaClient` para una gestión eficiente de recursos y estabilidad.
-        *   **Acciones:**
-            *   Crear `backend/prisma/client.js` para exportar una instancia única de `PrismaClient`.
-            *   Modificar `backend/index.js` para importar y usar `backend/prisma/client.js`.
-            *   Modificar todos los archivos de rutas (`backend/routes/*.js`) para importar y usar `backend/prisma/client.js`.
+                *   `[x]` (Frontend) Refinar la UI del dashboard para una experiencia móvil óptima.
 
-    *   **9.2: Modularización Completa del Backend (Mover Rutas de `index.js`)**
-        *   **Objetivo:** Descomponer el archivo `backend/index.js` en módulos de rutas dedicados para mejorar la organización y mantenibilidad.
-        *   **Acciones:**
-            *   Crear `backend/routes/overheadCosts.routes.js` y mover rutas de costos indirectos.
-            *   Crear `backend/routes/productDesign.routes.js` y mover rutas de diseño de producto.
-            *   Crear `backend/routes/auth.routes.js` y mover la ruta de login.
-            *   Crear `backend/routes/users.routes.js` y mover rutas de usuarios.
-            *   Crear `backend/routes/inventory.routes.js` y mover rutas de inventario.
-            *   Actualizar `backend/index.js` para importar y montar todos los nuevos routers.
+                *   `[x]` Vista de detalle tipo checklist con botones de confirmación claros ("Entrega Completada", "No se pudo entregar").
 
-    *   **9.3: Validación Consistente de Entradas (Backend)**
-        *   **Objetivo:** Implementar validación robusta para todas las entradas de la API.
-        *   **Acciones:**
-            *   `[ ]` Asegurar que todos los endpoints `POST` y `PUT` utilicen `zod` para validar `req.body`.
-            *   `[x]` Implementada validación `zod` para `POST /api/categories` y `PUT /api/categories/:id`.
+            *   `[x]` **`SUPERVISOR` (Logística):**
 
-    *   **9.4: Gestión Centralizada de Errores y Logging Estructurado**
-        *   **Objetivo:** Mejorar la capacidad de depuración y monitoreo de la aplicación.
-        *   **Acciones:**
-            *   `[x]` Implementar una librería de logging (ej. Winston/Pino) para errores estructurados.
-            *   `[x]` Asegurar que los errores sean capturados y registrados de forma consistente.
+                *   `[x]` **Panel de "Producción Externa" Mejorado:**
 
-    *   **9.5: Implementación del Entorno de Pruebas de Integración (Completo)**
-        *   **Objetivo:** Crear una red de seguridad para detectar regresiones y verificar la funcionalidad del backend de forma automática.
-        *   **Acciones:**
-            *   `[x]` Instalar y configurar Jest y Supertest.
-            *   `[x]` Modificar Docker Compose para soportar una base de datos de prueba aislada (`postgres-test`).
-            *   `[x]` Crear un script de prueba que aplica migraciones y ejecuta los tests contra la base de datos de prueba.
-            *   `[x]` Escribir y pasar el primer test de integración para el endpoint de productos.
+                    *   `[x]` Implementar filtros en el servidor por rango de fechas, armador y término de búsqueda (Nro. Orden / Producto).
 
--   **Fase 10: Refactorización del Flujo de Costos de Armado y Liquidaciones (En Progreso)**
-    > *Esta fase corrige una inconsistencia arquitectónica fundamental para asegurar la integridad de los datos de costos y habilitar un flujo de liquidación de pagos robusto y auditable.*
+                    *   `[x]` Añadir paginación para manejar grandes volúmenes de órdenes.
 
-    *   **10.1: Corrección Arquitectónica del Backend**
-        *   `[x]` **Acción (Backend):** Identificar y deprecian el endpoint obsoleto `POST /api/product-design/:id/assembly-cost` que opera sobre un modelo de datos antiguo (relación 1-a-1).
-        *   `[x]` **Acción (Backend):** Crear un nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado` que vincule un `Product` con un `TrabajoDeArmado` del catálogo, creando o actualizando la entrada correspondiente en la tabla intermedia `ProductoTrabajoArmado`.
+                    *   `[x]` Convertir el número de orden en un enlace a una vista de detalle.
 
-    *   **10.2: Implementación de UI para Vinculación de Costos**
-        *   `[x]` **Acción (Frontend):** Modificar la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`).
-        *   `[x]` **Acción (Frontend):** Añadir un campo desplegable "Trabajo de Armado" que será **obligatorio** para productos de tipo `PRE_ASSEMBLED` o `FINISHED`.
-        *   `[x]` **(NUEVO - Rediseño)** Implementado un flujo de asignación contextual desde la página de producto, reemplazando el desplegable por un modal "Selector/Creador" para mejorar la UX y la integridad de los datos.
-        *   `[x]` **Acción (Frontend):** Conectar el guardado del formulario al nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado`.
+                *   `[x]` **Vista de Detalle de Orden:**
 
-    *   **10.3: Refactorización y Corrección del Flujo de Liquidación**
-        *   `[x]` **Acción (Backend):** Refactorizar la lógica de cálculo en el endpoint `GET /api/armadores/payment-summary-batch` para que utilice el `precioUnitario` guardado en `OrderAssemblyStep`, en lugar de recalcularlo con consultas a la base de datos. Esto soluciona el error 500 y mejora la eficiencia.
-        *   `[x]` **Acción (Backend):** Reforzar la validación en el endpoint de creación de órdenes de producción externa (`POST /api/external-production-orders`) para rechazar órdenes si el trabajo de armado seleccionado no tiene un precio definido en el catálogo.
+                    *   `[x]` Crear una vista de solo lectura/imprimible que muestre toda la información de una orden de producción externa.
 
----
+                *   `[x]` (Backend) Implementada la lógica de datos para el dashboard (Tareas, Alertas de Stock, KPIs).
 
-## 2. Changelog (Registro de Cambios)
+                *   `[x]` (Frontend) Refinar la UI del dashboard del supervisor.
+
+                *   `[x]` Acciones directas (Asignar Reparto, Reasignar, Cancelar) integradas con la lógica de backend.
+
+                    *   Acciones ahora visibles para órdenes `PARTIALLY_RECEIVED`.
+
+                *   `[x]` **(NUEVO)** Implementar UI anidada para plan de producción.
+
+                *   `[x]` **(NUEVO)** Implementar botón "Crear orden nueva" para sub-ensambles faltantes.
+
+                *   `[x]` **(NUEVO)** Implementar botón "Agregar a esta orden" para sub-ensambles faltantes.
+
+            *   `[x]` **`ADMIN` (Finanzas):**
+
+                *   `[x]` UI para gestionar el catálogo `TrabajoDeArmado`.
+
+                    *   `[x]` **(NUEVO - Rediseño)** Reimplementada como un "Panel Maestro" de dos columnas con visualización de productos vinculados e indicadores de estado.
+
+                *   `[x]` UI para visualizar y registrar liquidaciones de pago.
+
+                *   `[x]` Mejorada la UI de registro de liquidaciones para filtrar armadores sin pago pendiente y mostrar un mensaje de estado vacío.
+
+                *   `[x]` Implementada página de "Historial de Pagos" con filtros, tarjetas de resumen y vista de detalle.
+
+    
+
+    -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
+
+        -   `[ ]` Implementar Service Workers para el funcionamiento offline.
+
+        -   `[ ]` Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio.
+
+    
+
+    -   **Fase 7: Despliegue y Pruebas (Pendiente)**
+
+        -   `[ ]` **(NUEVO - Auditoría)** Reescribir `backend/Dockerfile` y `frontend/Dockerfile` usando builds multi-etapa para producción.
+
+        -   `[ ]` **(NUEVO - Auditoría)** Crear un archivo `docker-compose.prod.yml` para despliegue.
+
+        -   `[ ]` Desplegar la aplicación en un entorno de producción.
+
+        -   `[ ]` Realizar pruebas con los colaboradores y recoger feedback.
+
+    
+
+    -   **Fase 8: Mejoras Futuras y Escalabilidad (Pendiente)**
+
+        -   `[ ]` **(NUEVO - Auditoría)** Mejorar la robustez de los CSV de importación añadiendo columnas explícitas de `Categoría` y `Tipo` para eliminar la lógica frágil basada en números de línea.
+
+        -   `[ ]` **(NUEVO - Auditoría)** Implementar un sistema de notificaciones "toast" para mejorar el feedback al usuario.
+
+        -   `[ ]` **(NUEVO)** Herramienta de "Estados de Cuenta": Implementar un sistema para gestionar estados de cuenta con clientes y proveedores clave, permitiendo el seguimiento de pagos parciales, saldos y un historial detallado de transacciones.
+
+        -   `[ ]` Implementar Registro de Auditoría (Audit Trail) para todas las modificaciones de datos.
+
+        -   `[ ]` Desarrollar UI para la gestión dinámica de permisos por rol.
+
+        -   `[x]` Diseño e implementación inicial de un "Dashboard" personalizado por rol (Backend completo, Frontend con esqueleto funcional).
+
+        -   `[ ]` Desarrollar Calculadora de Estructura de Costos.
+
+    
+
+    -   **Fase 9: Refactorización Arquitectónica (En Curso)**
+
+        > *Esta fase se enfoca en mejorar la robustez y escalabilidad de la aplicación mediante la aplicación de patrones arquitectónicos profesionales.*
+
+    
+
+        *   **9.1: Centralización de la Conexión a Base de Datos (PrismaClient Único)**
+
+            *   **Objetivo:** Asegurar que toda la aplicación use una única instancia de `PrismaClient` para una gestión eficiente de recursos y estabilidad.
+
+            *   **Acciones:**
+
+                *   Crear `backend/prisma/client.js` para exportar una instancia única de `PrismaClient`.
+
+                *   Modificar `backend/index.js` para importar y usar `backend/prisma/client.js`.
+
+                *   Modificar todos los archivos de rutas (`backend/routes/*.js`) para importar y usar `backend/prisma/client.js`.
+
+    
+
+        *   **9.2: Modularización Completa del Backend (Mover Rutas de `index.js`)**
+
+            *   **Objetivo:** Descomponer el archivo `backend/index.js` en módulos de rutas dedicados para mejorar la organización y mantenibilidad.
+
+            *   **Acciones:**
+
+                *   Crear `backend/routes/overheadCosts.routes.js` y mover rutas de costos indirectos.
+
+                *   Crear `backend/routes/productDesign.routes.js` y mover rutas de diseño de producto.
+
+                *   Crear `backend/routes/auth.routes.js` y mover la ruta de login.
+
+                *   Crear `backend/routes/users.routes.js` y mover rutas de usuarios.
+
+                *   Crear `backend/routes/inventory.routes.js` y mover rutas de inventario.
+
+                *   Actualizar `backend/index.js` para importar y montar todos los nuevos routers.
+
+    
+
+        *   **9.3: Validación Consistente de Entradas (Backend)**
+
+            *   **Objetivo:** Implementar validación robusta para todas las entradas de la API.
+
+            *   **Acciones:**
+
+                *   `[ ]` Asegurar que todos los endpoints `POST` y `PUT` utilicen `zod` para validar `req.body`.
+
+                *   `[x]` Implementada validación `zod` para `POST /api/categories` y `PUT /api/categories/:id`.
+
+    
+
+        *   **9.4: Gestión Centralizada de Errores y Logging Estructurado**
+
+            *   **Objetivo:** Mejorar la capacidad de depuración y monitoreo de la aplicación.
+
+            *   **Acciones:**
+
+                *   `[x]` Implementar una librería de logging (ej. Winston/Pino) para errores estructurados.
+
+                *   `[x]` Asegurar que los errores sean capturados y registrados de forma consistente.
+
+    
+
+        *   **9.5: Implementación del Entorno de Pruebas de Integración (Completo)**
+
+            *   **Objetivo:** Crear una red de seguridad para detectar regresiones y verificar la funcionalidad del backend de forma automática.
+
+            *   **Acciones:**
+
+                *   `[x]` Instalar y configurar Jest y Supertest.
+
+                *   `[x]` Modificar Docker Compose para soportar una base de datos de prueba aislada (`postgres-test`).
+
+                *   `[x]` Crear un script de prueba que aplica migraciones y ejecuta los tests contra la base de datos de prueba.
+
+                *   `[x]` Escribir y pasar el primer test de integración para el endpoint de productos.
+
+    
+
+    -   **Fase 10: Refactorización del Flujo de Costos de Armado y Liquidaciones (En Progreso)**
+
+        > *Esta fase corrige una inconsistencia arquitectónica fundamental para asegurar la integridad de los datos de costos y habilitar un flujo de liquidación de pagos robusto y auditable.*
+
+    
+
+        *   **10.1: Corrección Arquitectónica del Backend**
+
+            *   `[x]` **Acción (Backend):** Identificar y deprecian el endpoint obsoleto `POST /api/product-design/:id/assembly-cost` que opera sobre un modelo de datos antiguo (relación 1-a-1).
+
+            *   `[x]` **Acción (Backend):** Crear un nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado` que vincule un `Product` con un `TrabajoDeArmado` del catálogo, creando o actualizando la entrada correspondiente en la tabla intermedia `ProductoTrabajoArmado`.
+
+    
+
+        *   **10.2: Implementación de UI para Vinculación de Costos**
+
+            *   `[x]` **Acción (Frontend):** Modificar la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`).
+
+            *   `[x]` **Acción (Frontend):** Añadir un campo desplegable "Trabajo de Armado" que será **obligatorio** para productos de tipo `PRE_ASSEMBLED` o `FINISHED`.
+
+            *   `[x]` **(NUEVO - Rediseño)** Implementado un flujo de asignación contextual desde la página de producto, reemplazando el desplegable por un modal "Selector/Creador" para mejorar la UX y la integridad de los datos.
+
+            *   `[x]` **Acción (Frontend):** Conectar el guardado del formulario al nuevo endpoint `PUT /api/product-design/:productId/trabajo-armado`.
+
+    
+
+        *   **10.3: Refactorización y Corrección del Flujo de Liquidación**
+
+            *   `[x]` **Acción (Backend):** Refactorizar la lógica de cálculo en el endpoint `GET /api/armadores/payment-summary-batch` para que utilice el `precioUnitario` guardado en `OrderAssemblyStep`, en lugar de recalcularlo con consultas a la base de datos. Esto soluciona el error 500 y mejora la eficiencia.
+
+            *   `[x]` **Acción (Backend):** Reforzar la validación en el endpoint de creación de órdenes de producción externa (`POST /api/external-production-orders`) para rechazar órdenes si el trabajo de armado seleccionado no tiene un precio definido en el catálogo.
+
+    
+
+    -   **Fase 11: UI/UX y Refactorización Responsiva (Mobile-First) (EN CURSO)**
+
+        > *Esta fase se enfoca en rediseñar la interfaz de usuario de toda la aplicación siguiendo una filosofía "Mobile-First" para garantizar una experiencia de usuario profesional y nativa en todos los dispositivos.*
+
+        
+
+        *   **11.1: Navegación Global (Completada)**
+
+            *   `[x]` **Acción (Frontend):** Refactorizar la barra de navegación en un componente `Navbar` dedicado.
+
+            *   `[x]` **Acción (Frontend):** Implementar menú hamburguesa para la vista móvil y menús desplegables para la vista de escritorio.
+
+            *   `[x]` **Acción (Frontend):** Implementar un encabezado fijo (`position: fixed`) para una visibilidad constante.
+
+            *   `[x]` **Acción (Frontend):** Actualizar el branding del encabezado a "ZAP - FlowApp -".
+
+    
+
+        *   **11.2: Aplicar Diseño "Mobile-First" a Páginas Clave (Pendiente)**
+
+            *   **Objetivo:** Rediseñar las páginas más complejas para que sean intuitivas y funcionales en pantallas pequeñas.
+
+            *   **Acciones:**
+
+                *   `[ ]` **Panel de Logística (`LogisticsDashboardPage.jsx`):**
+
+                    *   `[ ]` (Móvil) Rediseñar la tabla de órdenes a un formato de "lista de tarjetas" apiladas verticalmente.
+
+                    *   `[ ]` (Móvil) Apilar los controles de filtro verticalmente para facilitar su uso.
+
+                    *   `[ ]` (Escritorio) Mejorar el espaciado y la legibilidad de la tabla y los filtros existentes.
+
+    ---
+
+    
+
+    ## 2. Changelog (Registro de Cambios)
+
+    
 
 -   **2025-10-27:**
     -   **Funcionalidad de Órdenes de Producción Externa:**

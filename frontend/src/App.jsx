@@ -23,63 +23,21 @@ import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDe
 import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
 import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage'; // NEW
 import DashboardPage from './pages/DashboardPage'; // Importar el nuevo DashboardPage
+import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation(); // Get current location
 
   return (
     <> 
       {/* Navigation bar - visible only if user is logged in AND not on the login page */}
-      {user && location.pathname !== '/login' && (
-        <nav>
-          <Link to="/">Inicio</Link>
-          {user && <Link to="/products">Productos</Link>}
-          {user && <Link to="/categories">Categorías</Link>}
-          {user && <Link to="/suppliers">Proveedores</Link>}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/assemblers">Armadores</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/inventory-history">Historial</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/production-orders">Producción</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/purchase-order">Registrar Compra</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/external-production-orders/new">Crear Orden Externa</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/logistics-dashboard">Panel de Logística</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/assembler-payment-batch">Liquidación por Lotes</Link>
-          )}
-          {user && user.role === 'ADMIN' && (
-            <Link to="/assembler-payments-history">Historial de Pagos</Link> // NEW
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/users">Usuarios</Link>
-          )}
-          {user && user.role === 'ADMIN' && (
-            <Link to="/admin-tools">Herramientas</Link>
-          )}
-          {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
-          {user ? (
-            <button onClick={logout}>Cerrar Sesión</button>
-          ) : (
-            <Link to="/login">Iniciar Sesión</Link>
-          )}
-        </nav>
-      )}
-
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        {/* Default route - show DashboardPage for authenticated users */}
+      {user && location.pathname !== '/login' && <Navbar />}
+      <main className="main-content">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          {/* Default route - show DashboardPage for authenticated users */}
         <Route
           path="/"
           element={<ProtectedRoute element={<DashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />}
@@ -167,6 +125,7 @@ function App() {
           element={<ProtectedRoute element={<ChangePasswordPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />} 
         />
       </Routes>
+    </main>
     </>
   );
 }

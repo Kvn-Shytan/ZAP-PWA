@@ -1,5 +1,15 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-06
+-   **[REFACTOR] Refactorización Completa de la Barra de Navegación:**
+    -   Se movió toda la lógica de navegación a un componente dedicado (`Navbar.jsx`) para mejorar la mantenibilidad.
+    -   Se implementó un encabezado fijo (`position: fixed`) en toda la aplicación para una visibilidad constante.
+    -   Se diseñó e implementó un menú de hamburguesa funcional para la vista móvil y menús desplegables para la vista de escritorio.
+    -   Se actualizó el branding en el encabezado a "ZAP - FlowApp -".
+    -   Se corrigieron múltiples bugs de CSS relacionados con el `z-index`, `transform`, y especificidad de selectores que causaban problemas de visualización y usabilidad en ambas vistas.
+-   **[CHORE] Estrategia de UI/UX:**
+    -   Se estableció formalmente la estrategia de diseño "Mobile-First" para guiar la refactorización responsiva de toda la aplicación.
+
 ## 2025-12-10
 -   **[FEAT] Implementación de Dashboard por Rol:**
     -   Se implementó un nuevo Dashboard como página de inicio para todos los roles, mostrando tareas, alertas y KPIs relevantes para cada usuario.

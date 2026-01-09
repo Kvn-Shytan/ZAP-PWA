@@ -1,0 +1,224 @@
+/* Lock body scroll when mobile nav is open */
+body.nav-open {
+  overflow: hidden;
+}
+
+.brand-suffix {
+  color: var(--color-neutral-white);
+}
+
+/* =================================
+   MOBILE-FIRST BASE STYLES
+   ================================= */
+
+.navbar {
+  background-color: var(--color-neutral-black);
+  color: var(--color-neutral-white);
+  padding: var(--spacing-sm) var(--spacing-md);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: box-shadow 0.3s ease-in-out;
+  box-sizing: border-box;
+}
+
+.navbar.scrolled {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* Ensure it takes full width initially */
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-primary-cyan);
+  text-decoration: none;
+  z-index: 1100;
+}
+
+/* --- Hamburger Toggle --- */
+.navbar-toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 28px;
+  height: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1100;
+}
+
+.navbar-toggle .bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-neutral-white);
+  border-radius: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* --- Mobile Menu Overlay --- */
+.navbar-links {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(26, 26, 26, 0.98);
+  backdrop-filter: blur(5px);
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  z-index: 1200; /* Increased z-index */
+}
+
+.navbar-links.active {
+  display: flex;
+}
+
+.navbar-links > ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.navbar-links li {
+  text-align: center;
+}
+
+.navbar-links a,
+.navbar-links button {
+  color: var(--color-neutral-white);
+  text-decoration: none;
+  font-size: 1.2rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* --- Dropdowns on Mobile --- */
+/* Hide the main dropdown button (e.g., "Administración") on mobile */
+.nav-dropdown > .dropdown-toggle {
+  display: none;
+}
+
+/* The dropdown menu itself is just a list of items on mobile */
+.dropdown-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.user-menu > .dropdown-toggle {
+    display: block; /* Show "Hola, user" */
+}
+
+/* Style all links, including those inside dropdowns, the same on mobile */
+.navbar-links .dropdown-menu a,
+.navbar-links .dropdown-menu button {
+  font-weight: 400; /* Make sub-items slightly less prominent */
+}
+
+
+/* =================================
+   DESKTOP STYLES (min-width: 993px)
+   ================================= */
+@media (min-width: 993px) {
+  
+  /* Hide hamburger on desktop */
+  .navbar-toggle {
+    display: none;
+  }
+
+  /* Reset navbar-links to be a normal flex container */
+  .navbar-links {
+    display: flex;
+    position: static;
+    height: auto;
+    width: auto;
+    background: none;
+    backdrop-filter: none;
+    overflow-y: visible;
+  }
+
+  .navbar-links > ul {
+    flex-direction: row;
+    gap: var(--spacing-lg); /* Increased spacing */
+  }
+
+  .navbar-links a,
+  .navbar-links button {
+    font-size: 1rem;
+    padding: var(--spacing-sm) 0;
+  }
+
+  /* Show dropdown toggle buttons on desktop */
+  .nav-dropdown > .dropdown-toggle {
+    display: block;
+  }
+  
+  /* Activate desktop dropdown behavior */
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    display: none; /* Hide by default */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--color-neutral-black);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    min-width: 220px;
+    padding: var(--spacing-sm);
+    /* margin-top: var(--spacing-sm); -> This was causing the hover issue */
+    gap: var(--spacing-xs);
+  }
+
+  .nav-dropdown:hover > .dropdown-menu {
+    display: flex; /* Show on hover */
+  }
+
+  .dropdown-menu li {
+    width: 100%;
+  }
+
+  .dropdown-menu a,
+  .dropdown-menu .logout-button {
+    display: block;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 4px;
+    box-sizing: border-box;
+    text-align: left;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dropdown-menu a:hover,
+  .dropdown-menu .logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-primary-cyan);
+  }
+}
+
