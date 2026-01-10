@@ -1,0 +1,37 @@
+/* Styles for AssignTrabajoModal.jsx */
+
+.assign-trabajo-input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.assign-trabajo-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.assign-trabajo-actions-container {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column; /* Mobile: stack vertically */
+  align-items: stretch; /* Mobile: make buttons full-width */
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .assign-trabajo-actions-container {
+    flex-direction: row; /* Desktop: arrange horizontally */
+    justify-content: flex-end; /* Desktop: align to the right */
+  }
+}
+
+.assign-trabajo-link-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
+}

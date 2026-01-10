@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-06 (Parte 3)
+-   **[FEAT(ui)] Implementado diseño responsivo en el Listado de Productos:**
+    -   Se aplicó la estrategia "Mobile-First" a la página del Listado de Productos.
+    -   La tabla de productos ahora se transforma en una lista de tarjetas en la vista móvil para una mejor usabilidad y legibilidad.
+    -   Los controles de filtro de productos ahora se apilan verticalmente en la vista móvil.
+-   **[FEAT(ui)] Mejorado el diseño responsivo del Modal "Asignar Trabajo de Armado":**
+    -   El modal fue refactorizado para usar el componente `Modal` reutilizable.
+    -   Los estilos en línea fueron migrados a un archivo CSS dedicado (`AssignTrabajoModal.css`).
+    -   Los botones de acción dentro del modal ahora se apilan verticalmente en móvil, resolviendo problemas de visibilidad y usabilidad.
+-   **[REFACTOR] Centralización de Estilos de Botones Globales:**
+    -   Las clases de botones genéricos (`.btn`, `.btn-primary`, `.btn-success`, `.btn-danger`, `.btn-secondary`, `.btn-outline-primary`) fueron movidas a `index.css` para su reutilización y consistencia en toda la aplicación.
+
 ## 2026-01-06 (Parte 2)
 -   **[FEAT(ui)] Implementado diseño responsivo en el Panel de Logística:**
     -   Se aplicó la estrategia "Mobile-First" a la página del Panel de Logística.

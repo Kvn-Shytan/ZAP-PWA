@@ -344,13 +344,18 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
                                 *   `[x]` (Escritorio) Mejorar el espaciado y la legibilidad de la tabla y los filtros existentes.
 
-                            *   `[ ]` **Listado de Productos (`ProductList.jsx`):**
+                            *   `[x]` **Listado de Productos (`ProductList.jsx`):**
 
-                                *   `[ ]` (Móvil) Rediseñar la tabla de productos a un formato de "lista de tarjetas".
+                                *   `[x]` (Móvil) Rediseñar la tabla de productos a un formato de "lista de tarjetas".
 
-                                *   `[ ]` (Móvil) Apilar los controles de filtro verticalmente.
+                                *   `[x]` (Móvil) Apilar los controles de filtro verticalmente.
 
-                                *   `[ ]` (Escritorio) Mejorar el espaciado de la tabla y los filtros.
+                                *   `[x]` (Escritorio) Mejorar el espaciado de la tabla y los filtros.
+
+                            *   `[x]` **Modal "Asignar Trabajo de Armado" (`AssignTrabajoModal.jsx`):**
+                                *   `[x]` (Frontend) Refactorizar el modal para usar el componente `Modal` reutilizable.
+                                *   `[x]` (Frontend) Migrar estilos en línea a archivos CSS dedicados.
+                                *   `[x]` (Frontend) Ajustar estilos de botones para responsividad y consistencia.
 
             ---
 
