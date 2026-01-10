@@ -1,0 +1,168 @@
+/* Styles for LogisticsDashboardPage.jsx */
+
+.logistics-dashboard-container {
+  padding: 2rem;
+}
+
+.filters-container {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column; /* Mobile: stack vertically */
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Desktop styles for filters */
+@media (min-width: 768px) { /* Adjust breakpoint as needed */
+  .filters-container {
+    flex-direction: row; /* Desktop: arrange horizontally */
+    flex-wrap: wrap; /* Allow wrapping if many filters */
+    align-items: center;
+  }
+}
+
+.filter-input,
+.filter-select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%; /* Full width on mobile */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+/* Desktop override for filter input/select width */
+@media (min-width: 768px) {
+  .filter-input,
+  .filter-select {
+    width: auto; /* Revert to auto width on desktop */
+  }
+}
+
+.clear-filters-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #6c757d;
+  color: white;
+  cursor: pointer;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-table th,
+.order-table td {
+  padding: 12px 15px; /* Add padding for better spacing */
+  border: 1px solid #ddd; /* Add borders for clarity */
+  text-align: left;
+}
+
+.order-table th {
+  background-color: #f2f2f2; /* Light background for headers */
+  font-weight: bold;
+}
+
+.order-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Zebra striping for readability */
+}
+
+/* Mobile Styles for Table (Table-to-Cards Transformation) */
+@media (max-width: 767px) {
+  .order-table {
+    border: none;
+  }
+
+  .order-table thead {
+    display: none;
+  }
+
+  .order-table tr {
+    display: block;
+    margin-bottom: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    background-color: #fff;
+  }
+
+  .order-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem 0;
+  }
+  
+  .order-table tr td:last-child {
+    border-bottom: none; /* No border for the last item in a card */
+  }
+
+  .order-table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    text-align: left;
+    padding-right: 1rem;
+  }
+
+  /* Special case for actions cell to wrap buttons */
+  .order-table td[data-label="Acciones"] {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Hide the "Acciones" label when the content is just text ("Orden cerrada") */
+  .order-table td:has(em)::before {
+    display: none;
+  }
+  .order-table td:has(em) {
+    justify-content: center;
+    font-style: italic;
+    padding: 0.5rem 0;
+  }
+}
+
+/* --- Action Buttons Styling --- */
+.action-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 8px; /* Default margin for spacing between buttons */
+  white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+.action-button:first-child {
+    margin-left: 0; /* No margin for the first button in a group */
+}
+
+.action-button.green-light {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.action-button.gray-light {
+  background-color: #e2e6ea;
+  color: #383d41;
+}
+
+.action-button.red-light {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.pagination-container {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Base styles for the filters and table will go here */

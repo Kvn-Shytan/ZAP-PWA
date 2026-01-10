@@ -1,5 +1,14 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-06 (Parte 2)
+-   **[FEAT(ui)] Implementado diseño responsivo en el Panel de Logística:**
+    -   Se aplicó la estrategia "Mobile-First" a la página del Panel de Logística.
+    -   La tabla de órdenes ahora se transforma en una lista de tarjetas en la vista móvil para una mejor usabilidad y legibilidad.
+    -   Los controles de filtro ahora se apilan verticalmente en la vista móvil.
+-   **[REFACTOR] Modularización de Estilos y Componentes:**
+    -   Se migraron todos los estilos en línea de `LogisticsDashboardPage.jsx` a un archivo CSS dedicado (`LogisticsDashboardPage.css`).
+    -   El componente `Modal` fue extraído a su propio archivo (`src/components/Modal.jsx`) para su reutilización en toda la aplicación.
+
 ## 2026-01-06
 -   **[REFACTOR] Refactorización Completa de la Barra de Navegación:**
     -   Se movió toda la lógica de navegación a un componente dedicado (`Navbar.jsx`) para mejorar la mantenibilidad.

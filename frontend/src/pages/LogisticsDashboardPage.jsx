@@ -3,45 +3,8 @@ import { Link } from 'react-router-dom'; // Added Link import
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 import { apiFetch } from '../services/api'; // Import apiFetch to get users
 import { armadorService } from '../services/armadorService';
-
-// Simple Modal component for reusability
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-
-  const modalStyle = {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: 'white',
-    padding: '2rem',
-    zIndex: 1000,
-    borderRadius: '8px',
-    boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-    width: '400px',
-  };
-
-  const overlayStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    zIndex: 999,
-  };
-
-  return (
-    <>
-      <div style={overlayStyle} onClick={onClose} />
-      <div style={modalStyle}>
-        <h3>{title}</h3>
-        {children}
-      </div>
-    </>
-  );
-};
-
+import './LogisticsDashboardPage.css'; // Import the new CSS file
+import Modal from '../components/Modal'; // Import the new Modal component
 const LogisticsDashboardPage = () => {
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, total: 0 });
@@ -378,30 +341,30 @@ const LogisticsDashboardPage = () => {
       case 'PENDING_DELIVERY':
         return (
           <>
-            <button onClick={() => handleOpenAssignModal(order, 'delivery')}>Asignar Reparto</button>
-            <button onClick={() => handleCancelOrder(order.id)} style={{ marginLeft: '8px'}}>Cancelar</button>
+            <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Asignar Reparto</button>
+            <button onClick={() => handleCancelOrder(order.id)} className="action-button red-light">Cancelar</button>
           </>
         );
       case 'OUT_FOR_DELIVERY':
         return (
           <>
-            <button onClick={() => handleConfirmDelivery(order.id)}>Confirmar Entrega</button>
-            <button onClick={() => handleOpenIncidentModal(order)} style={{ marginLeft: '8px'}}>Reportar Incidencia</button>
-            <button onClick={() => handleOpenAssignModal(order, 'delivery')} style={{ marginLeft: '8px'}}>Reasignar</button>
+            <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Confirmar Entrega</button>
+            <button onClick={() => handleOpenIncidentModal(order)} className="action-button red-light">Reportar Incidencia</button>
+            <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reasignar</button>
           </>
         );
       case 'DELIVERY_FAILED':
-        return <button onClick={() => handleOpenAssignModal(order, 'delivery')}>Reintentar Asignación</button>;
+        return <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reintentar Asignación</button>;
       case 'IN_ASSEMBLY':
-        return <button onClick={() => handleConfirmAssembly(order.id)}>Confirmar Fin de Armado</button>;
+        return <button onClick={() => handleConfirmAssembly(order.id)} className="action-button green-light">Confirmar Fin de Armado</button>;
       case 'PENDING_PICKUP':
-        return <button onClick={() => handleOpenAssignModal(order, 'pickup')}>Asignar Recogida</button>;
+        return <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Asignar Recogida</button>;
       case 'RETURN_IN_TRANSIT':
       case 'PARTIALLY_RECEIVED': // Add this case
         return (
           <>
-            <button onClick={() => handleOpenReceiveModal(order)}>Recibir Mercadería</button>
-            <button onClick={() => handleOpenAssignModal(order, 'pickup')} style={{ marginLeft: '8px'}}>Reasignar Recogida</button>
+            <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>
+            <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Reasignar Recogida</button>
           </>
         );
       case 'COMPLETED':
@@ -447,20 +410,20 @@ const LogisticsDashboardPage = () => {
   };
 
     return (
-      <div style={{ padding: '2rem' }}>
+      <div className="logistics-dashboard-container">
         <h2>Panel de Logística - Órdenes de Producción Externas</h2>
   
         {/* Filter Controls - Always rendered */}
-        <div className="filters-container" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+        <div className="filters-container">
           <input
             type="text"
             name="search"
             placeholder="Buscar por N° Orden o Producto..."
             value={filters.search}
             onChange={handleFilterChange}
-            style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            className="filter-input"
           />
-          <select name="armadorId" value={filters.armadorId} onChange={handleFilterChange} style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
+          <select name="armadorId" value={filters.armadorId} onChange={handleFilterChange} className="filter-select">
             <option value="">Todos los Armadores</option>
             {armadores.map(armador => (
               <option key={armador.id} value={armador.id}>{armador.name}</option>
@@ -471,16 +434,16 @@ const LogisticsDashboardPage = () => {
             name="dateFrom"
             value={filters.dateFrom}
             onChange={handleFilterChange}
-            style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            className="filter-input"
           />
           <input
             type="date"
             name="dateTo"
             value={filters.dateTo}
             onChange={handleFilterChange}
-            style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            className="filter-input"
           />
-          <button onClick={handleClearFilters} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', backgroundColor: '#6c757d', color: 'white', cursor: 'pointer' }}>Limpiar Filtros</button>
+          <button onClick={handleClearFilters} className="clear-filters-button">Limpiar Filtros</button>
         </div>
   
         {/* Conditional rendering for results area */}
@@ -492,7 +455,7 @@ const LogisticsDashboardPage = () => {
           <p>No hay órdenes que coincidan con los filtros.</p>
         ) : (
           <>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="order-table">
               <thead>
                 <tr>
                   <th>ID Orden</th>
@@ -508,19 +471,19 @@ const LogisticsDashboardPage = () => {
                   const assignedUser = getAssignedUser(order);
                   return (
                     <tr key={order.id}>
-                      <td><Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link></td>
-                      <td>{order.armador.name}</td>
-                      <td>{renderStatus(order)}</td>
-                      <td>{assignedUser ? assignedUser.name : 'N/A'}</td>
-                      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                      <td>{renderOrderActions(order)}</td>
+                      <td data-label="ID Orden"><Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link></td>
+                      <td data-label="Armador">{order.armador.name}</td>
+                      <td data-label="Estado">{renderStatus(order)}</td>
+                      <td data-label="Asignado a">{assignedUser ? assignedUser.name : 'N/A'}</td>
+                      <td data-label="Fecha Creación">{new Date(order.createdAt).toLocaleDateString()}</td>
+                      <td data-label="Acciones">{renderOrderActions(order)}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
   
-            <div className="pagination-container" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="pagination-container">
               <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                 disabled={pagination.currentPage <= 1 || loading}
@@ -543,7 +506,7 @@ const LogisticsDashboardPage = () => {
         {/* Modals are outside the conditional rendering */}
         {/* Assignment Modal */}
         <Modal isOpen={isAssignModalOpen} onClose={handleModalClose} title={assignModalConfig.title}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="modal-form-group">
               <label htmlFor="user-select">Asignar a:</label>
               <select id="user-select" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
                   <option value="">Seleccione un usuario...</option>
@@ -551,7 +514,7 @@ const LogisticsDashboardPage = () => {
                       <option key={user.id} value={user.id}>{user.name || user.email}</option>
                   ))}
               </select>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+              <div className="modal-buttons-row">
                   <button onClick={handleConfirmAssignment} disabled={!selectedUser}>Confirmar Asignación</button>
                   <button onClick={handleUnassign} disabled={assignModalConfig.type !== 'delivery' || !selectedOrder?.deliveryUserId}>Desasignar</button>
                   <button onClick={handleModalClose}>Cancelar</button>
@@ -562,7 +525,7 @@ const LogisticsDashboardPage = () => {
         {/* Incident Report Modal */}
         <Modal isOpen={isIncidentModalOpen} onClose={handleModalClose} title="Reportar incidencia en entrega">
           {incidentStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="modal-form-group">
               <p>¿Cuál fue el problema?</p>
               <button onClick={() => handleQuickIncident('El armador no se encuentra en domicilio')}>El armador no se encuentra en domicilio</button>
               <button onClick={() => setIncidentStep(2)}>Otro...</button>
@@ -570,7 +533,7 @@ const LogisticsDashboardPage = () => {
             </div>
           )}
           {incidentStep === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="modal-form-group">
               <label htmlFor="incident-notes">Por favor, describa la incidencia:</label>
               <textarea
                 id="incident-notes"
@@ -579,7 +542,7 @@ const LogisticsDashboardPage = () => {
                 rows={4}
                 placeholder="Ej: Se visitó el domicilio pero estaba cerrado."
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <div className="modal-buttons-end">
                 <button onClick={handleConfirmIncident} disabled={!incidentNotes}>Confirmar Incidencia</button>
                 <button onClick={handleModalClose} style={{ marginLeft: '8px' }}>Cancelar</button>
               </div>
@@ -593,7 +556,7 @@ const LogisticsDashboardPage = () => {
             <div>
               <h4>Paso 1: Confirmar cantidades recibidas</h4>
               {receivedItems.map(item => (
-                <div key={item.productId} style={{ marginBottom: '1rem' }}>
+                <div key={item.productId} className="modal-item-row">
                   <label>
                     {item.product.description}<br/>
                     <small>Esperado: {Number(item.quantityExpected)} | Recibido: {Number(item.quantityReceived)} | <strong>Pendiente: {item.pending}</strong></small>
@@ -604,11 +567,11 @@ const LogisticsDashboardPage = () => {
                     onChange={(e) => handleReceivedQuantityChange(item.productId, e.target.value)}
                     max={item.pending}
                     min={0}
-                    style={{ marginLeft: '1rem', width: '80px' }}
+                    className="modal-input-small"
                   />
                 </div>
               ))}
-              <button onClick={handleContinueReception}>Continuar</button>
+              <button onClick={handleContinueReception} className="action-button green-light">Continuar</button>
             </div>
           )}
                           {receptionStep === 2 && (
@@ -617,20 +580,20 @@ const LogisticsDashboardPage = () => {
                               <p>Se detectó una diferencia entre la cantidad pendiente y la recibida en esta entrega. ¿Cómo desea proceder?</p>
                   
                               {!showOtherNotesInput ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                                  <button onClick={() => handleConfirmReceptionChoice('partial')} style={{ padding: '10px', backgroundColor: '#ffc107', color: 'black', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                                <div className="modal-form-group modal-form-group-spaced">
+                                  <button onClick={() => handleConfirmReceptionChoice('partial')} className="modal-choice-button yellow">
                                     Entrega Parcial (Quedan ítems pendientes)
                                   </button>
-                                  <button onClick={() => handleConfirmReceptionChoice('returns')} style={{ padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                                  <button onClick={() => handleConfirmReceptionChoice('returns')} className="modal-choice-button green">
                                     Entrega con Devoluciones (Discrepancia Justificada)
                                   </button>
-                                  <button onClick={() => setShowOtherNotesInput(true)} style={{ padding: '10px', backgroundColor: 'red', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                                  <button onClick={() => setShowOtherNotesInput(true)} className="modal-choice-button red">
                                     Otro Motivo (Discrepancia No Justificada)
                                   </button>
-                                  <button onClick={handleModalClose} style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Cancelar</button>
+                                  <button onClick={handleModalClose} className="modal-choice-button gray" style={{ marginTop: '1rem' }}>Cancelar</button>
                                 </div>
                               ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                                <div className="modal-form-group modal-form-group-spaced">
                                   <label htmlFor="reception-notes">Especifique el motivo de la discrepancia:</label>
                                   <textarea
                                     id="reception-notes"
@@ -638,9 +601,9 @@ const LogisticsDashboardPage = () => {
                                     onChange={e => setReceptionNotes(e.target.value)}
                                     rows={3}
                                     placeholder="Ej: Producto dañado, error de conteo, etc."
-                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                    className="modal-textarea"
                                   />
-                                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                                  <div className="modal-buttons-end">
                                     <button onClick={() => handleConfirmReceptionChoice('other_notes')} disabled={!receptionNotes} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
                                       Confirmar y Finalizar
                                     </button>

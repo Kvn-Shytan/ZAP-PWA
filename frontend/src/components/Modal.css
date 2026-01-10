@@ -1,0 +1,96 @@
+/* Styles for Modal.jsx */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 2rem;
+  z-index: 1000;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  width: 400px; /* Base width */
+  max-width: 90%; /* Responsive adjustment */
+}
+
+/* Styles for modal inner containers */
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.modal-buttons-end {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    gap: 1rem; /* For buttons within the row */
+}
+
+/* Specific button styles for modal choices */
+.modal-choice-button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white; /* Default for some */
+}
+
+.modal-choice-button.yellow {
+    background-color: #ffc107;
+    color: black;
+}
+
+.modal-choice-button.green {
+    background-color: #28a745;
+}
+
+.modal-choice-button.red {
+    background-color: red;
+}
+
+.modal-choice-button.blue {
+    background-color: #007bff;
+}
+
+.modal-choice-button.gray {
+    background-color: #6c757d;
+}
+
+/* Textarea in modals */
+.modal-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-item-row {
+  margin-bottom: 1rem;
+}
+
+.modal-input-small {
+  margin-left: 1rem;
+  width: 80px;
+}
+
+.modal-form-group-spaced {
+    margin-top: 1rem;
+}

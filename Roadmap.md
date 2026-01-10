@@ -334,17 +334,25 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
             *   **Objetivo:** Rediseñar las páginas más complejas para que sean intuitivas y funcionales en pantallas pequeñas.
 
-            *   **Acciones:**
+                        *   **Acciones:**
 
-                *   `[ ]` **Panel de Logística (`LogisticsDashboardPage.jsx`):**
+                            *   `[x]` **Panel de Logística (`LogisticsDashboardPage.jsx`):**
 
-                    *   `[ ]` (Móvil) Rediseñar la tabla de órdenes a un formato de "lista de tarjetas" apiladas verticalmente.
+                                *   `[x]` (Móvil) Rediseñar la tabla de órdenes a un formato de "lista de tarjetas" apiladas verticalmente.
 
-                    *   `[ ]` (Móvil) Apilar los controles de filtro verticalmente para facilitar su uso.
+                                *   `[x]` (Móvil) Apilar los controles de filtro verticalmente para facilitar su uso.
 
-                    *   `[ ]` (Escritorio) Mejorar el espaciado y la legibilidad de la tabla y los filtros existentes.
+                                *   `[x]` (Escritorio) Mejorar el espaciado y la legibilidad de la tabla y los filtros existentes.
 
-    ---
+                            *   `[ ]` **Listado de Productos (`ProductList.jsx`):**
+
+                                *   `[ ]` (Móvil) Rediseñar la tabla de productos a un formato de "lista de tarjetas".
+
+                                *   `[ ]` (Móvil) Apilar los controles de filtro verticalmente.
+
+                                *   `[ ]` (Escritorio) Mejorar el espaciado de la tabla y los filtros.
+
+            ---
 
     
 
