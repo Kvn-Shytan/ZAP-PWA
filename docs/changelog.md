@@ -1,5 +1,15 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-12
+-   **[FEAT(ui)] Refactorizada la Página de Gestión de Armadores (`AssemblerManagementPage`):**
+    -   Se implementó el diseño responsivo "Mobile-First", transformando la tabla de armadores en una lista de tarjetas en la vista móvil.
+    -   Se corrigió un problema de desbordamiento horizontal en las tarjetas móviles reemplazando el layout de anchos fijos por un sistema flexible basado en Flexbox.
+-   **[FEAT(ui)] Mejorada la Página de Cambio de Contraseña (`ChangePasswordPage`):**
+    -   Se solucionó el problema de espaciado, añadiendo un contenedor tipo "tarjeta" centrado que evita que los campos del formulario se peguen a los bordes de la pantalla.
+    -   Se estandarizaron los estilos de los inputs y el botón para mayor consistencia con el resto de la aplicación.
+-   **[FIX(dev)] Corregido Error de Sintaxis en `ChangePasswordPage`:**
+    -   Se resolvió un error `Missing semicolon` causado por una operación de reemplazo de texto fallida, restaurando la funcionalidad de la página.
+
 ## 2026-01-06 (Parte 3)
 -   **[FEAT(ui)] Implementado diseño responsivo en el Listado de Productos:**
     -   Se aplicó la estrategia "Mobile-First" a la página del Listado de Productos.

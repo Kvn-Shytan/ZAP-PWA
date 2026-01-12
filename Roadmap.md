@@ -357,6 +357,13 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                                 *   `[x]` (Frontend) Migrar estilos en línea a archivos CSS dedicados.
                                 *   `[x]` (Frontend) Ajustar estilos de botones para responsividad y consistencia.
 
+                            *   `[x]` **Página de Gestión de Armadores (`AssemblerManagementPage.jsx`):**
+                                *   `[x]` (Móvil) Rediseñar la tabla a un formato de "lista de tarjetas".
+                                *   `[x]` (Móvil) Corregir el layout de las tarjetas para usar Flexbox y evitar el desbordamiento horizontal.
+                                
+                            *   `[x]` **Página de Cambio de Contraseña (`ChangePasswordPage.jsx`):**
+                                *   `[x]` (UI/UX) Añadir espaciado y un contenedor tipo "tarjeta" para mejorar el layout y la legibilidad en todas las pantallas.
+
             ---
 
     

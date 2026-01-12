@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // Keep useAuth for user role
+import { useAuth } from '../contexts/AuthContext';
 import { armadorService } from '../services/armadorService';
+import './AssemblerManagementPage.css';
 
 const INITIAL_FORM_STATE = {
   name: '',
@@ -37,14 +38,16 @@ function EditForm({ assembler, onSave, onCancel }) {
       <select name="paymentTerms" value={editedAssembler.paymentTerms} onChange={handleChange}>
         {paymentTermOptions.map(term => <option key={term} value={term}>{term}</option>)}
       </select>
-      <button type="submit">Guardar Cambios</button>
-      <button type="button" onClick={onCancel}>Cancelar</button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary">Guardar Cambios</button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
+      </div>
     </form>
   );
 }
 
 function AssemblerManagementPage() {
-  const { user } = useAuth(); // Keep useAuth only for user role
+  const { user } = useAuth();
   const [assemblers, setAssemblers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,7 +55,6 @@ function AssemblerManagementPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAssembler, setNewAssembler] = useState(INITIAL_FORM_STATE);
 
-  // State for editing
   const [editingAssembler, setEditingAssembler] = useState(null);
 
   const fetchAssemblers = useCallback(async () => {
@@ -66,7 +68,7 @@ function AssemblerManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, []); // No authFetch dependency needed anymore
+  }, []);
 
   useEffect(() => {
     fetchAssemblers();
@@ -104,7 +106,7 @@ function AssemblerManagementPage() {
     setError(null);
     try {
       await armadorService.update(assemblerToUpdate.id, assemblerToUpdate);
-      setEditingAssembler(null); // Exit edit mode
+      setEditingAssembler(null);
       fetchAssemblers();
     } catch (e) {
       setError('Failed to update assembler: ' + e.message);
@@ -117,7 +119,6 @@ function AssemblerManagementPage() {
   const isPrivilegedUser = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
   const paymentTermOptions = ['BI_WEEKLY', 'MONTHLY', 'PER_UNIT'];
 
-  // If editing, show only the edit form
   if (editingAssembler) {
     return (
       <div className="assembler-management-page">
@@ -135,7 +136,7 @@ function AssemblerManagementPage() {
       <h2>Gestión de Armadores</h2>
       
       {isPrivilegedUser && (
-        <button onClick={() => setShowCreateForm(!showCreateForm)}>
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
           {showCreateForm ? 'Cancelar' : 'Crear Nuevo Armador'}
         </button>
       )}
@@ -151,7 +152,7 @@ function AssemblerManagementPage() {
           <select name="paymentTerms" value={newAssembler.paymentTerms} onChange={handleNewAssemblerChange}>
             {paymentTermOptions.map(term => <option key={term} value={term}>{term}</option>)}
           </select>
-          <button type="submit">Guardar Armador</button>
+          <button type="submit" className="btn btn-success">Guardar Armador</button>
         </form>
       )}
 
@@ -174,16 +175,18 @@ function AssemblerManagementPage() {
         <tbody>
           {assemblers.map((assembler) => (
             <tr key={assembler.id}>
-              <td>{assembler.name}</td>
-              <td>{assembler.phone || '-'}</td>
-              <td>{assembler.address || '-'}</td>
+              <td data-label="Nombre"><span>{assembler.name}</span></td>
+              <td data-label="Teléfono"><span>{assembler.phone || '-'}</span></td>
+              <td data-label="Dirección"><span>{assembler.address || '-'}</span></td>
               {isPrivilegedUser && (
                 <>
-                  <td>{assembler.email || '-'}</td>
-                  <td>{assembler.paymentTerms}</td>
-                  <td>
-                    <button onClick={() => setEditingAssembler(assembler)}>Editar</button>
-                    {user.role === 'ADMIN' && <button onClick={() => handleDeleteAssembler(assembler.id)}>Eliminar</button>}
+                  <td data-label="Email"><span>{assembler.email || '-'}</span></td>
+                  <td data-label="Condiciones de Pago"><span>{assembler.paymentTerms}</span></td>
+                  <td data-label="Acciones">
+                    <div>
+                      <button className="btn btn-secondary" onClick={() => setEditingAssembler(assembler)}>Editar</button>
+                      {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={() => handleDeleteAssembler(assembler.id)}>Eliminar</button>}
+                    </div>
                   </td>
                 </>
               )}
