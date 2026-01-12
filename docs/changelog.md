@@ -1,5 +1,16 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-12 (Parte 2)
+-   **[REFACTOR(ui)] Reorganización de la Arquitectura de Navegación (`Navbar`):**
+    -   Se refactorizó por completo la barra de navegación para agrupar las secciones en menús desplegables más intuitivos: "Producción" y "Armado".
+    -   Se renombró el enlace "Productos" a "Inventario" para mayor claridad.
+    -   Se añadió un enlace principal "Historial" para el historial de inventario.
+    -   Se simplificó el menú "Administración" y se eliminó el menú "Herramientas" redundante para el rol de Supervisor, integrando sus enlaces en las nuevas secciones.
+    -   El orden de los enlaces principales se ha reorganizado para un flujo de trabajo más lógico.
+-   **[FEAT(ui)] Refactorizada la Página de Gestión de Usuarios (`UserManagementPage`):**
+    -   Se implementó el diseño responsivo "Mobile-First", convirtiendo la tabla de usuarios en una lista de tarjetas en la vista móvil para mejorar la usabilidad en pantallas pequeñas.
+    -   Se estandarizaron todos los botones y estilos del formulario de creación para mantener la consistencia visual con el resto de la aplicación.
+
 ## 2026-01-12 (Continuación)
 -   **[FEAT(ui)] Refactorizada la Página de Login (`LoginPage`):**
     -   Se realizó una refactorización completa del layout, eliminando estilos en línea y el `useEffect` que manipulaba el `document.body`.

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-
 import { apiFetch } from '../services/api';
+import './UserManagementPage.css';
 
 function UserManagementPage() {
-  const { user } = useAuth(); // Use user from context
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,11 +55,10 @@ function UserManagementPage() {
   const handleRoleChange = async (userId, newRole) => {
     setError(null);
     try {
-                await apiFetch(`/users/${userId}`,
-                  {          method: 'PUT',
-          body: JSON.stringify({ role: newRole }),
-        }
-      );
+      await apiFetch(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole }),
+      });
       fetchUsers(); // Refresh list
     } catch (e) {
       setError('Failed to update role: ' + e.message);
@@ -90,8 +89,8 @@ function UserManagementPage() {
       const result = await apiFetch(`/users/${userId}/reset-password`, {
         method: 'PUT',
       });
-      alert(`La nueva contraseña para el usuario ${userId} es: ${result.newPassword}. Por favor, comunícasela al usuario.`);
-      fetchUsers(); // Refresh list (optional, as password change doesn't affect displayed data)
+      alert(`La nueva contraseña para el usuario es: ${result.newPassword}. Por favor, comunícasela al usuario.`);
+      fetchUsers(); // Refresh list (optional)
     } catch (e) {
       setError('Failed to reset password: ' + e.message);
       console.error('Error resetting password:', e);
@@ -110,14 +109,14 @@ function UserManagementPage() {
     return <p className="error-message">Error: {error}</p>;
   }
 
-  const roles = ['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']; // Available roles
+  const roles = ['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE'];
 
   return (
     <div className="user-management-page">
       <h2>Gestión de Usuarios</h2>
 
       {user.role === 'ADMIN' && (
-        <button onClick={() => setShowCreateForm(!showCreateForm)}>
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
           {showCreateForm ? 'Cancelar' : 'Crear Nuevo Usuario'}
         </button>
       )}
@@ -149,56 +148,60 @@ function UserManagementPage() {
             required
           />
           <select name="role" value={newUser.role} onChange={handleNewUserChange}>
-            <option value={undefined}>Seleccionar Rol (por defecto NO_ROLE)</option>
+            <option value="">Seleccionar Rol (por defecto NO_ROLE)</option>
             {roles.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <button type="submit">Crear Usuario</button>
+          <button type="submit" className="btn btn-success">Crear Usuario</button>
         </form>
       )}
 
-      <h3>Lista de Usuarios</h3>
-      <table className="user-list-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Nombre</th>
-            <th>Rol</th>
-            <th>Creado</th>
-            <th>Actualizado</th>
-            {user.role === 'ADMIN' && <th>Acciones</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.email}</td>
-              <td>{u.name || '-'}</td>
-              <td>
-                {user.role === 'ADMIN' ? (
-                  <select
-                    value={u.role}
-                    onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                  >
-                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                ) : (
-                  u.role
-                )}
-              </td>
-              <td>{new Date(u.createdAt).toLocaleDateString()}</td>
-              <td>{new Date(u.updatedAt).toLocaleDateString()}</td>
-              {user.role === 'ADMIN' && (
-                <td>
-                  <button onClick={() => handleResetPassword(u.id)}>Resetear Contraseña</button>
-                  <button onClick={() => handleDeleteUser(u.id)}>Eliminar</button>
-                </td>
-              )}
+      <h3 style={{ marginTop: '30px' }}>Lista de Usuarios</h3>
+      <div className="table-responsive">
+        <table className="user-list-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Nombre</th>
+              <th>Rol</th>
+              <th>Creado</th>
+              <th>Actualizado</th>
+              {user.role === 'ADMIN' && <th>Acciones</th>}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id}>
+                <td data-label="ID"><span>{u.id}</span></td>
+                <td data-label="Email"><span>{u.email}</span></td>
+                <td data-label="Nombre"><span>{u.name || '-'}</span></td>
+                <td data-label="Rol">
+                  {user.role === 'ADMIN' ? (
+                    <select
+                      value={u.role}
+                      onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                    >
+                      {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  ) : (
+                    <span>{u.role}</span>
+                  )}
+                </td>
+                <td data-label="Creado"><span>{new Date(u.createdAt).toLocaleDateString()}</span></td>
+                <td data-label="Actualizado"><span>{new Date(u.updatedAt).toLocaleDateString()}</span></td>
+                {user.role === 'ADMIN' && (
+                  <td data-label="Acciones">
+                    <div>
+                      <button className="btn btn-secondary" onClick={() => handleResetPassword(u.id)}>Resetear Contraseña</button>
+                      <button className="btn btn-danger" onClick={() => handleDeleteUser(u.id)}>Eliminar</button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

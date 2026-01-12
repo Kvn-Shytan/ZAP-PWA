@@ -62,14 +62,39 @@ export default function Navbar() {
         <div className={`navbar-links ${isOpen ? 'active' : ''}`}>
           <ul>
             <li><Link to="/">Inicio</Link></li>
-            <li><Link to="/products">Productos</Link></li>
+            <li><Link to="/products">Inventario</Link></li>
+
+            {/* Produccion Dropdown */}
+            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+              <li className="nav-dropdown">
+                <button className="dropdown-toggle">Producción</button>
+                <ul className="dropdown-menu">
+                  <li><Link to="/purchase-order">Registrar Compra</Link></li>
+                  <li><Link to="/production-orders">Orden de Producción Interna</Link></li>
+                  <li><Link to="/external-production-orders/new">Orden de Producción Externa</Link></li>
+                </ul>
+              </li>
+            )}
+
+            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+              <li><Link to="/logistics-dashboard">Logística</Link></li>
+            )}
+            
+            {/* Armado Dropdown */}
+            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+              <li className="nav-dropdown">
+                <button className="dropdown-toggle">Armado</button>
+                <ul className="dropdown-menu">
+                  <li><Link to="/assemblers">Gestión de Armadores</Link></li>
+                  <li><Link to="/assembler-payment-batch">Liquidación de Pagos</Link></li>
+                  <li><Link to="/assembler-payments-history">Historial de Pagos</Link></li>
+                  {user.role === 'ADMIN' && <li><Link to="/admin-tools/assembly-work">Trabajos de Armado</Link></li>}
+                </ul>
+              </li>
+            )}
             
             {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-              <>
-                <li><Link to="/logistics-dashboard">Logística</Link></li>
-                <li><Link to="/production-orders">Producción</Link></li>
-                <li><Link to="/assemblers">Armadores</Link></li>
-              </>
+              <li><Link to="/inventory-history">Historial</Link></li>
             )}
 
             {/* Admin Dropdown */}
@@ -78,24 +103,8 @@ export default function Navbar() {
                 <button className="dropdown-toggle">Administración</button>
                 <ul className="dropdown-menu">
                   <li><Link to="/users">Gestión de Usuarios</Link></li>
-                  <li><Link to="/admin-tools/assembly-work">Trabajos de Armado</Link></li>
-                  <li><Link to="/assembler-payment-batch">Liquidación de Pagos</Link></li>
-                  <li><Link to="/assembler-payments-history">Historial de Pagos</Link></li>
-                  <li><Link to="/admin-tools/overhead-costs">Costos Indirectos</Link></li>
-                  <li><Link to="/inventory-history">Historial de Inventario</Link></li>
                   <li><Link to="/admin-tools">Otras Herramientas</Link></li>
-                </ul>
-              </li>
-            )}
-             {/* Supervisor Dropdown */}
-            {user.role === 'SUPERVISOR' && (
-               <li className="nav-dropdown">
-                <button className="dropdown-toggle">Herramientas</button>
-                <ul className="dropdown-menu">
-                  <li><Link to="/purchase-order">Registrar Compra</Link></li>
-                  <li><Link to="/external-production-orders/new">Crear Orden Externa</Link></li>
-                  <li><Link to="/assembler-payment-batch">Liquidación de Pagos</Link></li>
-                  <li><Link to="/inventory-history">Historial de Inventario</Link></li>
+                  <li><Link to="/admin-tools/overhead-costs">Costos Indirectos</Link></li>
                 </ul>
               </li>
             )}

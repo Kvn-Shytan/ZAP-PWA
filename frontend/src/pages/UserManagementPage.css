@@ -1,0 +1,138 @@
+/* CSS for UserManagementPage */
+
+.user-management-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-management-page h2,
+.user-management-page h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* --- Create User Form --- */
+.create-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  max-width: 500px;
+}
+
+.create-user-form input,
+.create-user-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* --- User List Table --- */
+.user-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.user-list-table th,
+.user-list-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.user-list-table th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+}
+
+.user-list-table td select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.user-list-table td button {
+  margin-right: 5px;
+  margin-top: 5px;
+}
+
+
+/* --- Mobile-First Responsive Design --- */
+@media (max-width: 992px) { /* A wider breakpoint for this table */
+  .user-management-page {
+    padding: 15px;
+  }
+
+  .user-list-table thead {
+    display: none; /* Hide table headers on mobile */
+  }
+
+  .user-list-table, .user-list-table tbody, .user-list-table tr, .user-list-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .user-list-table tr {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+
+  .user-list-table td {
+    border: none;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-list-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .user-list-table td > span,
+  .user-list-table td > select {
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .user-list-table td[data-label="Acciones"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .user-list-table td[data-label="Acciones"]::before {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .user-list-table td[data-label="Acciones"] > div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .user-list-table td[data-label="Acciones"] button {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+  }
+}

@@ -318,19 +318,16 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
         
 
-        *   **11.1: Navegación Global (Completada)**
+        *   **11.1: Navegación Global (Reorganización Completada)**
 
             *   `[x]` **Acción (Frontend):** Refactorizar la barra de navegación en un componente `Navbar` dedicado.
-
             *   `[x]` **Acción (Frontend):** Implementar menú hamburguesa para la vista móvil y menús desplegables para la vista de escritorio.
-
             *   `[x]` **Acción (Frontend):** Implementar un encabezado fijo (`position: fixed`) para una visibilidad constante.
-
-            *   `[x]` **Acción (Frontend):** Actualizar el branding del encabezado a "ZAP - FlowApp -".
+            *   `[x]` **Acción (Frontend):** Reorganizar la arquitectura de información de la `Navbar` en menús desplegables lógicos (`Producción`, `Armado`, etc.) para una experiencia más intuitiva.
 
     
 
-        *   **11.2: Aplicar Diseño "Mobile-First" a Páginas Clave (Pendiente)**
+        *   **11.2: Aplicar Diseño "Mobile-First" a Páginas Clave (EN CURSO)**
 
             *   **Objetivo:** Rediseñar las páginas más complejas para que sean intuitivas y funcionales en pantallas pequeñas.
 
@@ -367,6 +364,9 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                             *   `[x]` **Página de Login (`LoginPage.jsx`):**
                                 *   `[x]` (UI/UX) Refactorización completa del layout a un diseño centrado con Flexbox, eliminando los estilos en línea y el scroll vertical.
                                 *   `[x]` (UI/UX) Asegurar que el logo y la imagen de fondo se integren correctamente en el nuevo diseño.
+
+                            *   `[x]` **Página de Gestión de Usuarios (`UserManagementPage.jsx`):**
+                                *   `[x]` (Móvil) Rediseñar la tabla a un formato de "lista de tarjetas".
 
             ---
 
