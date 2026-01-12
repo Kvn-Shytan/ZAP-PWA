@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { armadorService } from '../services/armadorService';
 import { useAuth } from '../contexts/AuthContext';
+import './AssemblerPaymentsHistoryPage.css';
+import { Link } from 'react-router-dom'; // Import Link
 
 // Helper to get first and last day of the current month in YYYY-MM-DD format
 const getInitialDateRange = () => {
@@ -87,7 +89,6 @@ const AssemblerPaymentsHistoryPage = () => {
         totalCount: result.totalCount,
       }));
       
-      // Update summary cards with data from the backend aggregates
       setSummaryData({
         totalPaid: result.aggregates.totalPaid || 0,
         totalUnitsProduced: result.aggregates.totalUnitsProduced || 0,
@@ -100,9 +101,7 @@ const AssemblerPaymentsHistoryPage = () => {
     }
   }, [filters, pagination.currentPage]);
 
-  // Effect to fetch data on filter or page change
   useEffect(() => {
-    // Fetch only if dates are set, to avoid initial empty fetch
     if (filters.startDate && filters.endDate) {
       fetchPayments();
     }
@@ -112,7 +111,7 @@ const AssemblerPaymentsHistoryPage = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-    setPagination(prev => ({...prev, currentPage: 1})); // Reset to first page on filter change
+    setPagination(prev => ({...prev, currentPage: 1}));
   };
 
   const handleNextPage = () => {
@@ -131,23 +130,22 @@ const AssemblerPaymentsHistoryPage = () => {
     setExpandedRow(prev => (prev === paymentId ? null : paymentId));
   };
 
-
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="payment-history-page">
       <h2>Historial de Pagos a Armadores</h2>
 
-      <div className="summary-cards" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', minWidth: '220px' }}>
+      <div className="summary-cards">
+        <div className="summary-card">
           <h4>Total Pagado en Período</h4>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${Number(summaryData.totalPaid).toFixed(2)}</p>
+          <p>${Number(summaryData.totalPaid).toFixed(2)}</p>
         </div>
-        <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', minWidth: '220px' }}>
+        <div className="summary-card">
           <h4>Total de Unidades Producidas</h4>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{summaryData.totalUnitsProduced}</p>
+          <p>{summaryData.totalUnitsProduced}</p>
         </div>
       </div>
       
-      <div className="filters" style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="filters">
         <input 
           type="date" 
           name="startDate" 
@@ -173,80 +171,82 @@ const AssemblerPaymentsHistoryPage = () => {
       </div>
 
       {loading && <p>Cargando historial de pagos...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={tableHeaderStyle}>ID de Pago</th>
-            <th style={tableHeaderStyle}>Armador</th>
-            <th style={tableHeaderStyle}>Fecha de Pago</th>
-            <th style={tableHeaderStyle}>Período Liquidado</th>
-            <th style={tableHeaderStyle}>Monto</th>
-            <th style={tableHeaderStyle}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {!loading && payments.length > 0 ? (
-            payments.map(payment => (
-              <React.Fragment key={payment.id}>
-                <tr style={{ backgroundColor: expandedRow === payment.id ? '#e9f5ff' : 'transparent' }}>
-                  <td>{payment.id.slice(-8)}...</td>
-                  <td>{payment.armador?.name}</td>
-                  <td>{new Date(payment.datePaid).toLocaleDateString()}</td>
-                  <td>{`${new Date(payment.periodStart).toLocaleDateString()} - ${new Date(payment.periodEnd).toLocaleDateString()}`}</td>
-                  <td>${Number(payment.amount).toFixed(2)}</td>
-                  <td>
-                    <button onClick={() => handleToggleRow(payment.id)}>
-                      {expandedRow === payment.id ? 'Ocultar Órdenes' : 'Ver Órdenes'}
-                    </button>
-                  </td>
-                </tr>
-                {expandedRow === payment.id && (
+      <div className="table-responsive">
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>ID de Pago</th>
+              <th>Armador</th>
+              <th>Fecha de Pago</th>
+              <th>Período Liquidado</th>
+              <th>Monto</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!loading && payments.length > 0 ? (
+              payments.map(payment => (
+                <React.Fragment key={payment.id}>
                   <tr>
-                    <td colSpan="6" style={{ padding: '1rem', backgroundColor: '#f8f9fa' }}>
-                      <h4>Órdenes Incluidas en este Pago</h4>
-                      {payment.orders && payment.orders.length > 0 ? (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                          {payment.orders.map(order => (
-                            <li key={order.id} style={{ borderBottom: '1px solid #eee', padding: '8px 0' }}>
-                              <strong>Nro:</strong> {order.orderNumber} - <strong>Estado:</strong> {order.status}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No hay órdenes detalladas para este pago.</p>
-                      )}
+                    <td data-label="ID de Pago"><span>{payment.id.slice(-8)}...</span></td>
+                    <td data-label="Armador"><span>{payment.armador?.name}</span></td>
+                    <td data-label="Fecha de Pago"><span>{new Date(payment.datePaid).toLocaleDateString()}</span></td>
+                    <td data-label="Período Liquidado"><span>{`${new Date(payment.periodStart).toLocaleDateString()} - ${new Date(payment.periodEnd).toLocaleDateString()}`}</span></td>
+                    <td data-label="Monto"><span>${Number(payment.amount).toFixed(2)}</span></td>
+                    <td data-label="Acciones">
+                      <button className="btn btn-outline-primary btn-sm" onClick={() => handleToggleRow(payment.id)}>
+                        {expandedRow === payment.id ? 'Ocultar' : 'Ver Órdenes'}
+                      </button>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))
-          ) : (
-            !loading && (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
-                  No se encontraron pagos para los filtros seleccionados.
-                </td>
-              </tr>
-            )
-          )}
-        </tbody>
-      </table>
+                  {expandedRow === payment.id && (
+                    <tr className="expanded-details-row">
+                      <td colSpan="6">
+                        <div className="expanded-details-content">
+                          <h4>Órdenes Incluidas en este Pago</h4>
+                          {payment.orders && payment.orders.length > 0 ? (
+                            <ul>
+                              {payment.orders.map(order => (
+                                <li key={order.id}>
+                                  <strong>Nro:</strong> <Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link> - <strong>Estado:</strong> {order.status}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No hay órdenes detalladas para este pago.</p>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              !loading && (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+                    No se encontraron pagos para los filtros seleccionados.
+                  </td>
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      <div className="pagination" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem' }}>
-        <button onClick={handlePreviousPage} disabled={pagination.currentPage <= 1 || loading}>
+      <div className="pagination">
+        <button className="btn btn-secondary" onClick={handlePreviousPage} disabled={pagination.currentPage <= 1 || loading}>
           Anterior
         </button>
         <span>Página {pagination.currentPage} de {pagination.totalPages}</span>
-        <button onClick={handleNextPage} disabled={pagination.currentPage >= pagination.totalPages || loading}>
+        <button className="btn btn-secondary" onClick={handleNextPage} disabled={pagination.currentPage >= pagination.totalPages || loading}>
           Siguiente
         </button>
       </div>
     </div>
   );
 };
-
-const tableHeaderStyle = { borderBottom: '2px solid black', textAlign: 'left', padding: '8px' };
 
 export default AssemblerPaymentsHistoryPage;

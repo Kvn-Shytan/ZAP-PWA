@@ -367,6 +367,15 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
                             *   `[x]` **Página de Gestión de Usuarios (`UserManagementPage.jsx`):**
                                 *   `[x]` (Móvil) Rediseñar la tabla a un formato de "lista de tarjetas".
+                            
+                            *   `[x]` **Página de Creación de Orden de Producción Externa (`ExternalProductionOrderPage.jsx`):**
+                                *   `[x]` (UI/UX) Refactorización completa a un diseño responsive con "tarjetas" para secciones clave.
+                                *   `[x]` (Funcionalidad) Implementación de un buscador de productos escalable (`react-select AsyncSelect`) con búsqueda asíncrona y paginación.
+                                *   `[x]` (FIX) Corrección de bug en el buscador de productos (parámetro `search` y `defaultOptions`).
+                            
+                            *   `[x]` **Página de Historial de Pagos a Armadores (`AssemblerPaymentsHistoryPage.jsx`):**
+                                *   `[x]` (Móvil) Rediseñar la tabla a un formato de "lista de tarjetas" con filtros y paginación responsivos.
+                                *   `[x]` (Funcionalidad) Integración de enlaces clicables a las órdenes de producción en los detalles expandidos.
 
             ---
 

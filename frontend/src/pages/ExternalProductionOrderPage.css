@@ -1,0 +1,188 @@
+/* CSS for ExternalProductionOrderPage */
+
+.external-order-page-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.external-order-page-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.external-order-page-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-form-section,
+.plan-summary-section {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.order-form-section div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-form-section label {
+  font-weight: 600;
+  color: #555;
+}
+
+.order-form-section select,
+.order-form-section input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.plan-summary-section h4,
+.plan-summary-section h5 {
+  color: #333;
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.plan-summary-section hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+/* PlanItem Component Styling */
+.plan-item-wrapper {
+  border-left: 2px solid #eee; /* Default indentation line */
+  padding-left: 10px;
+  margin-top: 5px;
+}
+
+.plan-item {
+  padding: 8px;
+  border-radius: 4px;
+  font-style: italic;
+  font-size: 0.9em;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.plan-item.level-0 {
+  background: transparent;
+  font-style: normal;
+  font-size: 1em;
+}
+
+.plan-item-content {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.plan-item-content.insufficient-stock {
+  color: red;
+  font-weight: bold;
+}
+
+.plan-item-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.plan-item-actions button {
+  white-space: nowrap;
+}
+
+.plan-item.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.plan-item-children {
+  margin-left: 20px;
+  margin-top: 5px;
+}
+
+/* Responsive adjustments for PlanItem buttons */
+@media (max-width: 768px) {
+  .plan-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .plan-item-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .plan-item-actions button {
+    width: 100%;
+  }
+}
+
+.plan-response-warning {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.plan-summary-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-summary-section li {
+  background-color: #f0f8ff;
+  border: 1px solid #e0f0ff;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.plan-summary-total {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-top: 20px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* Error message styling */
+.error-message {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Loader styling */
+.loading-message {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  margin-bottom: 20px;
+}
+
+/* Responsive container for forms/sections */
+@media (max-width: 768px) {
+  .external-order-page-container {
+    padding: 15px;
+  }
+  .order-form-section,
+  .plan-summary-section {
+    padding: 15px;
+  }
+}
