@@ -42,5 +42,9 @@
 }
 
 .main-content {
+  /* Base class for main content area */
+}
+
+.main-content-with-navbar {
   padding-top: 76px; /* Adjust based on navbar height */
 }

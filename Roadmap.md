@@ -363,6 +363,10 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                                 
                             *   `[x]` **Página de Cambio de Contraseña (`ChangePasswordPage.jsx`):**
                                 *   `[x]` (UI/UX) Añadir espaciado y un contenedor tipo "tarjeta" para mejorar el layout y la legibilidad en todas las pantallas.
+                            
+                            *   `[x]` **Página de Login (`LoginPage.jsx`):**
+                                *   `[x]` (UI/UX) Refactorización completa del layout a un diseño centrado con Flexbox, eliminando los estilos en línea y el scroll vertical.
+                                *   `[x]` (UI/UX) Asegurar que el logo y la imagen de fondo se integren correctamente en el nuevo diseño.
 
             ---
 

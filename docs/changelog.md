@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-12 (Continuación)
+-   **[FEAT(ui)] Refactorizada la Página de Login (`LoginPage`):**
+    -   Se realizó una refactorización completa del layout, eliminando estilos en línea y el `useEffect` que manipulaba el `document.body`.
+    -   Se implementó un diseño centrado con Flexbox en el contenedor principal (`login-page-container`) para asegurar que el contenido esté siempre visible y bien espaciado, sin necesidad de scroll vertical.
+    -   Se creó un `login-form-card` para agrupar el logo, título y formulario, dándole una apariencia de tarjeta y resolviendo el problema de los elementos pegados a los bordes.
+    -   Se aseguró la correcta integración visual del logo y la trama de fondo, elementos clave de la marca.
+    -   Todos los estilos fueron movidos a `frontend/src/pages/LoginPage.css` para una mayor mantenibilidad.
+-   **[FIX(ui)] Eliminada Barra Blanca Superior en Página de Login:**
+    -   Se solucionó el problema de la "barra blanca" superior visible en la página de Login.
+    -   La causa fue un `padding-top` fijo en `.main-content` que se aplicaba universalmente.
+    -   La solución implementada fue renombrar la clase en `App.css` a `.main-content-with-navbar` y aplicar esta clase condicionalmente en `App.jsx`, solo cuando la barra de navegación está visible.
+
 ## 2026-01-12
 -   **[FEAT(ui)] Refactorizada la Página de Gestión de Armadores (`AssemblerManagementPage`):**
     -   Se implementó el diseño responsivo "Mobile-First", transformando la tabla de armadores en una lista de tarjetas en la vista móvil.

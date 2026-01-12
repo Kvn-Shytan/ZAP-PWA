@@ -34,7 +34,7 @@ function App() {
     <> 
       {/* Navigation bar - visible only if user is logged in AND not on the login page */}
       {user && location.pathname !== '/login' && <Navbar />}
-      <main className="main-content">
+      <main className={user && location.pathname !== '/login' ? 'main-content-with-navbar' : 'main-content'}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           {/* Default route - show DashboardPage for authenticated users */}
