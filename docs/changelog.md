@@ -1,5 +1,22 @@
 # Changelog (Registro de Cambios)
 
+1 ## 2026-01-12 (Parte 3)
+    2 -   **[FEAT(ui)] Refactorizada Página de Historial de Movimientos de Inventario (`InventoryHistoryPage`):**
+    3     -   Se realizó una refactorización completa a un diseño responsive con "tarjetas de movimiento" inteligentes,
+      incluyendo un código de colores mejorado para identificar rápidamente el tipo de movimiento.
+    4     -   Se implementó un buscador de productos escalable (`react-select AsyncSelect`) para el filtro de productos,
+      mejorando la usabilidad con grandes volúmenes de datos.
+    5     -   Se eliminaron todos los estilos en línea y se trasladaron a `InventoryHistoryPage.css`.
+    6 -   **[FEAT(ui)] Refactorizada Página de Herramientas de Administración (`AdminToolsPage`):**
+    7     -   Se refactorizó el layout de la página a un diseño responsivo de cuadrícula (`grid`) para las tarjetas de
+      herramientas, eliminando los estilos en línea y trasladándolos a `AdminToolsPage.css`.
+    8 -   **[REFACTOR(ui)] Eliminado Enlace Redundante de `Navbar`:**
+    9     -   Se eliminó el enlace "Costos Indirectos" del menú desplegable "Administración" en `Navbar.jsx` para evitar
+      redundancia, ya que es accesible a través de "Otras Herramientas".
+   10 -   **[FIX(ui)] Corregido Padding de `Navbar` en Escritorio:**
+   11     -   Se solucionó el problema del exceso de padding en la `Navbar` en la vista de escritorio, que se introdujo
+      ajustar el menú móvil. Se añadió un reset de padding en el media query de escritorio en `Navbar.css`.
+
 ## 2026-01-12 (Parte 2)
 -   **[REFACTOR(ui)] Reorganización de la Arquitectura de Navegación (`Navbar`):**
     -   Se refactorizó por completo la barra de navegación para agrupar las secciones en menús desplegables más intuitivos: "Producción" y "Armado".

@@ -376,6 +376,13 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
                             *   `[x]` **Página de Historial de Pagos a Armadores (`AssemblerPaymentsHistoryPage.jsx`):**
                                 *   `[x]` (Móvil) Rediseñar la tabla a un formato de "lista de tarjetas" con filtros y paginación responsivos.
                                 *   `[x]` (Funcionalidad) Integración de enlaces clicables a las órdenes de producción en los detalles expandidos.
+                            
+                            *   `[x]` **Página de Historial de Movimientos de Inventario (`InventoryHistoryPage.jsx`):**
+                                *   `[x]` (UI/UX) Refactorización completa a un diseño responsive con "tarjetas de movimiento" inteligentes y código de colores.
+                                *   `[x]` (Funcionalidad) Implementación de un buscador de productos escalable (`react-select AsyncSelect`) para el filtro.
+                            
+                            *   `[x]` **Página de Herramientas de Administración (`AdminToolsPage.jsx`):**
+                                *   `[x]` (UI/UX) Refactorización a un diseño responsivo de cuadrícula (`grid`) para las tarjetas de herramientas.
 
             ---
 

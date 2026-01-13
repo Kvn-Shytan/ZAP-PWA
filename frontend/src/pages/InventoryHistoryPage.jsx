@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom'; // NEW
+import { Link } from 'react-router-dom';
+import AsyncSelect from 'react-select/async';
+import { productService } from '../services/productService';
+import './InventoryHistoryPage.css';
 
 const MOVEMENT_TYPES = [
   { value: 'PURCHASE', label: 'Compra' },
@@ -20,41 +23,36 @@ const InventoryHistoryPage = () => {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button on action
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [filters, setFilters] = useState({ page: 1, pageSize: 20 });
   const [pagination, setPagination] = useState({});
   const [filterInputs, setFilterInputs] = useState({ 
-    productId: '', userId: '', type: '', startDate: '', endDate: '', isCorrection: false 
+    productId: null, userId: '', type: '', startDate: '', endDate: '', isCorrection: false 
   });
 
-  const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
-
-  const { user } = useAuth(); // Get user from auth context
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchFilterData = async () => {
+    const fetchUsers = async () => {
       try {
-        // Fetch products with pagination disabled to get all for the filter
-        const productsData = await apiFetch('/products?pageSize=1000'); 
         const usersData = await apiFetch('/users');
-        setProducts(productsData.products || []); // Correctly access the products array
         setUsers(usersData || []);
       } catch (err) {
-        console.error("Failed to fetch filter data", err);
+        console.error("Failed to fetch users", err);
       }
     };
-    fetchFilterData();
+    fetchUsers();
   }, []);
 
   const loadMovements = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const activeFilters = { ...filters };
+      const activeFilters = { ...filters, productId: filters.productId?.value };
       Object.keys(activeFilters).forEach(key => {
-        if (activeFilters[key] === '' || activeFilters[key] === false) {
+        if (!activeFilters[key]) {
           delete activeFilters[key];
         }
       });
@@ -84,6 +82,10 @@ const InventoryHistoryPage = () => {
     setFilterInputs(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleProductFilterChange = (selectedOption) => {
+    setFilterInputs(prev => ({ ...prev, productId: selectedOption }));
+  };
+
   const handleApplyFilters = () => {
     setFilters({ ...filterInputs, page: 1, pageSize: 20 });
   };
@@ -107,7 +109,7 @@ const InventoryHistoryPage = () => {
         body: JSON.stringify({ movementId }),
       });
       alert('Movimiento anulado correctamente.');
-      loadMovements(); // Recargar la lista
+      loadMovements();
     } catch (err) {
       console.error("Error during reversal:", err);
       alert(`Error al anular el movimiento: ${err.message}`);
@@ -116,12 +118,19 @@ const InventoryHistoryPage = () => {
     }
   };
 
-  const renderMovements = () => {
-    if (loading) return <tr><td colSpan="7">Cargando...</td></tr>;
-    if (error) return <tr><td colSpan="7" style={{ color: 'red' }}>{error}</td></tr>;
-    if (movements.length === 0) return <tr><td colSpan="7">No se encontraron movimientos con los filtros actuales.</td></tr>;
+  const loadProductOptions = async (inputValue) => {
+    const data = await productService.getProducts({ search: inputValue, pageSize: 50 });
+    return data.products.map(p => ({
+      value: p.id,
+      label: `${p.description} (${p.internalCode})`
+    }));
+  };
 
-    // 1. Find all annulled movements to identify originals
+  const renderMovements = () => {
+    if (loading) return <tr><td colSpan="7" style={{ textAlign: 'center' }}>Cargando...</td></tr>;
+    if (error) return <tr><td colSpan="7" className="error-message">{error}</td></tr>;
+    if (movements.length === 0) return <tr><td colSpan="7" style={{ textAlign: 'center' }}>No se encontraron movimientos con los filtros actuales.</td></tr>;
+
     const annulledOriginalIds = new Set();
     movements.forEach(mov => {
       if (mov.notes?.startsWith('Anulación del mov. #')) {
@@ -134,51 +143,38 @@ const InventoryHistoryPage = () => {
 
     return movements.map(mov => {
       const isAnnulled = annulledOriginalIds.has(mov.id);
-      const isComponent = mov.type === 'PRODUCTION_OUT';
       const isReversal = mov.notes?.startsWith('Anulación');
-
-      // 2. Define dynamic styles
-      const rowStyle = {};
-      if (isAnnulled) {
-        rowStyle.textDecoration = 'line-through';
-        rowStyle.color = '#999';
-        rowStyle.fontStyle = 'italic';
-        rowStyle.fontSize = '0.9em';
-      } else if (isReversal) { // Las reversiones tienen prioridad sobre otros colores si no están anuladas
-        rowStyle.color = 'red';
-        rowStyle.textDecoration = 'none';
-        rowStyle.fontStyle = 'normal';
-      } else if (mov.type === 'PURCHASE') { // Nuevo: Verde para Compras
-        rowStyle.color = '#28a745'; // Green
-      } else if (mov.eventId && ['SENT_TO_ASSEMBLER', 'RECEIVED_FROM_ASSEMBLER'].includes(mov.type)) { // Nuevo: Azul para Eventos de Producción Externa
-        rowStyle.color = '#4682B4'; // SteelBlue
-      } else if (isComponent) { // Estilo existente para componentes
-        rowStyle.fontStyle = 'italic';
-        rowStyle.fontSize = '0.9em';
-      }
-
-      // 3. Define button visibility - NEW LOGIC
+      
+      let rowClass = 'movement-row';
+      if (isAnnulled) rowClass += ' annulled';
+      else if (isReversal) rowClass += ' reversal';
+      else if (mov.type === 'PURCHASE') rowClass += ' purchase';
+      else if (mov.eventId && ['SENT_TO_ASSEMBLER', 'RECEIVED_FROM_ASSEMBLER'].includes(mov.type)) rowClass += ' external-order';
+      
       const showAnnulButton = user.role === 'ADMIN' && !isReversal && !isAnnulled && (!mov.eventId || mov.type === 'PRODUCTION_IN');
+      const isPositive = ['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN', 'RECEIVED_FROM_ASSEMBLER'].includes(mov.type);
 
       return (
-        <tr key={mov.id} style={rowStyle}>
-          <td>{new Date(mov.createdAt).toLocaleString()}</td>
-          <td>{mov.product.description} ({mov.product.internalCode})</td>
-          <td>{mov.type}</td>
-          <td>{['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type) ? '+' : '-'}{mov.quantity}</td>
-          <td>{mov.user.name || mov.user.email}</td>
-          <td>
-            {mov.externalProductionOrder ? (
-              <Link to={`/external-orders/${mov.externalProductionOrder.id}`}>
-                {mov.externalProductionOrder.orderNumber}
-              </Link>
-            ) : (
-              mov.notes
-            )}
+        <tr key={mov.id} className={rowClass}>
+          <td data-label="Fecha"><span>{new Date(mov.createdAt).toLocaleString()}</span></td>
+          <td data-label="Producto"><span>{mov.product.description} ({mov.product.internalCode})</span></td>
+          <td data-label="Tipo"><span>{MOVEMENT_TYPES.find(t => t.value === mov.type)?.label || mov.type}</span></td>
+          <td data-label="Cantidad"><span className={`quantity ${isPositive ? 'positive' : 'negative'}`}>{isPositive ? '+' : '-'}{mov.quantity}</span></td>
+          <td data-label="Usuario"><span>{mov.user.name || mov.user.email}</span></td>
+          <td data-label="Notas">
+            <span>
+              {mov.externalProductionOrder ? (
+                <Link to={`/external-orders/${mov.externalProductionOrder.id}`}>
+                  {mov.externalProductionOrder.orderNumber}
+                </Link>
+              ) : (
+                mov.notes
+              )}
+            </span>
           </td>
-          <td>
+          <td data-label="Acciones">
             {showAnnulButton && (
-              <button onClick={() => handleReversal(mov.id)} disabled={isSubmitting} style={annulButtonStyle}>
+              <button onClick={() => handleReversal(mov.id)} disabled={isSubmitting} className="btn btn-danger btn-sm">
                 Anular
               </button>
             )}
@@ -189,72 +185,65 @@ const InventoryHistoryPage = () => {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="inventory-history-page">
       <h2>Historial de Movimientos de Inventario</h2>
       
-      <div style={filterContainerStyle}>
-        <select name="productId" value={filterInputs.productId} onChange={handleInputChange} style={inputStyle}>
-          <option value="">Todos los Productos</option>
-          {products.map(p => <option key={p.id} value={p.id}>{p.description}</option>)}
-        </select>
-        <select name="userId" value={filterInputs.userId} onChange={handleInputChange} style={inputStyle}>
+      <div className="filters-container">
+        <AsyncSelect
+          className="product-filter"
+          cacheOptions
+          loadOptions={loadProductOptions}
+          defaultOptions
+          value={filterInputs.productId}
+          onChange={handleProductFilterChange}
+          placeholder="Filtrar por Producto..."
+          isClearable
+        />
+        <select name="userId" value={filterInputs.userId} onChange={handleInputChange}>
           <option value="">Todos los Usuarios</option>
           {users.map(u => <option key={u.id} value={u.id}>{u.name || u.email}</option>)}
         </select>
-        <select name="type" value={filterInputs.type} onChange={handleInputChange} style={inputStyle}>
+        <select name="type" value={filterInputs.type} onChange={handleInputChange}>
           <option value="">Todos los Tipos</option>
           {MOVEMENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
-        <input type="date" name="startDate" value={filterInputs.startDate} onChange={handleInputChange} style={inputStyle} />
-        <input type="date" name="endDate" value={filterInputs.endDate} onChange={handleInputChange} style={inputStyle} />
-        <label style={inputStyle}>
+        <input type="date" name="startDate" value={filterInputs.startDate} onChange={handleInputChange} />
+        <input type="date" name="endDate" value={filterInputs.endDate} onChange={handleInputChange} />
+        <label>
           <input type="checkbox" name="isCorrection" checked={filterInputs.isCorrection} onChange={handleInputChange} />
           Sólo Correcciones
         </label>
-        <button onClick={handleApplyFilters} style={buttonStyle}>Aplicar Filtros</button>
+        <button onClick={handleApplyFilters} className="btn btn-primary">Aplicar Filtros</button>
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={tableHeaderStyle}>Fecha</th>
-            <th style={tableHeaderStyle}>Producto</th>
-            <th style={tableHeaderStyle}>Tipo</th>
-            <th style={tableHeaderStyle}>Cantidad</th>
-            <th style={tableHeaderStyle}>Usuario</th>
-            <th style={tableHeaderStyle}>Notas</th>
-            <th style={tableHeaderStyle}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderMovements()}
-        </tbody>
-      </table>
+      <div className="table-responsive">
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Usuario</th>
+              <th>Notas</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {renderMovements()}
+          </tbody>
+        </table>
+      </div>
 
-       <div style={paginationStyle}>
-        <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage <= 1}>Anterior</button>
+       <div className="pagination">
+        <button className="btn btn-secondary" onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={!pagination.currentPage || pagination.currentPage <= 1}>Anterior</button>
         <span>
           Página {pagination.currentPage || '-'} de {pagination.totalPages || '-'} (Total: {pagination.totalMovements} movimientos)
         </span>
-        <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage >= pagination.totalPages}>Siguiente</button>
+        <button className="btn btn-secondary" onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={!pagination.currentPage || pagination.currentPage >= pagination.totalPages}>Siguiente</button>
       </div>
     </div>
   );
-};
-
-// Styles
-const tableHeaderStyle = { borderBottom: '2px solid black', textAlign: 'left', padding: '8px' };
-const filterContainerStyle = { display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '1rem', alignItems: 'center' };
-const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px' };
-const buttonStyle = { padding: '8px 12px', border: 'none', backgroundColor: '#007bff', color: 'white', borderRadius: '4px', cursor: 'pointer' };
-const paginationStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' };
-const annulButtonStyle = { 
-  padding: '4px 8px', 
-  border: '1px solid #dc3545', 
-  backgroundColor: 'transparent', 
-  color: '#dc3545', 
-  borderRadius: '4px', 
-  cursor: 'pointer' 
 };
 
 export default InventoryHistoryPage;

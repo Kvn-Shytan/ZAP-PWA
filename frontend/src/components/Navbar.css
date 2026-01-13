@@ -76,10 +76,12 @@ body.nav-open {
   height: 100%;
   background-color: rgba(26, 26, 26, 0.98);
   backdrop-filter: blur(5px);
-  justify-content: center;
-  align-items: center;
   overflow-y: auto;
   z-index: 1200; /* Increased z-index */
+  /* Add padding and remove alignment to fix scroll issue */
+  padding-top: 80px;
+  padding-bottom: 40px;
+  box-sizing: border-box;
 }
 
 .navbar-links.active {
@@ -159,6 +161,7 @@ body.nav-open {
     background: none;
     backdrop-filter: none;
     overflow-y: visible;
+    padding: 0; /* ADDED: Reset padding for desktop view */
   }
 
   .navbar-links > ul {

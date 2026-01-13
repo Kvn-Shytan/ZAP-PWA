@@ -104,7 +104,6 @@ export default function Navbar() {
                 <ul className="dropdown-menu">
                   <li><Link to="/users">Gestión de Usuarios</Link></li>
                   <li><Link to="/admin-tools">Otras Herramientas</Link></li>
-                  <li><Link to="/admin-tools/overhead-costs">Costos Indirectos</Link></li>
                 </ul>
               </li>
             )}

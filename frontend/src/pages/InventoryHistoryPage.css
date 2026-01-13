@@ -1,0 +1,169 @@
+/* CSS for InventoryHistoryPage */
+
+.inventory-history-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.inventory-history-page h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* --- Filters --- */
+.filters-container {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.filters-container select,
+.filters-container input {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.filters-container label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+/* --- Table --- */
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.history-table th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+}
+
+/* --- Color Coding & Status --- */
+.movement-row.annulled {
+  text-decoration: line-through;
+  color: #999;
+  font-style: italic;
+  font-size: 0.9em;
+  background-color: #fcfcfc;
+}
+.movement-row.reversal {
+  color: #dc3545; /* Red */
+  font-weight: 500;
+}
+.movement-row.purchase {
+  color: #28a745; /* Green */
+}
+.movement-row.external-order {
+  color: #4682B4; /* SteelBlue */
+}
+
+/* --- Pagination --- */
+.pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination span {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+
+/* --- Mobile-First Responsive Design --- */
+@media (max-width: 992px) {
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table, .history-table tbody, .history-table tr, .history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .history-table tr.movement-row {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-left: 5px solid #ccc; /* Default border color */
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+
+  /* Color Coding for Cards */
+  .movement-row.purchase { border-left-color: #28a745; }
+  .movement-row.external-order { border-left-color: #4682B4; }
+  .movement-row.reversal { border-left-color: #dc3545; }
+
+
+  .history-table td {
+    border: none;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px dashed #eee;
+  }
+  .history-table td:last-child {
+    border-bottom: none;
+  }
+
+  .history-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .history-table td > span {
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .history-table td > .quantity {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  
+  .quantity.positive { color: #28a745; }
+  .quantity.negative { color: #dc3545; }
+
+  .history-table td[data-label="Acciones"] {
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+}
