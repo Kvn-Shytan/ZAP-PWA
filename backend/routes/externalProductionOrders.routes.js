@@ -34,15 +34,15 @@ const getProductionPlan = async (tx, prodId, requiredQty, visited = new Set()) =
   const flatWorkItems = new Map();
   const flatInsufficientStock = [];
 
-  const directAssemblyWork = await tx.productoTrabajoArmado.findMany({
+  const directAssemblyWork = await tx.productAssemblyJob.findMany({
     where: { productId: prodId },
-    include: { trabajo: true },
+    include: { assemblyJob: true },
   });
 
   directAssemblyWork.forEach(aw => {
     const totalWorkQty = 1 * requiredQty;
-    const currentQty = flatWorkItems.get(aw.trabajo.id)?.quantity || 0;
-    flatWorkItems.set(aw.trabajo.id, { work: aw.trabajo, quantity: currentQty + totalWorkQty });
+    const currentQty = flatWorkItems.get(aw.assemblyJob.id)?.quantity || 0;
+    flatWorkItems.set(aw.assemblyJob.id, { work: aw.assemblyJob, quantity: currentQty + totalWorkQty });
   });
 
   for (const item of directComponents) {
@@ -106,7 +106,7 @@ router.use(authenticateToken);
 // POST /api/external-production-orders - Crear o Simular una orden
 router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { mode } = req.query; // 'dry-run' or 'commit'
-  const { armadorId, productId, quantity, expectedCompletionDate, notes, includeSubAssemblies = [] } = req.body;
+  const { assemblerId, productId, quantity, expectedCompletionDate, notes, includeSubAssemblies = [] } = req.body;
   const userId = req.user.userId;
 
   if (!productId || !quantity || quantity <= 0) {
@@ -166,8 +166,8 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   }
 
   // --- COMMIT MODE ---
-  if (!armadorId) {
-    return res.status(400).json({ error: 'armadorId es requerido para crear la orden.' });
+  if (!assemblerId) {
+    return res.status(400).json({ error: 'assemblerId es requerido para crear la orden.' });
   }
 
   try {
@@ -223,7 +223,9 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
       const order = await tx.externalProductionOrder.create({
         data: {
           orderNumber, // Add the generated order number
-          armadorId,
+          assembler: {
+            connect: { id: assemblerId }
+          },
           dateSent: new Date(),
           expectedCompletionDate: expectedCompletionDate ? new Date(expectedCompletionDate) : null,
           notes,
@@ -298,7 +300,7 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
 router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { 
     status, 
-    armadorId, 
+    assemblerId, 
     dateFrom, 
     dateTo, 
     search, 
@@ -316,8 +318,8 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
     if (status) {
       where.status = { in: status.split(',') };
     }
-    if (armadorId) {
-      where.armadorId = armadorId;
+    if (assemblerId) {
+      where.armadorId = assemblerId;
     }
     if (dateFrom && dateTo) {
       where.createdAt = {
@@ -352,8 +354,13 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
       prisma.externalProductionOrder.count({ where }),
     ]);
 
+    const formattedOrders = orders.map(order => {
+      const { armador, ...rest } = order;
+      return { ...rest, assembler: armador };
+    });
+
     res.json({
-      orders,
+      orders: formattedOrders,
       pagination: {
         total: totalOrders,
         totalPages: Math.ceil(totalOrders / pageSizeNum),
@@ -407,7 +414,10 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    res.json(order);
+    const { armador, ...restOfOrder } = order;
+    const orderWithAssembler = { ...restOfOrder, assembler: armador };
+
+    res.json(orderWithAssembler);
   } catch (error) {
     console.error(`Error fetching order ${id}:`, error.message);
     res.status(500).json({ error: 'Failed to fetch order.' });

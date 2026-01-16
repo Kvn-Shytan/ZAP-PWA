@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { armadorService } from '../services/armadorService';
+import { assemblerService } from '../services/assemblerService';
 import './AssemblerManagementPage.css';
 
 const INITIAL_FORM_STATE = {
@@ -61,7 +61,7 @@ function AssemblerManagementPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await armadorService.getArmadores();
+      const data = await assemblerService.getAssemblers();
       setAssemblers(data);
     } catch (e) {
       setError('Failed to fetch assemblers: ' + e.message);
@@ -82,7 +82,7 @@ function AssemblerManagementPage() {
     e.preventDefault();
     setError(null);
     try {
-      await armadorService.create(newAssembler);
+      await assemblerService.create(newAssembler);
       setNewAssembler(INITIAL_FORM_STATE);
       setShowCreateForm(false);
       fetchAssemblers();
@@ -92,10 +92,10 @@ function AssemblerManagementPage() {
   };
 
   const handleDeleteAssembler = async (assemblerId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este armador?')) return;
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este ensamblador?')) return;
     setError(null);
     try {
-      await armadorService.delete(assemblerId);
+      await assemblerService.delete(assemblerId);
       fetchAssemblers();
     } catch (e) {
       setError('Failed to delete assembler: ' + e.message);
@@ -105,7 +105,7 @@ function AssemblerManagementPage() {
   const handleUpdateAssembler = async (assemblerToUpdate) => {
     setError(null);
     try {
-      await armadorService.update(assemblerToUpdate.id, assemblerToUpdate);
+      await assemblerService.update(assemblerToUpdate.id, assemblerToUpdate);
       setEditingAssembler(null);
       fetchAssemblers();
     } catch (e) {
@@ -113,7 +113,7 @@ function AssemblerManagementPage() {
     }
   };
 
-  if (loading) return <p>Cargando armadores...</p>;
+  if (loading) return <p>Cargando ensambladores...</p>;
   if (error) return <p className="error-message">Error: {error}</p>;
 
   const isPrivilegedUser = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
@@ -133,17 +133,17 @@ function AssemblerManagementPage() {
 
   return (
     <div className="assembler-management-page">
-      <h2>Gestión de Armadores</h2>
+      <h2>Gestión de Ensambladores</h2>
       
       {isPrivilegedUser && (
         <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
-          {showCreateForm ? 'Cancelar' : 'Crear Nuevo Armador'}
+          {showCreateForm ? 'Cancelar' : 'Crear Nuevo Ensamblador'}
         </button>
       )}
 
       {showCreateForm && isPrivilegedUser && (
         <form onSubmit={handleCreateAssembler} className="create-form">
-          <h3>Crear Nuevo Armador</h3>
+          <h3>Crear Nuevo Ensamblador</h3>
           <input type="text" name="name" placeholder="Nombre Completo" value={newAssembler.name} onChange={handleNewAssemblerChange} required />
           <input type="text" name="contactInfo" placeholder="Persona de Contacto" value={newAssembler.contactInfo} onChange={handleNewAssemblerChange} />
           <input type="text" name="address" placeholder="Dirección" value={newAssembler.address} onChange={handleNewAssemblerChange} />
@@ -152,11 +152,11 @@ function AssemblerManagementPage() {
           <select name="paymentTerms" value={newAssembler.paymentTerms} onChange={handleNewAssemblerChange}>
             {paymentTermOptions.map(term => <option key={term} value={term}>{term}</option>)}
           </select>
-          <button type="submit" className="btn btn-success">Guardar Armador</button>
+          <button type="submit" className="btn btn-success">Guardar Ensamblador</button>
         </form>
       )}
 
-      <h3>Lista de Armadores</h3>
+      <h3>Lista de Ensambladores</h3>
       <table className="data-table">
         <thead>
           <tr>

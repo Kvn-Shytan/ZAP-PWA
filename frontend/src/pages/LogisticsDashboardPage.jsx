@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom'; // Added Link import
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 import { apiFetch } from '../services/api'; // Import apiFetch to get users
-import { armadorService } from '../services/armadorService';
+import { assemblerService } from '../services/assemblerService';
 import './LogisticsDashboardPage.css'; // Import the new CSS file
 import Modal from '../components/Modal'; // Import the new Modal component
 const LogisticsDashboardPage = () => {
@@ -10,7 +10,7 @@ const LogisticsDashboardPage = () => {
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, total: 0 });
   const [filters, setFilters] = useState({
     status: '',
-    armadorId: '',
+    assemblerId: '',
     dateFrom: '',
     dateTo: '',
     search: ''
@@ -19,7 +19,7 @@ const LogisticsDashboardPage = () => {
   const [error, setError] = useState(null);
   
   const [users, setUsers] = useState([]);
-  const [armadores, setArmadores] = useState([]); // For the filter dropdown
+  const [assemblers, setAssemblers] = useState([]); // For the filter dropdown
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   // State for Modals
@@ -81,8 +81,8 @@ const LogisticsDashboardPage = () => {
         const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR');
         setUsers(assignableUsers);
 
-        const allArmadores = await armadorService.getArmadores();
-        setArmadores(allArmadores);
+        const allAssemblers = await assemblerService.getAssemblers();
+        setAssemblers(allAssemblers);
       } catch (err) {
         console.error("Failed to fetch initial data:", err);
         setError(err.message);
@@ -296,7 +296,7 @@ const LogisticsDashboardPage = () => {
 
   // --- BUTTON HANDLERS ---
   const handleConfirmDelivery = async (orderId) => {
-    if (!window.confirm("¿Confirmar que los materiales fueron entregados al armador?")) return;
+    if (!window.confirm("¿Confirmar que los materiales fueron entregados al ensamblador?")) return;
     try {
       await externalProductionOrderService.confirmDelivery(orderId);
       fetchOrders();
@@ -306,7 +306,7 @@ const LogisticsDashboardPage = () => {
   };
 
   const handleConfirmAssembly = async (orderId) => {
-    if (!window.confirm("¿Confirmar que el armador ha finalizado la producción?")) return;
+    if (!window.confirm("¿Confirmar que el ensamblador ha finalizado la producción?")) return;
     try {
       await externalProductionOrderService.confirmAssembly(orderId);
       fetchOrders();
@@ -392,7 +392,7 @@ const LogisticsDashboardPage = () => {
   const handleClearFilters = () => {
     setFilters({
       status: '',
-      armadorId: '',
+      assemblerId: '',
       dateFrom: '',
       dateTo: '',
       search: ''
@@ -423,10 +423,10 @@ const LogisticsDashboardPage = () => {
             onChange={handleFilterChange}
             className="filter-input"
           />
-          <select name="armadorId" value={filters.armadorId} onChange={handleFilterChange} className="filter-select">
+          <select name="assemblerId" value={filters.assemblerId} onChange={handleFilterChange} className="filter-select">
             <option value="">Todos los Armadores</option>
-            {armadores.map(armador => (
-              <option key={armador.id} value={armador.id}>{armador.name}</option>
+            {assemblers.map(assembler => (
+              <option key={assembler.id} value={assembler.id}>{assembler.name}</option>
             ))}
           </select>
           <input
@@ -472,7 +472,7 @@ const LogisticsDashboardPage = () => {
                   return (
                     <tr key={order.id}>
                       <td data-label="ID Orden"><Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link></td>
-                      <td data-label="Armador">{order.armador.name}</td>
+                      <td data-label="Armador">{order.assembler.name}</td>
                       <td data-label="Estado">{renderStatus(order)}</td>
                       <td data-label="Asignado a">{assignedUser ? assignedUser.name : 'N/A'}</td>
                       <td data-label="Fecha Creación">{new Date(order.createdAt).toLocaleDateString()}</td>
@@ -527,7 +527,7 @@ const LogisticsDashboardPage = () => {
           {incidentStep === 1 && (
             <div className="modal-form-group">
               <p>¿Cuál fue el problema?</p>
-              <button onClick={() => handleQuickIncident('El armador no se encuentra en domicilio')}>El armador no se encuentra en domicilio</button>
+              <button onClick={() => handleQuickIncident('El ensamblador no se encuentra en domicilio')}>El ensamblador no se encuentra en domicilio</button>
               <button onClick={() => setIncidentStep(2)}>Otro...</button>
               <button onClick={() => handleModalClose()} style={{ marginTop: '1rem' }}>Cancelar</button>
             </div>

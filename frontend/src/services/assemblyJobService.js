@@ -1,10 +1,10 @@
 import { apiFetch } from './api';
 
-const BASE_URL = '/trabajos-armado';
+const BASE_URL = '/assembly-jobs';
 
-export const trabajoDeArmadoService = {
+export const assemblyJobService = {
   /**
-   * Obtiene todos los trabajos de armado.
+   * Fetches all assembly jobs.
    * @returns {Promise<Array<object>>}
    */
   getAll() {
@@ -12,8 +12,8 @@ export const trabajoDeArmadoService = {
   },
 
   /**
-   * Obtiene un trabajo de armado por su ID.
-   * @param {string} id - El ID del trabajo.
+   * Fetches an assembly job by its ID.
+   * @param {string} id - The ID of the assembly job.
    * @returns {Promise<object>}
    */
   getById(id) {
@@ -21,8 +21,8 @@ export const trabajoDeArmadoService = {
   },
 
   /**
-   * Crea un nuevo trabajo de armado.
-   * @param {object} data - { nombre, precio, descripcion }
+   * Creates a new assembly job.
+   * @param {object} data - { name, price, description }
    * @returns {Promise<object>}
    */
   create(data) {
@@ -33,9 +33,9 @@ export const trabajoDeArmadoService = {
   },
 
   /**
-   * Actualiza un trabajo de armado.
-   * @param {string} id - El ID del trabajo a actualizar.
-   * @param {object} data - { nombre, precio, descripcion }
+   * Updates an existing assembly job.
+   * @param {string} id - The ID of the assembly job to update.
+   * @param {object} data - { name, price, description }
    * @returns {Promise<object>}
    */
   update(id, data) {
@@ -46,8 +46,8 @@ export const trabajoDeArmadoService = {
   },
 
   /**
-   * Elimina un trabajo de armado.
-   * @param {string} id - El ID del trabajo a eliminar.
+   * Deletes an assembly job.
+   * @param {string} id - The ID of the assembly job to delete.
    * @returns {Promise<null>}
    */
   delete(id) {
@@ -57,8 +57,8 @@ export const trabajoDeArmadoService = {
   },
 
   /**
-   * Obtiene todos los productos vinculados a un trabajo de armado específico.
-   * @param {string} id - El ID del trabajo.
+   * Fetches all products linked to a specific assembly job.
+   * @param {string} id - The ID of the assembly job.
    * @returns {Promise<Array<object>>}
    */
   getLinkedProducts(id) {

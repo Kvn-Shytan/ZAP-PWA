@@ -1,6 +1,6 @@
 import { apiFetch } from './api';
 
-export const armadorService = {
+export const assemblerService = {
   /**
    * Obtiene una lista de todos los armadores.
    * La API aplica seguridad a nivel de campo según el rol del usuario.

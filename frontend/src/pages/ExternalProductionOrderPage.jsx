@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
-import { armadorService } from '../services/armadorService';
+import { assemblerService } from '../services/assemblerService';
 import { productService } from '../services/productService';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 import './ExternalProductionOrderPage.css';
@@ -66,10 +66,10 @@ const PlanItem = ({ item, level = 0, onAddSubAssembly, addedSubAssemblies }) => 
 
 
 const ExternalProductionOrderPage = () => {
-  const [armadores, setArmadores] = useState([]);
+  const [assemblers, setAssemblers] = useState([]);
   const location = useLocation();
 
-  const [selectedArmador, setSelectedArmador] = useState('');
+  const [selectedAssembler, setSelectedAssembler] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null); // Will be { value, label } object
   const [quantity, setQuantity] = useState('1');
   const [addedSubAssemblies, setAddedSubAssemblies] = useState([]);
@@ -106,8 +106,8 @@ const ExternalProductionOrderPage = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const armadoresData = await armadorService.getArmadores();
-        setArmadores(armadoresData);
+        const assemblersData = await assemblerService.getAssemblers();
+        setAssemblers(assemblersData);
 
         const params = new URLSearchParams(location.search);
         const productIdFromUrl = params.get('productId');
@@ -188,20 +188,20 @@ const ExternalProductionOrderPage = () => {
     if (!isConfirmed) return;
 
     const numericQuantity = parseInt(quantity, 10);
-    if (!selectedArmador || !selectedProduct || !numericQuantity || numericQuantity <= 0 || !planResponse) {
+    if (!selectedAssembler || !selectedProduct || !numericQuantity || numericQuantity <= 0 || !planResponse) {
       alert('Por favor, complete todos los campos y espere a que se genere el plan de producción.');
       return;
     }
     setIsSubmitting(true);
     try {
       await externalProductionOrderService.createOrder({
-        armadorId: selectedArmador,
+        assemblerId: selectedAssembler,
         productId: selectedProduct.value,
         quantity: numericQuantity,
         includeSubAssemblies: addedSubAssemblies,
       }, 'commit');
       alert('¡Orden de producción creada exitosamente!');
-      setSelectedArmador('');
+      setSelectedAssembler('');
       setSelectedProduct(null);
       setQuantity('1');
       setPlanResponse(null);
@@ -224,9 +224,9 @@ const ExternalProductionOrderPage = () => {
           <h3>Detalles de la Orden</h3>
           <div className="form-group">
             <label>Armador:</label>
-            <select value={selectedArmador} onChange={e => setSelectedArmador(e.target.value)} required>
+            <select value={selectedAssembler} onChange={e => setSelectedAssembler(e.target.value)} required>
               <option value="">Seleccione un armador...</option>
-              {armadores.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {assemblers.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
           <div className="form-group">

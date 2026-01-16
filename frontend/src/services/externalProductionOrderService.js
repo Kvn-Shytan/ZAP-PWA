@@ -3,7 +3,7 @@ import { apiFetch } from './api';
 export const externalProductionOrderService = {
   /**
    * Crea una nueva orden de producción externa.
-   * @param {object} orderData - Los datos de la orden (armadorId, productId, quantity, etc.)
+   * @param {object} orderData - Los datos de la orden (assemblerId, productId, quantity, etc.)
    * @returns {Promise<object>} - La nueva orden creada.
    */
   createOrder(orderData, mode = 'commit') {
@@ -16,7 +16,7 @@ export const externalProductionOrderService = {
 
   /**
    * Obtiene una lista de órdenes de producción externa, con filtros opcionales.
-   * @param {object} params - Parámetros de consulta (ej. status).
+   * @param {object} params - Parámetros de consulta (ej. status, assemblerId, dateFrom, dateTo, search).
    * @returns {Promise<Array<object>>} - La lista de órdenes.
    */
   getOrders(params = {}) {

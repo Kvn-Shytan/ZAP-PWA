@@ -39,7 +39,7 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
               deliveryUserId: user.userId, // CORRECTED
               status: 'OUT_FOR_DELIVERY',
             },
-            include: { armador: true },
+            include: { assembler: true },
           }),
           // Tareas de Recolección
           prisma.externalProductionOrder.findMany({
@@ -47,21 +47,31 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
               pickupUserId: user.userId, // CORRECTED
               status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
             },
-            include: { armador: true },
+            include: { assembler: true },
           }),
         ]);
 
-        const deliveryTasks = deliveries.map(order => ({
-          id: `delivery-${order.id}`,
-          text: `Entregar orden ${order.orderNumber} a ${order.armador?.name || '[Armador no especificado]'}`,
-          link: `/external-orders/${order.id}`,
-        }));
+        const deliveryTasks = deliveries.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
 
-        const pickupTasks = pickups.map(order => ({
-          id: `pickup-${order.id}`,
-          text: `Recoger orden ${order.orderNumber} de ${order.armador?.name || '[Armador no especificado]'}`,
-          link: `/external-orders/${order.id}`,
-        }));
+          return {
+            id: `delivery-${orderWithAssembler.id}`,
+            text: `Entregar orden ${orderWithAssembler.orderNumber} a ${orderWithAssembler.assembler?.name || '[Armador no especificado]'}`,
+            link: `/external-orders/${orderWithAssembler.id}`,
+          };
+        });
+
+        const pickupTasks = pickups.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
+
+          return {
+            id: `pickup-${orderWithAssembler.id}`,
+            text: `Recoger orden ${orderWithAssembler.orderNumber} de ${orderWithAssembler.assembler?.name || '[Armador no especificado]'}`,
+            link: `/external-orders/${orderWithAssembler.id}`,
+          };
+        });
 
         dashboardData.tasks = [...deliveryTasks, ...pickupTasks];
 
@@ -83,16 +93,14 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
           productsWithThreshold,
           ordersInProgressCount
         ] = await Promise.all([
-          // Tarea: Órdenes pendientes de asignación de reparto
           prisma.externalProductionOrder.findMany({
             where: { status: 'PENDING_DELIVERY' },
-            include: { armador: true },
+            include: { assembler: true },
             orderBy: { createdAt: 'desc' },
           }),
-          // Tarea: Órdenes con entrega fallida
           prisma.externalProductionOrder.findMany({
             where: { status: 'DELIVERY_FAILED' },
-            include: { armador: true },
+            include: { assembler: true },
             orderBy: { updatedAt: 'desc' },
           }),
           // Alerta: Productos con bajo stock (se filtran en memoria)
@@ -108,17 +116,25 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         ]);
 
         // Mapear Tareas
-        const pendingTasks = pendingAssignmentOrders.map(order => ({
-          id: `task-pending-${order.id}`,
-          text: `Asignar reparto para orden ${order.orderNumber} (${order.armador?.name || 'N/A'})`,
-          link: `/logistics-dashboard`, // Link al panel para que pueda usar las acciones
-        }));
+        const pendingTasks = pendingAssignmentOrders.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
+          return {
+            id: `task-pending-${orderWithAssembler.id}`,
+            text: `Asignar reparto para orden ${orderWithAssembler.orderNumber} (${orderWithAssembler.assembler?.name || 'N/A'})`,
+            link: `/logistics-dashboard`, // Link al panel para que pueda usar las acciones
+          };
+        });
 
-        const failedTasks = failedDeliveryOrders.map(order => ({
-          id: `task-failed-${order.id}`,
-          text: `Revisar entrega fallida para orden ${order.orderNumber} (${order.armador?.name || 'N/A'})`,
-          link: `/external-orders/${order.id}`,
-        }));
+        const failedTasks = failedDeliveryOrders.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
+          return {
+            id: `task-failed-${orderWithAssembler.id}`,
+            text: `Revisar entrega fallida para orden ${orderWithAssembler.orderNumber} (${orderWithAssembler.assembler?.name || 'N/A'})`,
+            link: `/external-orders/${orderWithAssembler.id}`,
+          };
+        });
         
         dashboardData.tasks = [...pendingTasks, ...failedTasks];
 
@@ -174,21 +190,21 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
               status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] },
               assemblerPaymentId: null,
             },
-            distinct: ['armadorId'], // Contar armadores distintos
+            distinct: ['assemblerId'], // Contar ensambladores distintos
             select: {
-              armador: { select: { id: true, name: true } },
+              assembler: { select: { id: true, name: true } },
             },
           }),
           // SUPERVISOR: Tarea: Órdenes pendientes de asignación de reparto
           prisma.externalProductionOrder.findMany({
             where: { status: 'PENDING_DELIVERY' },
-            include: { armador: true },
+            include: { assembler: true },
             orderBy: { createdAt: 'desc' },
           }),
           // SUPERVISOR: Tarea: Órdenes con entrega fallida
           prisma.externalProductionOrder.findMany({
             where: { status: 'DELIVERY_FAILED' },
-            include: { armador: true },
+            include: { assembler: true },
             orderBy: { updatedAt: 'desc' },
           }),
           // SUPERVISOR: Alerta: Productos con bajo stock (se filtran en memoria)
@@ -204,11 +220,14 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         ]);
 
         // ADMIN: Mapear Tareas (Pagos pendientes)
-        const adminPaymentTasks = pendingPaymentOrders.map(order => ({
-          id: `task-admin-payment-${order.armador.id}`,
-          text: `Liquidar pagos pendientes para ${order.armador.name}`,
-          link: `/assembler-payment-batch`,
-        }));
+        const adminPaymentTasks = pendingPaymentOrders.map(order => {
+          const { armador: assembler } = order;
+          return {
+            id: `task-admin-payment-${assembler.id}`,
+            text: `Liquidar pagos pendientes para ${assembler.name}`,
+            link: `/assembler-payment-batch`,
+          };
+        });
         
         // ADMIN: Mapear Alertas (Placeholder)
         const adminAlerts = [
@@ -229,17 +248,25 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
 
 
         // SUPERVISOR: Mapear Tareas (re-usando lógica del supervisor)
-        const supervisorPendingTasks = pendingAssignmentOrders.map(order => ({
-          id: `task-s-adminview-pending-${order.id}`,
-          text: `Asignar reparto para orden ${order.orderNumber} (${order.armador?.name || 'N/A'})`,
-          link: `/logistics-dashboard`,
-        }));
+        const supervisorPendingTasks = pendingAssignmentOrders.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
+          return {
+            id: `task-s-adminview-pending-${orderWithAssembler.id}`,
+            text: `Asignar reparto para orden ${orderWithAssembler.orderNumber} (${orderWithAssembler.assembler?.name || 'N/A'})`,
+            link: `/logistics-dashboard`,
+          };
+        });
 
-        const supervisorFailedTasks = failedDeliveryOrders.map(order => ({
-          id: `task-s-adminview-failed-${order.id}`,
-          text: `Revisar entrega fallida para orden ${order.orderNumber} (${order.armador?.name || 'N/A'})`,
-          link: `/external-orders/${order.id}`,
-        }));
+        const supervisorFailedTasks = failedDeliveryOrders.map(order => {
+          const { armador, ...restOfOrder } = order;
+          const orderWithAssembler = { ...restOfOrder, assembler: armador };
+          return {
+            id: `task-s-adminview-failed-${orderWithAssembler.id}`,
+            text: `Revisar entrega fallida para orden ${orderWithAssembler.orderNumber} (${orderWithAssembler.assembler?.name || 'N/A'})`,
+            link: `/external-orders/${orderWithAssembler.id}`,
+          };
+        });
         
         const supervisorTasks = [...supervisorPendingTasks, ...supervisorFailedTasks];
 

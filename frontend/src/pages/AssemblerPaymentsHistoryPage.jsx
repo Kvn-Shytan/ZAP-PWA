@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { armadorService } from '../services/armadorService';
+import { assemblerService } from '../services/assemblerService';
 import { useAuth } from '../contexts/AuthContext';
 import './AssemblerPaymentsHistoryPage.css';
 import { Link } from 'react-router-dom'; // Import Link
@@ -50,7 +50,7 @@ const AssemblerPaymentsHistoryPage = () => {
   useEffect(() => {
     const fetchAssemblers = async () => {
       try {
-        const data = await armadorService.getArmadores();
+        const data = await assemblerService.getAssemblers();
         setAssemblers(data);
       } catch (err) {
         console.error("Failed to fetch assemblers:", err);
@@ -80,7 +80,7 @@ const AssemblerPaymentsHistoryPage = () => {
         ...activeFilters,
       });
 
-      const result = await armadorService.getPaymentHistory(queryParams);
+      const result = await assemblerService.getPaymentHistory(queryParams);
 
       setPayments(result.data);
       setPagination(prev => ({
@@ -132,7 +132,7 @@ const AssemblerPaymentsHistoryPage = () => {
 
   return (
     <div className="payment-history-page">
-      <h2>Historial de Pagos a Armadores</h2>
+      <h2>Historial de Pagos a Ensambladores</h2>
 
       <div className="summary-cards">
         <div className="summary-card">
@@ -163,7 +163,7 @@ const AssemblerPaymentsHistoryPage = () => {
           value={filters.assemblerId} 
           onChange={handleFilterChange}
         >
-          <option value="">Todos los Armadores</option>
+          <option value="">Todos los Ensambladores</option>
           {assemblers.map(asm => (
             <option key={asm.id} value={asm.id}>{asm.name}</option>
           ))}
@@ -178,7 +178,7 @@ const AssemblerPaymentsHistoryPage = () => {
           <thead>
             <tr>
               <th>ID de Pago</th>
-              <th>Armador</th>
+              <th>Ensamblador</th>
               <th>Fecha de Pago</th>
               <th>Período Liquidado</th>
               <th>Monto</th>
@@ -191,7 +191,7 @@ const AssemblerPaymentsHistoryPage = () => {
                 <React.Fragment key={payment.id}>
                   <tr>
                     <td data-label="ID de Pago"><span>{payment.id.slice(-8)}...</span></td>
-                    <td data-label="Armador"><span>{payment.armador?.name}</span></td>
+                    <td data-label="Armador"><span>{payment.assembler?.name}</span></td>
                     <td data-label="Fecha de Pago"><span>{new Date(payment.datePaid).toLocaleDateString()}</span></td>
                     <td data-label="Período Liquidado"><span>{`${new Date(payment.periodStart).toLocaleDateString()} - ${new Date(payment.periodEnd).toLocaleDateString()}`}</span></td>
                     <td data-label="Monto"><span>${Number(payment.amount).toFixed(2)}</span></td>

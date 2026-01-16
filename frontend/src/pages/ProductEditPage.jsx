@@ -3,11 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../services/api';
 import ProductForm from '../components/ProductForm';
-import AssignTrabajoModal from '../components/AssignTrabajoModal'; // Import the new modal
+import AssignAssemblyJobModal from '../components/AssignAssemblyJobModal'; // Import the new modal
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { supplierService } from '../services/supplierService';
-import { trabajoDeArmadoService } from '../services/trabajoDeArmadoService';
+import { assemblyJobService } from '../services/assemblyJobService';
 
 const ProductEditPage = () => {
   const { id } = useParams();
@@ -18,7 +18,7 @@ const ProductEditPage = () => {
   const [product, setProduct] = useState({ type: 'RAW_MATERIAL', lowStockThreshold: 0 });
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [trabajosOptions, setTrabajosOptions] = useState([]);
+  const [assemblyJobOptions, setAssemblyJobOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,29 +31,30 @@ const ProductEditPage = () => {
       setLoading(true);
       const catPromise = categoryService.getCategories();
       const supPromise = supplierService.getSuppliers();
-      const trabajoPromise = trabajoDeArmadoService.getAll();
+      const assemblyJobPromise = assemblyJobService.getAll();
       let prodPromise = Promise.resolve(null);
 
       if (isEdit) {
         prodPromise = productService.getProductById(id);
       }
 
-      const [catData, supData, prodData, trabajoData] = await Promise.all([catPromise, supPromise, prodPromise, trabajoPromise]);
+      const [catData, supData, prodData, assemblyJobData] = await Promise.all([catPromise, supPromise, prodPromise, assemblyJobPromise]);
 
       setCategories(catData || []);
       setSuppliers(supData || []);
       
-      const options = (trabajoData || []).map(t => ({
+      const options = (assemblyJobData || []).map(t => ({
         value: t.id,
-        label: `${t.nombre} ($${Number(t.precio).toFixed(2)})`
+        label: `${t.name} ($${Number(t.price).toFixed(2)})`
       }));
-      setTrabajosOptions(options);
+      setAssemblyJobOptions(options);
 
       if (prodData) {
-        const currentTrabajo = (prodData.trabajosDeArmado && prodData.trabajosDeArmado[0])
-          ? options.find(opt => opt.value === prodData.trabajosDeArmado[0].trabajoId)
+        // Find the current assembly job based on the new relation name 'assemblyJobs'
+        const currentAssemblyJob = (prodData.assemblyJobs && prodData.assemblyJobs[0])
+          ? options.find(opt => opt.value === prodData.assemblyJobs[0].assemblyJobId)
           : null;
-        setProduct({ ...prodData, trabajoDeArmado: currentTrabajo });
+        setProduct({ ...prodData, assemblyJob: currentAssemblyJob });
       }
 
     } catch (err) {
@@ -72,13 +73,13 @@ const ProductEditPage = () => {
   const handleOpenAssignModal = () => setIsAssignModalOpen(true);
   const handleCloseAssignModal = () => setIsAssignModalOpen(false);
 
-  const handleTrabajoAssigned = (assignedTrabajo) => {
-    setProduct(prev => ({ ...prev, trabajoDeArmado: assignedTrabajo }));
+  const handleAssemblyJobAssigned = (assignedAssemblyJob) => {
+    setProduct(prev => ({ ...prev, assemblyJob: assignedAssemblyJob }));
     handleCloseAssignModal();
   };
   
-  const handleTrabajoDisassociated = () => {
-    setProduct(prev => ({ ...prev, trabajoDeArmado: null }));
+  const handleAssemblyJobDisassociated = () => {
+    setProduct(prev => ({ ...prev, assemblyJob: null }));
     handleCloseAssignModal();
   };
 
@@ -86,8 +87,8 @@ const ProductEditPage = () => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && !product.trabajoDeArmado) {
-        setError('Para productos pre-ensamblados o finales, es obligatorio asignar un trabajo de armado.');
+    if ((product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && !product.assemblyJob) {
+        setError('Para productos pre-ensamblados o finales, es obligatorio asignar un trabajo de ensamblaje.');
         return;
     }
 
@@ -96,8 +97,9 @@ const ProductEditPage = () => {
       setError(null);
       
       const payload = { ...product };
-      delete payload.trabajoDeArmado;
-      delete payload.trabajosDeArmado;
+      // Remove Prisma relation fields that should not be sent in the payload
+      delete payload.assemblyJob;
+      delete payload.assemblyJobs;
       delete payload.components;
       delete payload.componentOf;
       delete payload.movements;
@@ -115,12 +117,12 @@ const ProductEditPage = () => {
 
       const productId = savedProduct.id;
 
-      // Only attempt to assign a trabajo de armado if the product type requires it
+      // Only attempt to assign an assembly job if the product type requires it
       if (product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') {
-        await apiFetch(`/product-design/${productId}/trabajo-armado`, {
+        await apiFetch(`/product-design/${productId}/assembly-job`, {
             method: 'PUT',
             body: JSON.stringify({ 
-              trabajoDeArmadoId: product.trabajoDeArmado ? product.trabajoDeArmado.value : null 
+              assemblyJobId: product.assemblyJob ? product.assemblyJob.value : null 
             })
         });
       }
@@ -185,13 +187,13 @@ const ProductEditPage = () => {
         </div>
       )}
 
-      <AssignTrabajoModal
+      <AssignAssemblyJobModal
         isOpen={isAssignModalOpen}
         onClose={handleCloseAssignModal}
-        onAssign={handleTrabajoAssigned}
-        onDisassociate={handleTrabajoDisassociated}
-        existingTrabajos={trabajosOptions}
-        currentTrabajo={product.trabajoDeArmado}
+        onAssign={handleAssemblyJobAssigned}
+        onDisassociate={handleAssemblyJobDisassociated}
+        existingAssemblyJobs={assemblyJobOptions}
+        currentAssemblyJob={product.assemblyJob}
       />
 
       {error && <p style={{ color: 'red', marginTop: '1rem' }}>Error: {error}</p>}

@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { apiFetch } from '../services/api';
+
+
 import { useAuth } from '../contexts/AuthContext';
 
 const AssemblerPaymentBatchPage = () => {
@@ -10,7 +12,7 @@ const AssemblerPaymentBatchPage = () => {
   const [selectedAssemblers, setSelectedAssemblers] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [expandedArmadoresDetails, setExpandedArmadoresDetails] = useState(new Set());
+  const [expandedAssemblersDetails, setExpandedAssemblersDetails] = useState(new Set());
 
   const calculateBatchPayment = useCallback(async () => {
     if (!startDate || !endDate) {
@@ -93,7 +95,7 @@ const AssemblerPaymentBatchPage = () => {
   };
 
   const handleToggleDetails = (assemblerId) => {
-    setExpandedArmadoresDetails(prev => {
+    setExpandedAssemblersDetails(prev => {
       const newExpanded = new Set(prev);
       if (newExpanded.has(assemblerId)) {
         newExpanded.delete(assemblerId);
@@ -152,7 +154,7 @@ const AssemblerPaymentBatchPage = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h2>Liquidación de Pagos a Armadores por Lotes</h2>
+      <h2>Liquidación de Pagos a Ensambladores por Lotes</h2>
 
       <div style={filterContainerStyle}>
         <label>
@@ -190,7 +192,7 @@ const AssemblerPaymentBatchPage = () => {
             <thead>
               <tr>
                 <th style={tableHeaderStyle}>Seleccionar</th>
-                <th style={tableHeaderStyle}>Armador</th>
+                <th style={tableHeaderStyle}>Ensamblador</th>
                 <th style={tableHeaderStyle}>Total a Pagar</th>
                 <th style={tableHeaderStyle}>Detalles</th>
               </tr>
@@ -261,7 +263,7 @@ const AssemblerPaymentBatchPage = () => {
         </div>
       ) : ( // else part for filteredBatchSummary.length === 0
         batchSummary && !loading && ( // only show message if batchSummary was actually fetched and is empty
-          <p style={{ marginTop: '2rem' }}>No se encontraron armadores con pagos pendientes en el período seleccionado.</p>
+          <p style={{ marginTop: '2rem' }}>No se encontraron ensambladores con pagos pendientes en el período seleccionado.</p>
         )
       )}
     </div>

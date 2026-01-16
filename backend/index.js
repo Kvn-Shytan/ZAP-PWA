@@ -3,8 +3,8 @@ const cors = require('cors');
 const productRoutes = require('./routes/products.routes');
 const categoryRoutes = require('./routes/categories.routes');
 const supplierRoutes = require('./routes/suppliers.routes');
-const armadoresRoutes = require('./routes/armadores.routes.js');
-const trabajoDeArmadoRoutes = require('./routes/trabajoDeArmado.routes.js');
+const assemblersRoutes = require('./routes/assemblers.routes.js');
+const assemblyJobsRoutes = require('./routes/assemblyJobs.routes.js');
 const usersRoutes = require('./routes/users.routes.js');
 const inventoryRoutes = require('./routes/inventory.routes.js');
 const externalProductionOrdersRoutes = require('./routes/externalProductionOrders.routes.js');
@@ -35,10 +35,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/suppliers', supplierRoutes);
 
 // Use armadores routes
-app.use('/api/assemblers', armadoresRoutes);
+app.use('/api/assemblers', assemblersRoutes);
 
 // Use trabajo de armado routes
-app.use('/api/trabajos-armado', trabajoDeArmadoRoutes);
+app.use('/api/assembly-jobs', assemblyJobsRoutes);
 
 // Use external production orders routes
 app.use('/api/external-production-orders', externalProductionOrdersRoutes);

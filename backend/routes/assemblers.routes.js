@@ -14,10 +14,20 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOY
     : { id: true, name: true, phone: true, address: true };
 
   try {
-    const assemblers = await prisma.armador.findMany({
+    const assemblersFromDb = await prisma.armador.findMany({
       select: selectFields,
       orderBy: { name: 'asc' },
     });
+    // Map to English standard for the API response
+    const assemblers = assemblersFromDb.map(a => ({
+      id: a.id,
+      name: a.name,
+      phone: a.phone,
+      address: a.address,
+      contactInfo: a.contactInfo,
+      email: a.email,
+      paymentTerms: a.paymentTerms
+    }));
     res.json(assemblers);
   } catch (error) {
     console.error(error);
@@ -35,7 +45,15 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), asyn
     const newAssembler = await prisma.armador.create({
       data: { name, contactInfo, address, phone, email, paymentTerms },
     });
-    res.status(201).json(newAssembler);
+    res.status(201).json({
+      id: newAssembler.id,
+      name: newAssembler.name,
+      contactInfo: newAssembler.contactInfo,
+      address: newAssembler.address,
+      phone: newAssembler.phone,
+      email: newAssembler.email,
+      paymentTerms: newAssembler.paymentTerms,
+    });
   } catch (error) {
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'An assembler with this name already exists.' });
@@ -304,8 +322,16 @@ router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req,
     ]);
     
     // 4. Construct the final response
+    const formattedPayments = payments.map(p => {
+      const { armador, ...rest } = p;
+      return {
+        ...rest,
+        assembler: armador
+      };
+    });
+
     res.json({
-      data: payments,
+      data: formattedPayments,
       currentPage: parsedPage,
       totalPages: Math.ceil(totalPayments / parsedLimit),
       totalCount: totalPayments,
@@ -337,7 +363,15 @@ router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMP
       select: selectFields,
     });
     if (assembler) {
-      res.json(assembler);
+      res.json({
+        id: assembler.id,
+        name: assembler.name,
+        contactInfo: assembler.contactInfo,
+        address: assembler.address,
+        phone: assembler.phone,
+        email: assembler.email,
+        paymentTerms: assembler.paymentTerms,
+      });
     } else {
       res.status(404).json({ error: 'Assembler not found' });
     }
@@ -348,8 +382,8 @@ router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMP
 });
 
 // GET /api/assemblers/:armadorId/payment-summary - Obtener resumen de pagos para un armador
-router.get('/:armadorId/payment-summary', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { armadorId } = req.params;
+router.get('/:assemblerId/payment-summary', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { assemblerId } = req.params;
   const { startDate, endDate } = req.query;
 
   if (!armadorId || !startDate || !endDate) {
@@ -363,7 +397,7 @@ router.get('/:armadorId/payment-summary', authenticateToken, authorizeRole(['ADM
 
     const orders = await prisma.externalProductionOrder.findMany({
       where: {
-        armadorId: armadorId,
+armadorId: assemblerId,
         createdAt: {
           gte: start,
           lte: end,
@@ -423,7 +457,7 @@ router.get('/:armadorId/payment-summary', authenticateToken, authorizeRole(['ADM
     }
 
     res.json({
-      armadorId: armadorId,
+      assemblerId: assemblerId,
       startDate: startDate,
       endDate: endDate,
       totalPayment: totalPayment,
@@ -431,7 +465,7 @@ router.get('/:armadorId/payment-summary', authenticateToken, authorizeRole(['ADM
     });
 
   } catch (error) {
-    console.error(`Error calculating payment summary for armador ${armadorId}:`, error.message);
+    console.error(`Error calculating payment summary for assembler ${assemblerId}:`, error.message);
     res.status(500).json({ error: 'Failed to calculate payment summary.' });
   }
 });
@@ -445,7 +479,15 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), as
       where: { id },
       data: { name, contactInfo, address, phone, email, paymentTerms },
     });
-    res.json(updatedAssembler);
+    res.json({
+      id: updatedAssembler.id,
+      name: updatedAssembler.name,
+      contactInfo: updatedAssembler.contactInfo,
+      address: updatedAssembler.address,
+      phone: updatedAssembler.phone,
+      email: updatedAssembler.email,
+      paymentTerms: updatedAssembler.paymentTerms,
+    });
   } catch (error) {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Assembler not found' });
