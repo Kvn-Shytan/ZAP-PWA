@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { assemblyJobService } from '../services/assemblyJobService';
-import './TrabajoDeArmadoPage.css'; // Keep original CSS import for now, will rename it later.
+
 
 const AssemblyJobPage = () => {
   // Main list state
