@@ -17,18 +17,18 @@ import ClassifyProductsPage from './pages/ClassifyProductsPage';
 import AssemblerManagementPage from './pages/AssemblerManagementPage';
 import OverheadCostPage from './pages/OverheadCostPage';
 import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
-import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
+import AssemblyJobPage from './pages/AssemblyJobPage'; // Updated import
 import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
 import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
 import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
-import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage'; // NEW
-import DashboardPage from './pages/DashboardPage'; // Importar el nuevo DashboardPage
+import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage';
+import DashboardPage from './pages/DashboardPage';
 import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
   const { user } = useAuth();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   return (
     <> 
@@ -88,8 +88,8 @@ function App() {
           element={<ProtectedRoute element={<OverheadCostPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
-          path="/admin-tools/assembly-work"
-          element={<ProtectedRoute element={<TrabajoDeArmadoPage />} allowedRoles={['ADMIN']} />}
+          path="/admin-tools/assembly-jobs" // Updated route path
+          element={<ProtectedRoute element={<AssemblyJobPage />} allowedRoles={['ADMIN']} />} // Updated page component
         />
         <Route
           path="/inventory-history"
@@ -117,8 +117,8 @@ function App() {
           element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
-          path="/assembler-payments-history" // NEW
-          element={<ProtectedRoute element={<AssemblerPaymentsHistoryPage />} allowedRoles={['ADMIN']} />} // NEW
+          path="/assembler-payments-history"
+          element={<ProtectedRoute element={<AssemblerPaymentsHistoryPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
           path="/change-password"
