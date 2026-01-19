@@ -76,6 +76,12 @@ export const externalProductionOrderService = {
     });
   },
 
+  confirmPickup(orderId) {
+    return apiFetch(`/external-production-orders/${orderId}/confirm-pickup`, {
+      method: 'POST',
+    });
+  },
+
   receiveOrder(orderId, payload) {
     return apiFetch(`/external-production-orders/${orderId}/receive`, {
       method: 'POST',

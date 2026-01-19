@@ -76,7 +76,7 @@ export default function Navbar() {
               </li>
             )}
 
-            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
+            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR' || user.role === 'EMPLOYEE') && (
               <li><Link to="/logistics-dashboard">Logística</Link></li>
             )}
             

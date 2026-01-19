@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom'; // Added Link import
+import { Link } from 'react-router-dom';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
-import { apiFetch } from '../services/api'; // Import apiFetch to get users
+import { apiFetch } from '../services/api';
 import { assemblerService } from '../services/assemblerService';
-import './LogisticsDashboardPage.css'; // Import the new CSS file
-import Modal from '../components/Modal'; // Import the new Modal component
+import { useAuth } from '../contexts/AuthContext'; // Import useAuth
+import './LogisticsDashboardPage.css';
+import Modal from '../components/Modal';
+
 const LogisticsDashboardPage = () => {
+  const { user: currentUser } = useAuth(); // Get current user
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, total: 0 });
   const [filters, setFilters] = useState({
@@ -19,16 +22,15 @@ const LogisticsDashboardPage = () => {
   const [error, setError] = useState(null);
   
   const [users, setUsers] = useState([]);
-  const [assemblers, setAssemblers] = useState([]); // For the filter dropdown
+  const [assemblers, setAssemblers] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // State for Modals
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState('');
   const [assignModalConfig, setAssignModalConfig] = useState({ title: '', type: '', currentUserId: null });
 
   const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
-  const [incidentStep, setIncidentStep] = useState(1); // 1: Choice, 2: Custom note
+  const [incidentStep, setIncidentStep] = useState(1);
   const [incidentNotes, setIncidentNotes] = useState('');
 
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
@@ -36,8 +38,8 @@ const LogisticsDashboardPage = () => {
   const [receivedItems, setReceivedItems] = useState([]);
   const [receptionNotes, setReceptionNotes] = useState('');
   const [isJustified, setIsJustified] = useState(false);
-  const [showOtherNotesInput, setShowOtherNotesInput] = useState(false); // New state for 'Otro' option
-  const [receptionChoice, setReceptionChoice] = useState(''); // New state to track user's choice in step 2
+  const [showOtherNotesInput, setShowOtherNotesInput] = useState(false);
+  const [receptionChoice, setReceptionChoice] = useState('');
 
 
   const fetchOrders = useCallback(async () => {
@@ -45,7 +47,6 @@ const LogisticsDashboardPage = () => {
     setError(null);
     try {
       const queryParams = { ...filters, page: pagination.currentPage, pageSize: 25 };
-      // Remove empty filters to keep URL clean
       Object.keys(queryParams).forEach(key => {
         if (queryParams[key] === '' || queryParams[key] === null) {
           delete queryParams[key];
@@ -57,7 +58,7 @@ const LogisticsDashboardPage = () => {
       setPagination(data.pagination || { currentPage: 1, totalPages: 1, total: 0 });
     } catch (err) {
       setError(err.message);
-      setOrders([]); // Clear orders on error
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ const LogisticsDashboardPage = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchOrders();
-    }, 500); // Debounce API calls by 500ms
+    }, 500);
 
     return () => {
       clearTimeout(handler);
@@ -77,9 +78,11 @@ const LogisticsDashboardPage = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const allUsers = await apiFetch('/users');
-        const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR');
-        setUsers(assignableUsers);
+        if (currentUser && (currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN')) {
+          const allUsers = await apiFetch('/users');
+          const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR');
+          setUsers(assignableUsers);
+        }
 
         const allAssemblers = await assemblerService.getAssemblers();
         setAssemblers(allAssemblers);
@@ -89,9 +92,8 @@ const LogisticsDashboardPage = () => {
       }
     };
     fetchInitialData();
-  }, []);
+  }, [currentUser]); // Added currentUser to dependency array
 
-  // --- MODAL HANDLERS ---
   const handleModalClose = () => {
     setIsAssignModalOpen(false);
     setIsIncidentModalOpen(false);
@@ -99,16 +101,14 @@ const LogisticsDashboardPage = () => {
     setSelectedOrder(null);
     setSelectedUser('');
     setIncidentNotes('');
-    setIncidentStep(1); // Reset incident step
+    setIncidentStep(1);
     setReceivedItems([]);
     setReceptionStep(1);
     setIsJustified(false);
-    // setIsFinalDiscrepancy(false); // This was removed as it is obsolete
-    setShowOtherNotesInput(false); // Reset new state
-    setReceptionChoice(''); // Reset new state
+    setShowOtherNotesInput(false);
+    setReceptionChoice('');
   };
 
-  // Assignment Modal
   const handleOpenAssignModal = (order, type) => {
     setSelectedOrder(order);
     if (type === 'delivery') {
@@ -148,11 +148,10 @@ const LogisticsDashboardPage = () => {
     }
   };
 
-  // Incident Modal
   const handleOpenIncidentModal = (order) => {
     setSelectedOrder(order);
     setIncidentNotes('');
-    setIncidentStep(1); // Reset to the first step
+    setIncidentStep(1);
     setIsIncidentModalOpen(true);
   };
 
@@ -170,7 +169,6 @@ const LogisticsDashboardPage = () => {
     }
   };
 
-  // New handler for quick incident reporting
   const handleQuickIncident = async (note) => {
     if (!selectedOrder) return;
     try {
@@ -182,15 +180,13 @@ const LogisticsDashboardPage = () => {
     }
   };
 
-  // Receive Modal
   const handleOpenReceiveModal = (order) => {
     setSelectedOrder(order);
-    // The state will now hold the quantity *for this specific delivery*
     const itemsToReceive = order.expectedOutputs.map(item => {
       const pending = Number(item.quantityExpected) - Number(item.quantityReceived);
       return {
         ...item,
-        quantityForThisDelivery: pending, // Pre-fill with the pending amount
+        quantityForThisDelivery: pending,
         pending: pending,
       }
     });
@@ -202,19 +198,13 @@ const LogisticsDashboardPage = () => {
   const handleReceivedQuantityChange = (productId, quantity) => {
     const newItems = receivedItems.map(item => {
       if (item.productId === productId) {
-        // Allow empty string for temporary editing
         if (quantity === '') {
-          return { ...item, quantityForThisDelivery: '' }; // Keep it as an empty string
+          return { ...item, quantityForThisDelivery: '' };
         }
-
         let newQuantity = Number(quantity);
-        // If it's not a valid number (e.g., "abc"), keep the input value as is
-        // so the user can correct it.
         if (isNaN(newQuantity)) {
             return { ...item, quantityForThisDelivery: quantity };
         }
-
-        // Validation: cannot be negative or more than pending
         if (newQuantity < 0) newQuantity = 0;
         if (newQuantity > item.pending) newQuantity = item.pending;
         return { ...item, quantityForThisDelivery: newQuantity };
@@ -225,15 +215,11 @@ const LogisticsDashboardPage = () => {
   };
 
   const handleContinueReception = () => {
-    // Check for any discrepancy in this specific delivery
     const hasDiscrepancyInThisDelivery = receivedItems.some(item => item.quantityForThisDelivery !== item.pending);
-    
     if (!hasDiscrepancyInThisDelivery) {
-      handleFinalizeReception(); // No discrepancy in THIS delivery, finalize immediately
+      handleFinalizeReception();
       return;
     }
-
-    // If there's any discrepancy, always go to Step 2 to let the user decide
     setReceptionStep(2);
   };
 
@@ -245,12 +231,12 @@ const LogisticsDashboardPage = () => {
     switch (choice) {
       case 'partial':
         confirmationMessage = '¿Confirma que esta es una entrega parcial? La orden permanecerá abierta con ítems pendientes.';
-        justifiedValue = false; // Not relevant for partial, but set to default
+        justifiedValue = false;
         break;
       case 'returns':
         confirmationMessage = '¿Confirma que esta es una entrega final con devoluciones? La orden se cerrará como "COMPLETADA CON NOTAS".';
         justifiedValue = true;
-        notesValue = notesValue || 'Entrega final con devoluciones.'; // Default note if none provided
+        notesValue = notesValue || 'Entrega final con devoluciones.';
         break;
       case 'other_notes':
         confirmationMessage = '¿Confirma que esta es una entrega final con discrepancia no justificada? La orden se cerrará como "COMPLETADA CON DISCREPANCIA".';
@@ -263,7 +249,7 @@ const LogisticsDashboardPage = () => {
     if (window.confirm(confirmationMessage)) {
       setIsJustified(justifiedValue);
       setReceptionNotes(notesValue);
-      setReceptionChoice(choice); // Store choice to use in handleFinalizeReception
+      setReceptionChoice(choice);
       handleFinalizeReception(choice);
     }
   };
@@ -273,19 +259,15 @@ const LogisticsDashboardPage = () => {
     let finalNotes = receptionNotes;
     const finalChoice = choiceOverride || receptionChoice;
 
-    // Override justified/notes based on the definitive choice
     if (finalChoice === 'returns') {
       finalJustified = true;
       finalNotes = finalNotes || 'Entrega final con devoluciones.';
     } else if (finalChoice === 'other_notes') {
       finalJustified = false;
-      // finalNotes is already set by the textarea
     } else if (finalChoice === 'partial') {
-      finalJustified = false; // Not justified, as it's just partial
+      finalJustified = false;
       finalNotes = finalNotes || 'Entrega parcial.';
     }
-    // If receptionChoice is empty, it means it was a full reception without discrepancy,
-    // or the old flow was used, so isJustified and receptionNotes are already correct.
 
     const payload = {
       receivedItems: receivedItems.map(item => ({
@@ -305,11 +287,20 @@ const LogisticsDashboardPage = () => {
     }
   };
 
-  // --- BUTTON HANDLERS ---
   const handleConfirmDelivery = async (orderId) => {
     if (!window.confirm("¿Confirmar que los materiales fueron entregados al ensamblador?")) return;
     try {
       await externalProductionOrderService.confirmDelivery(orderId);
+      fetchOrders();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const handleConfirmPickup = async (orderId) => {
+    if (!window.confirm("¿Confirmar que ha recogido los productos del ensamblador?")) return;
+    try {
+      await externalProductionOrderService.confirmPickup(orderId);
       fetchOrders();
     } catch (err) {
       alert(`Error: ${err.message}`);
@@ -338,7 +329,6 @@ const LogisticsDashboardPage = () => {
     }
   };
 
-  // --- RENDER LOGIC ---
   const getAssignedUser = (order) => {
     const pickupStatuses = ['PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED', 'COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'];
     if (pickupStatuses.includes(order.status)) {
@@ -348,36 +338,77 @@ const LogisticsDashboardPage = () => {
   };
 
   const renderOrderActions = (order) => {
+    if (!currentUser) return null; // Don't render if user context is not loaded yet
+
+    const isSupervisor = currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN';
+    const isEmployee = currentUser.role === 'EMPLOYEE';
+    const isDeliveryPerson = order.deliveryUserId === currentUser.id;
+    const isPickupPerson = order.pickupUserId === currentUser.id;
+
     switch (order.status) {
       case 'PENDING_DELIVERY':
-        return (
-          <>
-            <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Asignar Reparto</button>
-            <button onClick={() => handleCancelOrder(order.id)} className="action-button red-light">Cancelar</button>
-          </>
-        );
+        if (isSupervisor) {
+          return (
+            <>
+              <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Asignar Reparto</button>
+              <button onClick={() => handleCancelOrder(order.id)} className="action-button red-light">Cancelar</button>
+            </>
+          );
+        }
+        return null;
+
       case 'OUT_FOR_DELIVERY':
-        return (
-          <>
-            <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Confirmar Entrega</button>
-            <button onClick={() => handleOpenIncidentModal(order)} className="action-button red-light">Reportar Incidencia</button>
-            <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reasignar</button>
-          </>
-        );
+        if (isSupervisor) {
+          return (
+            <>
+              <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Forzar Entrega</button>
+              <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reasignar</button>
+            </>
+          );
+        }
+        if (isEmployee && isDeliveryPerson) {
+          return (
+            <>
+              <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Confirmar Entrega</button>
+              <button onClick={() => handleOpenIncidentModal(order)} className="action-button red-light">Reportar Incidencia</button>
+            </>
+          );
+        }
+        return null;
+
       case 'DELIVERY_FAILED':
-        return <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reintentar Asignación</button>;
+        if (isSupervisor) {
+          return <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reintentar Asignación</button>;
+        }
+        return null;
+
       case 'IN_ASSEMBLY':
-        return <button onClick={() => handleConfirmAssembly(order.id)} className="action-button green-light">Confirmar Fin de Armado</button>;
+        if (isSupervisor) {
+          return <button onClick={() => handleConfirmAssembly(order.id)} className="action-button green-light">Confirmar Fin de Armado</button>;
+        }
+        return null;
+        
       case 'PENDING_PICKUP':
-        return <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Asignar Recogida</button>;
+        if (isSupervisor) {
+          return <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Asignar Recogida</button>;
+        }
+        if (isEmployee && isPickupPerson) {
+          return <button onClick={() => handleConfirmPickup(order.id)} className="action-button green-light">Confirmar Recolección</button>;
+        }
+        return null;
+
       case 'RETURN_IN_TRANSIT':
-      case 'PARTIALLY_RECEIVED': // Add this case
-        return (
-          <>
-            <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>
-            <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Reasignar Recogida</button>
-          </>
-        );
+      case 'PARTIALLY_RECEIVED':
+        if (isSupervisor) {
+          return (
+            <>
+              <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>
+              <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Reasignar Recogida</button>
+            </>
+          );
+        }
+        return null;
+
       case 'COMPLETED':
       case 'COMPLETED_WITH_NOTES':
       case 'COMPLETED_WITH_DISCREPANCY':
@@ -391,7 +422,7 @@ const LogisticsDashboardPage = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-    setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to first page on filter change
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
   };
 
   const handlePageChange = (newPage) => {

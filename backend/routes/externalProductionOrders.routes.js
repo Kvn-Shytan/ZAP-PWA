@@ -315,28 +315,47 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
   const take = pageSizeNum;
 
   try {
-    const where = {};
+    const { userId, role } = req.user;
+    
+    const filterConditions = [];
+
     if (status) {
-      where.status = { in: status.split(',') };
+      filterConditions.push({ status: { in: status.split(',') } });
     }
     if (assemblerId) {
-      where.assemblerId = assemblerId;
+      filterConditions.push({ assemblerId: assemblerId });
     }
     if (dateFrom && dateTo) {
-      where.createdAt = {
-        gte: new Date(dateFrom),
-        lte: new Date(dateTo),
-      };
+      filterConditions.push({
+        createdAt: {
+          gte: new Date(dateFrom),
+          lte: new Date(dateTo),
+        },
+      });
     }
     if (search) {
-      where.OR = [
-        { orderNumber: { contains: search, mode: 'insensitive' } },
-        { items: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
-        { items: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
-        { expectedOutputs: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
-        { expectedOutputs: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
-      ];
+      filterConditions.push({
+        OR: [
+          { orderNumber: { contains: search, mode: 'insensitive' } },
+          { items: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
+          { items: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
+          { expectedOutputs: { some: { product: { description: { contains: search, mode: 'insensitive' } } } } },
+          { expectedOutputs: { some: { product: { internalCode: { contains: search, mode: 'insensitive' } } } } },
+        ],
+      });
     }
+
+    // Role-based filtering
+    if (role === 'EMPLOYEE') {
+      filterConditions.push({
+        OR: [
+          { deliveryUserId: userId },
+          { pickupUserId: userId }
+        ]
+      });
+    }
+
+    const where = filterConditions.length > 0 ? { AND: filterConditions } : {};
 
     const [orders, totalOrders] = await prisma.$transaction([
       prisma.externalProductionOrder.findMany({
@@ -620,7 +639,6 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
     const updatedOrder = await prisma.externalProductionOrder.update({
       where: { id },
       data: {
-        status: 'RETURN_IN_TRANSIT',
         pickupUserId: userId,
       },
     });
@@ -631,6 +649,32 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
     res.status(500).json({ error: 'Failed to assign pickup' });
   }
 });
+
+// POST /:id/confirm-pickup - Assigned employee confirms they have picked up the goods
+router.post(
+  '/:id/confirm-pickup',
+  authorizeAssignedUserOrAdmin(['ADMIN', 'SUPERVISOR'], 'pickupUserId'),
+  async (req, res) => {
+    const { id } = req.params;
+    const { order } = req; // Use the order from middleware
+
+    try {
+      if (order.status !== 'PENDING_PICKUP') {
+        return res.status(400).json({ error: `No se puede confirmar la recolección para una orden con estado ${order.status}` });
+      }
+
+      const updatedOrder = await prisma.externalProductionOrder.update({
+        where: { id },
+        data: { status: 'RETURN_IN_TRANSIT' },
+      });
+
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error(`Error confirming pickup for order ${id}:`, error);
+      res.status(500).json({ error: 'Failed to confirm pickup' });
+    }
+  }
+);
 
 // POST /:id/receive - Receive finished goods from an assembler
 router.post(

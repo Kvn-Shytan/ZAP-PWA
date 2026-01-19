@@ -389,6 +389,66 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   **Fase 12: Consolidación y Estabilización (Completada)**
         *   `[x]` Todos los cambios de refactorización y mejoras de UI/UX, así como las correcciones de errores, se han integrado con éxito en la rama `master`.
         *   `[x]` La aplicación se considera estable y lista para futuras fases de desarrollo.
+
+<br>
+
+---
+
+<br>
+
+-   **Fase 13: Control de Inventario Externo y Alertas de Inactividad (Pendiente)**
+    > **Objetivo:** Obtener visibilidad en tiempo real del inventario en manos de armadores externos y ser notificado proactivamente sobre posibles demoras.
+
+    *   **13.1: Inventario de Armadores ("Pendientes")**
+        *   **Objetivo:** Visualizar todos los materiales (productos finales y materias primas) que un armador tiene en su poder.
+        *   **Acciones Backend:**
+            *   `[ ]` **(DB):** Crear tabla `OrderSentComponent` para guardar un "snapshot" de los materiales enviados en cada orden y optimizar el rendimiento.
+            *   `[ ]` **(API):** Modificar el endpoint de creación de órdenes para poblar la nueva tabla `OrderSentComponent`.
+            *   `[ ]` **(API):** Crear nuevo endpoint `GET /api/assemblers/:id/inventory` para calcular y devolver los pendientes de un armador basándose en el "snapshot" y las entregas parciales.
+        *   **Acciones Frontend:**
+            *   `[ ]` **(UI):** Añadir una pestaña "Pendientes" en la vista de detalle de cada armador.
+            *   `[ ]` **(UI):** Implementar una vista que muestre los productos finales pendientes y un desplegable (`[+]`) para ver las materias primas restantes.
+
+    *   **13.2: Alertas por Inactividad**
+        *   **Objetivo:** Notificar a Supervisores y Administradores si una orden no presenta cambios de estado por más de 3 días hábiles.
+        *   **Acciones Backend:**
+            *   `[ ]` **(DB):** Crear nueva tabla `Alert` para almacenar las notificaciones generadas.
+            *   `[ ]` **(Infra):** Implementar un trabajo programado (`scheduled job`) diario en el backend.
+            *   `[ ]` **(Job):** El job escaneará órdenes en estado `IN_ASSEMBLY`, y si no han tenido cambios por 3 días hábiles (Lun-Sab), creará una alerta.
+            *   `[ ]` **(API):** Crear endpoints para leer (`GET /api/alerts`) y desestimar temporalmente (`POST /api/alerts/:id/dismiss`) las alertas. La desestimación durará solo hasta el próximo ciclo del job.
+            *   `[ ]` **(API):** Implementar la lógica para que una alerta se resuelva automáticamente cuando el estado de la orden asociada cambie.
+        *   **Acciones Frontend:**
+            *   `[ ]` **(UI):** Añadir una sección de "Alertas" en el dashboard de `SUPERVISOR` y `ADMIN`.
+            *   `[ ]` **(UI):** Cada alerta deberá tener un botón para "Desestimar".
+
+<br>
+
+-   **Fase 14: Gestión de Rechazos y Control de Calidad en Recepción (Pendiente)**
+    > **Objetivo:** Implementar un sistema robusto para gestionar material defectuoso, separando el proceso logístico del de calidad y vinculando los rechazos a los pagos de armadores.
+
+    *   **14.1: Flujo de "Recepción en Dos Pasos" (Completada)**
+        *   **Objetivo:** Reflejar el proceso real donde la recolección logística y la inspección de calidad ocurren en momentos y por personas diferentes.
+        *   **Acciones:**
+            *   `[x]` **(DB):** Añadir nuevo estado de orden: `RETURN_IN_TRANSIT`.
+            *   `[x]` **(API & UI - Repartidor):** Implementar un botón "Recolección Confirmada" para el rol `EMPLOYEE`. Esta acción cambiará el estado de la orden de `PENDING_PICKUP` a `RETURN_IN_TRANSIT`.
+            *   `[x]` **(UI - Supervisor):** Crear una nueva cola en el dashboard del supervisor: "Pendiente de Recepción en Fábrica", que liste las órdenes en estado `RETURN_IN_TRANSIT`.
+
+    *   **14.2: Control de Calidad en Recepción y Ajuste de Pago**
+        *   **Objetivo:** Permitir al supervisor registrar unidades aceptadas y rechazadas, y que esto impacte el pago al armador.
+        *   **Acciones:**
+            *   `[ ]` **(DB):** Crear tabla `RejectedMaterialLog` para un historial auditable de rechazos, incluyendo campos para `reason` (texto libre), `externalProductionOrderId` y `deductFromAssemblerPayment` (booleano).
+            *   `[ ]` **(API):** Refactorizar el endpoint de recepción del supervisor para aceptar `quantityAccepted` y `quantityRejected`.
+            *   `[ ]` **(API):** La lógica de recepción aumentará el stock con las unidades aceptadas, creará un movimiento de desecho (`WASTE_OUT`) con las rechazadas, y guardará el registro en `RejectedMaterialLog`.
+            *   `[ ]` **(API):** Modificar la API de cálculo de pagos para que reste el valor de las unidades marcadas con `deductFromAssemblerPayment: true`.
+            *   `[ ]` **(UI - Supervisor):** El modal de recepción del supervisor tendrá campos para "Cantidad Aceptada" y "Cantidad Rechazada", y un checkbox `[ ] ¿Descontar del pago?` si hay rechazados.
+
+    *   **14.3: Herramienta de Ajuste General de Inventario por Rechazo**
+        *   **Objetivo:** Proveer una herramienta para dar de baja cualquier ítem del inventario por cualquier motivo (daño, obsolescencia, etc.).
+        *   **Acciones:**
+            *   `[ ]` **(UI):** Crear una nueva página en "Inventario": "Gestión de Rechazos".
+            *   `[ ]` **(UI):** La página contendrá un formulario simple para seleccionar un producto, cantidad y un campo de texto libre para la razón del ajuste.
+            *   `[ ]` **(API):** Crear un endpoint `POST /api/inventory/reject-general` que cree el `InventoryMovement` de tipo `WASTE_OUT` y el registro correspondiente en `RejectedMaterialLog`.
+
     
 
     ## 2. Changelog (Registro de Cambios)
