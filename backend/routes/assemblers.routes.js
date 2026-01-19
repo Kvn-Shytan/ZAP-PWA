@@ -6,7 +6,7 @@ const router = express.Router();
 
 // === SPECIFIC ROUTES FIRST ===
 
-// Obtener todos los armadores
+// Get all assemblers
 router.get('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { role } = req.user;
   const selectFields = (role === 'ADMIN' || role === 'SUPERVISOR')
@@ -14,56 +14,39 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOY
     : { id: true, name: true, phone: true, address: true };
 
   try {
-    const assemblersFromDb = await prisma.armador.findMany({
+    const assemblersFromDb = await prisma.assembler.findMany({
       select: selectFields,
       orderBy: { name: 'asc' },
     });
-    // Map to English standard for the API response
-    const assemblers = assemblersFromDb.map(a => ({
-      id: a.id,
-      name: a.name,
-      phone: a.phone,
-      address: a.address,
-      contactInfo: a.contactInfo,
-      email: a.email,
-      paymentTerms: a.paymentTerms
-    }));
-    res.json(assemblers);
+    // The selectFields already ensures that only allowed fields are returned
+    res.json(assemblersFromDb);
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching assemblers:', error);
     res.status(500).json({ error: 'Failed to fetch assemblers.' });
   }
 });
 
-// Crear un nuevo armador
+// Create a new assembler
 router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
     const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
     if (!name || !paymentTerms) {
       return res.status(400).json({ error: 'Name and paymentTerms are required' });
     }
-    const newAssembler = await prisma.armador.create({
+    const newAssembler = await prisma.assembler.create({
       data: { name, contactInfo, address, phone, email, paymentTerms },
     });
-    res.status(201).json({
-      id: newAssembler.id,
-      name: newAssembler.name,
-      contactInfo: newAssembler.contactInfo,
-      address: newAssembler.address,
-      phone: newAssembler.phone,
-      email: newAssembler.email,
-      paymentTerms: newAssembler.paymentTerms,
-    });
+    res.status(201).json(newAssembler);
   } catch (error) {
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'An assembler with this name already exists.' });
     }
-    console.error(error);
+    console.error('Error creating assembler:', error);
     res.status(500).json({ error: 'Failed to create assembler.' });
   }
 });
 
-// GET /api/assemblers/payment-summary-batch - Obtener resumen de pagos para múltiples armadores
+// GET /api/assemblers/payment-summary-batch - Get payment summary for multiple assemblers
 router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { startDate, endDate } = req.query;
 
@@ -76,17 +59,16 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999); // Ensure endDate includes the entire day
 
-    const allArmadores = await prisma.armador.findMany({
+    const allAssemblers = await prisma.assembler.findMany({
       orderBy: { name: 'asc' },
     });
 
     const batchPaymentSummary = [];
 
-    for (const armador of allArmadores) {
-      console.log('Processing armador:', armador);
+    for (const assembler of allAssemblers) {
       const orders = await prisma.externalProductionOrder.findMany({
         where: {
-          armadorId: armador.id,
+          assemblerId: assembler.id,
           createdAt: {
             gte: start,
             lte: end,
@@ -97,57 +79,47 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
           assemblerPaymentId: null, // Only fetch unpaid orders
         },
         include: {
-          expectedOutputs: {
-            include: {
-              product: true,
-            },
-          },
           assemblySteps: {
             include: {
-              trabajoDeArmado: true,
+              assemblyJob: true,
             },
           },
         },
         orderBy: { createdAt: 'asc' },
       });
-      console.log(`Found ${orders.length} orders for armador ${armador.name}`);
 
-      let armadorTotalPayment = 0;
-      const armadorPaymentDetails = [];
+      let assemblerTotalPayment = 0;
+      const assemblerPaymentDetails = [];
 
       for (const order of orders) {
         let orderTotal = 0;
         for (const step of order.assemblySteps) {
-          const itemPayment = Number(step.quantity) * Number(step.precioUnitario);
+          const itemPayment = Number(step.quantity) * Number(step.unitPrice);
           orderTotal += itemPayment;
 
-          armadorPaymentDetails.push({
+          assemblerPaymentDetails.push({
             orderNumber: order.orderNumber,
-            productId: step.trabajoDeArmado.id,
-            productDescription: step.trabajoDeArmado.nombre,
-            trabajoDeArmado: step.trabajoDeArmado.nombre,
-            trabajoPrecio: Number(step.precioUnitario),
+            productId: step.assemblyJob.id,
+            productDescription: step.assemblyJob.name,
+            assemblyJobName: step.assemblyJob.name,
+            assemblyJobPrice: Number(step.unitPrice),
             quantityToPayFor: Number(step.quantity),
             itemPayment: itemPayment,
             orderStatus: order.status,
           });
         }
-        armadorTotalPayment += orderTotal;
+        assemblerTotalPayment += orderTotal;
       }
-      console.log(`Total payment for armador ${armador.name}: ${armadorTotalPayment}`);
 
-        batchPaymentSummary.push({
-          assemblerId: armador.id,
-          assemblerName: armador.name,
-          paymentTerms: armador.paymentTerms,
-          pendingPayment: armadorTotalPayment,
-          totalJobs: armadorPaymentDetails.length,
-          totalPaid: 0,
-          paymentDetails: armadorPaymentDetails,
-        });
+      batchPaymentSummary.push({
+        assemblerId: assembler.id,
+        assemblerName: assembler.name,
+        paymentTerms: assembler.paymentTerms,
+        pendingPayment: assemblerTotalPayment,
+        totalJobs: assemblerPaymentDetails.length,
+        paymentDetails: assemblerPaymentDetails,
+      });
     }
-
-    console.log('Final batch summary:', JSON.stringify(batchPaymentSummary, null, 2));
 
     res.json({
       startDate: startDate,
@@ -156,12 +128,12 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
     });
 
   } catch (error) {
-    console.error(`Error calculating batch payment summary:`, error.message);
+    console.error(`Error calculating batch payment summary:`, error);
     res.status(500).json({ error: 'Failed to calculate batch payment summary.' });
   }
 });
 
-// POST /api/assemblers/close-fortnight-batch - Cierra la quincena y registra pagos
+// POST /api/assemblers/close-fortnight-batch - Close the fortnight and register payments
 router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   const { assemblerIds, startDate, endDate } = req.body;
 
@@ -180,7 +152,7 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
       for (const assemblerId of assemblerIds) {
         const orders = await tx.externalProductionOrder.findMany({
           where: {
-            armadorId: assemblerId, // Database field remains 'armadorId'
+            assemblerId: assemblerId,
             createdAt: {
               gte: start,
               lte: end,
@@ -191,8 +163,7 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
             assemblerPaymentId: null,
           },
           include: {
-            expectedOutputs: { include: { product: true } },
-            assemblySteps: { include: { trabajoDeArmado: true } },
+            assemblySteps: true
           },
         });
 
@@ -200,39 +171,22 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
         const paidOrderIds = [];
 
         for (const order of orders) {
-          let orderTotal = 0;
-          for (const expectedOutput of order.expectedOutputs) {
-            const productoTrabajoArmado = await tx.productoTrabajoArmado.findFirst({
-              where: { productId: expectedOutput.productId },
-              include: { trabajo: true },
-            });
-
-            if (productoTrabajoArmado && productoTrabajoArmado.trabajo) {
-              const trabajoPrecio = Number(productoTrabajoArmado.trabajo.precio);
-              let quantityToPayFor = 0;
-
-              if (order.status === 'COMPLETED' || order.status === 'COMPLETED_WITH_NOTES') {
-                quantityToPayFor = Number(expectedOutput.quantityExpected);
-              } else if (order.status === 'COMPLETED_WITH_DISCREPANCY') {
-                quantityToPayFor = Number(expectedOutput.quantityReceived);
-              }
-
-              orderTotal += quantityToPayFor * trabajoPrecio;
-            }
+          for(const step of order.assemblySteps) {
+            totalPaymentForAssembler += Number(step.quantity) * Number(step.unitPrice);
           }
-          totalPaymentForAssembler += orderTotal;
           paidOrderIds.push(order.id);
         }
 
         if (totalPaymentForAssembler > 0) {
+          const assembler = await tx.assembler.findUnique({ where: { id: assemblerId } });
           const newPayment = await tx.assemblerPayment.create({
             data: {
-              armadorId: assemblerId, // Database field remains 'armadorId'
+              assemblerId: assemblerId,
               datePaid: new Date(),
               amount: totalPaymentForAssembler,
               periodStart: start,
               periodEnd: end,
-              notes: `Liquidación de quincena para ${(await tx.armador.findUnique({ where: { id: assemblerId } }))?.name} (${startDate} - ${endDate})`,
+              notes: `Liquidación de quincena para ${assembler?.name} (${startDate} - ${endDate})`,
             },
           });
 
@@ -243,7 +197,7 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
 
           processedPayments.push({
             assemblerId: assemblerId,
-            assemblerName: (await tx.armador.findUnique({ where: { id: assemblerId } }))?.name,
+            assemblerName: assembler?.name,
             totalPayment: totalPaymentForAssembler,
             paymentId: newPayment.id,
           });
@@ -255,12 +209,12 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
     res.status(200).json(result);
 
   } catch (error) {
-    console.error(`Error closing fortnight batch:`, error.message);
+    console.error(`Error closing fortnight batch:`, error);
     res.status(500).json({ error: 'Failed to close fortnight batch.' });
   }
 });
 
-// GET /api/assemblers/payments - Obtener historial de pagos a armadores
+// GET /api/assemblers/payments - Get payment history for assemblers
 router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   try {
     const { assemblerId, startDate, endDate, page = 1, limit = 10 } = req.query;
@@ -271,7 +225,7 @@ router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req,
     // 1. Define the main 'where' clause for AssemblerPayment
     const paymentWhere = {};
     if (assemblerId) {
-      paymentWhere.armadorId = assemblerId;
+      paymentWhere.assemblerId = assemblerId;
     }
     if (startDate) {
       // Ensure we query from the start of the day
@@ -286,24 +240,16 @@ router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req,
       paymentWhere.datePaid = { ...paymentWhere.datePaid, lte: end };
     }
 
-    // 2. Define the 'where' clause for related ExpectedProduction by traversing the relation backwards
-    const unitsWhere = {
-      order: {
-        assemblerPayment: paymentWhere
-      }
-    };
-
-    // 3. Execute all database queries concurrently for maximum efficiency
+    // 2. Execute all database queries concurrently for maximum efficiency
     const [
       payments,
       totalPayments,
       totalPaidAggregate,
-      totalUnitsAggregate
     ] = await prisma.$transaction([
       prisma.assemblerPayment.findMany({
         where: paymentWhere,
         include: { 
-          armador: { select: { id: true, name: true } }, 
+          assembler: { select: { id: true, name: true } }, 
           orders: { select: { id: true, orderNumber: true, status: true } } 
         },
         orderBy: { datePaid: 'desc' },
@@ -315,41 +261,28 @@ router.get('/payments', authenticateToken, authorizeRole(['ADMIN']), async (req,
         _sum: { amount: true },
         where: paymentWhere,
       }),
-      prisma.expectedProduction.aggregate({
-        _sum: { quantityReceived: true },
-        where: unitsWhere,
-      })
     ]);
     
-    // 4. Construct the final response
-    const formattedPayments = payments.map(p => {
-      const { armador, ...rest } = p;
-      return {
-        ...rest,
-        assembler: armador
-      };
-    });
-
+    // 3. Construct the final response
     res.json({
-      data: formattedPayments,
+      data: payments,
       currentPage: parsedPage,
       totalPages: Math.ceil(totalPayments / parsedLimit),
       totalCount: totalPayments,
       aggregates: {
         totalPaid: totalPaidAggregate._sum.amount || 0,
-        totalUnitsProduced: totalUnitsAggregate._sum.quantityReceived || 0,
       }
     });
 
   } catch (error) {
-    console.error(`Error fetching assembler payments:`, error.message);
+    console.error(`Error fetching assembler payments:`, error);
     res.status(500).json({ error: 'Failed to fetch assembler payments.' });
   }
 });
 
 // === GENERIC / PARAMETERIZED ROUTES LAST ===
 
-// Obtener un armador por ID
+// Get an assembler by ID
 router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { id } = req.params;
   const { role } = req.user;
@@ -358,20 +291,12 @@ router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMP
     : { id: true, name: true, phone: true, address: true };
 
   try {
-    const assembler = await prisma.armador.findUnique({
+    const assembler = await prisma.assembler.findUnique({
       where: { id },
       select: selectFields,
     });
     if (assembler) {
-      res.json({
-        id: assembler.id,
-        name: assembler.name,
-        contactInfo: assembler.contactInfo,
-        address: assembler.address,
-        phone: assembler.phone,
-        email: assembler.email,
-        paymentTerms: assembler.paymentTerms,
-      });
+      res.json(assembler);
     } else {
       res.status(404).json({ error: 'Assembler not found' });
     }
@@ -381,13 +306,13 @@ router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMP
   }
 });
 
-// GET /api/assemblers/:armadorId/payment-summary - Obtener resumen de pagos para un armador
+// GET /api/assemblers/:assemblerId/payment-summary - Get payment summary for a single assembler
 router.get('/:assemblerId/payment-summary', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { assemblerId } = req.params;
   const { startDate, endDate } = req.query;
 
-  if (!armadorId || !startDate || !endDate) {
-    return res.status(400).json({ error: 'armadorId, startDate, and endDate are required.' });
+  if (!assemblerId || !startDate || !endDate) {
+    return res.status(400).json({ error: 'assemblerId, startDate, and endDate are required.' });
   }
 
   try {
@@ -397,7 +322,7 @@ router.get('/:assemblerId/payment-summary', authenticateToken, authorizeRole(['A
 
     const orders = await prisma.externalProductionOrder.findMany({
       where: {
-armadorId: assemblerId,
+        assemblerId: assemblerId,
         createdAt: {
           gte: start,
           lte: end,
@@ -407,8 +332,7 @@ armadorId: assemblerId,
         },
       },
       include: {
-        expectedOutputs: { include: { product: true } },
-        assemblySteps: { include: { trabajoDeArmado: true } },
+        assemblySteps: { include: { assemblyJob: true } },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -417,43 +341,23 @@ armadorId: assemblerId,
     const paymentDetails = [];
 
     for (const order of orders) {
-      let orderTotal = 0;
-      const orderItems = [];
-
-      for (const expectedOutput of order.expectedOutputs) {
-        const productoTrabajoArmado = await prisma.productoTrabajoArmado.findFirst({
-          where: { productId: expectedOutput.productId },
-          include: { trabajo: true },
+      for (const step of order.assemblySteps) {
+        const itemPayment = Number(step.quantity) * Number(step.unitPrice);
+        totalPayment += itemPayment;
+        paymentDetails.push({
+          orderNumber: order.orderNumber,
+          productId: step.assemblyJob.id,
+          productDescription: step.assemblyJob.name,
+          assemblyJobName: step.assemblyJob.name,
+          assemblyJobPrice: Number(step.unitPrice),
+          quantityExpected: Number(step.quantity),
+          quantityReceived: Number(step.quantity), // Assumption: for payment, received = expected
+          quantityToPayFor: Number(step.quantity),
+          itemPayment: itemPayment,
+          orderStatus: order.status,
+          notes: order.notes,
         });
-
-        if (productoTrabajoArmado && productoTrabajoArmado.trabajo) {
-          const trabajoPrecio = Number(productoTrabajoArmado.trabajo.precio);
-          let quantityToPayFor = 0;
-
-          if (order.status === 'COMPLETED' || order.status === 'COMPLETED_WITH_NOTES') {
-            quantityToPayFor = Number(expectedOutput.quantityExpected);
-          } else if (order.status === 'COMPLETED_WITH_DISCREPANCY') {
-            quantityToPayFor = Number(expectedOutput.quantityReceived);
-          }
-
-          const itemPayment = quantityToPayFor * trabajoPrecio;
-          orderTotal += itemPayment;
-          paymentDetails.push({
-            orderNumber: order.orderNumber,
-            productId: expectedOutput.productId,
-            productDescription: expectedOutput.product.description,
-            trabajoDeArmado: productoTrabajoArmado.trabajo.nombre,
-            trabajoPrecio: trabajoPrecio,
-            quantityExpected: Number(expectedOutput.quantityExpected),
-            quantityReceived: Number(expectedOutput.quantityReceived),
-            quantityToPayFor: quantityToPayFor,
-            itemPayment: itemPayment,
-            orderStatus: order.status,
-            notes: order.notes,
-          });
-        }
       }
-      totalPayment += orderTotal;
     }
 
     res.json({
@@ -465,29 +369,21 @@ armadorId: assemblerId,
     });
 
   } catch (error) {
-    console.error(`Error calculating payment summary for assembler ${assemblerId}:`, error.message);
+    console.error(`Error calculating payment summary for assembler ${assemblerId}:`, error);
     res.status(500).json({ error: 'Failed to calculate payment summary.' });
   }
 });
 
-// Actualizar un armador por ID
+// Update an assembler by ID
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
   try {
-    const updatedAssembler = await prisma.armador.update({
+    const updatedAssembler = await prisma.assembler.update({
       where: { id },
       data: { name, contactInfo, address, phone, email, paymentTerms },
     });
-    res.json({
-      id: updatedAssembler.id,
-      name: updatedAssembler.name,
-      contactInfo: updatedAssembler.contactInfo,
-      address: updatedAssembler.address,
-      phone: updatedAssembler.phone,
-      email: updatedAssembler.email,
-      paymentTerms: updatedAssembler.paymentTerms,
-    });
+    res.json(updatedAssembler);
   } catch (error) {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Assembler not found' });
@@ -495,16 +391,16 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), as
     if (error.code === 'P2002') {
       return res.status(409).json({ error: 'An assembler with this name already exists.' });
     }
-    console.error(error);
+    console.error('Error updating assembler:', error);
     res.status(500).json({ error: 'Failed to update assembler.' });
   }
 });
 
-// Eliminar un armador por ID
+// Delete an assembler by ID
 router.delete('/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.armador.delete({
+    await prisma.assembler.delete({
       where: { id },
     });
     res.status(204).send();
@@ -512,7 +408,7 @@ router.delete('/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Assembler not found' });
     }
-    console.error(error);
+    console.error('Error deleting assembler:', error);
     res.status(500).json({ error: 'Failed to delete assembler.' });
   }
 });

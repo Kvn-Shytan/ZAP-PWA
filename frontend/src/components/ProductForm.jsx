@@ -63,17 +63,17 @@ const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignM
       {/* Conditional Assembly Job Display */}
       {(product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
         <div style={inputGroupStyle}>
-          <label>Trabajo de Armado</label>
-          <div style={trabajoDisplayBoxStyle}>
-            {product.trabajoDeArmado ? (
+          <label>Trabajo de Ensamblaje</label>
+          <div style={assemblyJobDisplayBoxStyle}>
+            {product.assemblyJob ? (
               <span>
-                {product.trabajoDeArmado.label}
+                {product.assemblyJob.label}
               </span>
             ) : (
               <span style={{ fontStyle: 'italic', color: '#666' }}>Ninguno asignado</span>
             )}
             <button type="button" onClick={onOpenAssignModal} style={assignButtonStyle}>
-              {product.trabajoDeArmado ? 'Cambiar' : 'Asignar'}
+              {product.assemblyJob ? 'Cambiar' : 'Asignar'}
             </button>
           </div>
         </div>
@@ -114,7 +114,7 @@ const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignM
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '600px', margin: 'auto' };
 const inputGroupStyle = { display: 'flex', flexDirection: 'column' };
 const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px' };
-const trabajoDisplayBoxStyle = {
+const assemblyJobDisplayBoxStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

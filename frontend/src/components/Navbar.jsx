@@ -88,7 +88,7 @@ export default function Navbar() {
                   <li><Link to="/assemblers">Gestión de Armadores</Link></li>
                   <li><Link to="/assembler-payment-batch">Liquidación de Pagos</Link></li>
                   <li><Link to="/assembler-payments-history">Historial de Pagos</Link></li>
-                  {user.role === 'ADMIN' && <li><Link to="/admin-tools/assembly-work">Trabajos de Armado</Link></li>}
+                  {user.role === 'ADMIN' && <li><Link to="/admin-tools/assembly-jobs">Assembly Jobs</Link></li>}
                 </ul>
               </li>
             )}

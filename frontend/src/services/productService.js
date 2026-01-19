@@ -105,11 +105,11 @@ export const productService = {
   // --- Assembly (Recipe) Management ---
 
   /**
-   * Obtiene la lista de trabajos de armado (receta de armado) de un producto.
-   * @param {string} productId - El ID del producto.
-   * @returns {Promise<Array<object>>} - La lista de trabajos asignados.
+   * Gets the list of assembly jobs (assembly recipe) for a product.
+   * @param {string} productId - The ID of the product.
+   * @returns {Promise<Array<object>>} - The list of assigned assembly jobs.
    */
-  getTrabajosArmado(productId) {
-    return apiFetch(`/products/${productId}/trabajos-armado`);
+  getAssemblyJobs(productId) {
+    return apiFetch(`/products/${productId}/assembly-jobs`);
   },
 };

@@ -62,7 +62,7 @@ const ExternalProductionOrderDetailPage = () => {
         <ul style={{ listStyleType: 'none', padding: 0 }}>
           {steps.map((step, index) => (
             <li key={index} style={{ marginBottom: '0.5rem', borderBottom: '1px dotted #ccc', paddingBottom: '0.5rem' }}>
-              {step.trabajoDeArmado.name} - Cantidad: {step.quantity}
+              {step.assemblyJob.name} - Cantidad: {step.quantity}
             </li>
           ))}
         </ul>
@@ -104,9 +104,9 @@ const ExternalProductionOrderDetailPage = () => {
 
       <div style={{ border: '1px solid #eee', padding: '1.5rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
         <h3>Información General</h3>
-        <p><strong>Armador:</strong> {order.armador?.name}</p>
-        {order.armador?.address && <p><strong>Dirección:</strong> {order.armador.address}</p>}
-        {order.armador?.phone && <p><strong>Teléfono:</strong> {order.armador.phone}</p>}
+        <p><strong>Ensamblador:</strong> {order.assembler?.name}</p>
+        {order.assembler?.address && <p><strong>Dirección:</strong> {order.assembler.address}</p>}
+        {order.assembler?.phone && <p><strong>Teléfono:</strong> {order.assembler.phone}</p>}
         <p><strong>Estado:</strong> {order.status}</p>
         <p><strong>Fecha de Envío:</strong> {new Date(order.dateSent).toLocaleDateString()}</p>
         {order.expectedCompletionDate && <p><strong>Fecha de Finalización Esperada:</strong> {new Date(order.expectedCompletionDate).toLocaleDateString()}</p>}
@@ -114,8 +114,8 @@ const ExternalProductionOrderDetailPage = () => {
         {order.pickupUser && <p><strong>Asignado para Recogida:</strong> {order.pickupUser.name}</p>}
       </div>
 
-      {renderProductList(order.items, 'Materiales Enviados al Armador')}
-      {renderProductList(order.expectedOutputs, 'Productos Esperados del Armador')}
+      {renderProductList(order.items, 'Materiales Enviados al Ensamblador')}
+      {renderProductList(order.expectedOutputs, 'Productos Esperados del Ensamblador')}
       {renderAssemblySteps(order.assemblySteps)}
       {renderNotes(order.orderNotes)}
 

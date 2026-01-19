@@ -23,7 +23,7 @@ const AssemblerPaymentBatchPage = () => {
     setError(null);
     setBatchSummary(null);
     setSelectedAssemblers(new Set());
-    setExpandedArmadoresDetails(new Set());
+    setExpandedAssemblersDetails(new Set());
 
     try {
       const query = new URLSearchParams({
@@ -42,7 +42,7 @@ const AssemblerPaymentBatchPage = () => {
     }
   }, [startDate, endDate]);
 
-  // Nueva lógica para establecer la quincena por defecto
+  // New logic to set the fortnight by default
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -51,35 +51,35 @@ const AssemblerPaymentBatchPage = () => {
     let defaultStartDate, defaultEndDate;
 
     if (today.getDate() <= 15) {
-      // Primera quincena (1 al 15)
+      // First fortnight (1st to 15th)
       defaultStartDate = new Date(year, month, 1);
       defaultEndDate = new Date(year, month, 15);
     } else {
-      // Segunda quincena (16 al último día del mes)
+      // Second fortnight (16th to last day of the month)
       defaultStartDate = new Date(year, month, 16);
-      defaultEndDate = new Date(year, month + 1, 0); // Día 0 del siguiente mes es el último día del mes actual
+      defaultEndDate = new Date(year, month + 1, 0); // Day 0 of next month is last day of current month
     }
 
-    // Formatear las fechas a 'YYYY-MM-DD'
+    // Format dates to 'YYYY-MM-DD'
     const format = (date) => date.toISOString().split('T')[0];
 
     const formattedStartDate = format(defaultStartDate);
     const formattedEndDate = format(defaultEndDate);
 
-    // Solo establecer si los estados aún no están definidos
+    // Only set if states are not already defined
     if (!startDate && !endDate) {
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
     }
-  }, []); // El array vacío asegura que se ejecute solo una vez al montar el componente
+  }, []); // The empty array ensures it runs only once on component mount
 
   useEffect(() => {
-    // Este useEffect se ejecutará cuando startDate y endDate cambien, incluyendo la inicialización.
-    // Aseguramos que no se ejecute en el primer render si startDate y endDate son inicialmente vacíos.
+    // This useEffect will run when startDate and endDate change, including initialization.
+    // We ensure it doesn't run on the first render if startDate and endDate are initially empty.
     if (startDate && endDate) {
       calculateBatchPayment();
     }
-  }, [startDate, endDate, calculateBatchPayment]); // Dependencias: startDate, endDate, y calculateBatchPayment
+  }, [startDate, endDate, calculateBatchPayment]); // Dependencies: startDate, endDate, and calculateBatchPayment
 
 
   const handleToggleAssembler = (assemblerId) => {
@@ -111,12 +111,12 @@ const AssemblerPaymentBatchPage = () => {
       return;
     }
     if (selectedAssemblers.size === 0) {
-      alert('Please select at least one assembler to close the batch.');
+      alert('Por favor, selecciona al menos un ensamblador para cerrar la quincena.');
       return;
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to close the batch for ${selectedAssemblers.size} assembler(s)? This action will register the payments.`
+      `¿Está seguro de que desea cerrar la quincena para ${selectedAssemblers.size} ensamblador(es)? Esta acción registrará los pagos.`
     );
     if (!confirmed) return;
 
@@ -133,11 +133,11 @@ const AssemblerPaymentBatchPage = () => {
         method: 'POST',
         body: JSON.stringify(payload),
       });
-      alert('Batch closed and payments registered successfully.');
+      alert('Quincena cerrada y pagos registrados exitosamente.');
       calculateBatchPayment(); // Recalculate to update status
     } catch (err) {
       console.error('Error closing fortnight batch:', err);
-      setError(`Error closing batch: ${err.message || 'Unknown error'}`);
+      setError(`Error al cerrar la quincena: ${err.message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
@@ -212,11 +212,11 @@ const AssemblerPaymentBatchPage = () => {
                     <td>${(item.pendingPayment ?? 0).toFixed(2)}</td>
                     <td>
                       <button onClick={() => handleToggleDetails(item.assemblerId)} style={smallButtonStyle}>
-                        {expandedArmadoresDetails.has(item.assemblerId) ? 'Ocultar Detalles' : 'Ver Detalles'}
+                        {expandedAssemblersDetails.has(item.assemblerId) ? 'Ocultar Detalles' : 'Ver Detalles'}
                       </button>
                     </td>
                   </tr>
-                  {expandedArmadoresDetails.has(item.assemblerId) && item.paymentDetails.length > 0 && (
+                  {expandedAssemblersDetails.has(item.assemblerId) && item.paymentDetails.length > 0 && (
                     <React.Fragment>
                       <tr style={{ backgroundColor: '#e0e0e0' }}>
                         <td colSpan="2"></td>
@@ -235,8 +235,8 @@ const AssemblerPaymentBatchPage = () => {
                           <td colSpan="2"></td>
                           <td>{detail.orderNumber}</td>
                           <td>{detail.productDescription}</td>
-                          <td>{detail.trabajoDeArmado}</td>
-                          <td>${(Number(detail.trabajoPrecio) ?? 0).toFixed(2)}</td>
+                          <td>{detail.assemblyJobName}</td>
+                          <td>${(Number(detail.assemblyJobPrice) ?? 0).toFixed(2)}</td>
                           <td>{detail.quantityExpected}</td>
                           <td>{detail.quantityReceived}</td>
                           <td>{detail.quantityToPayFor}</td>

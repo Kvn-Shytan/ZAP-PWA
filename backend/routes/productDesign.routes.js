@@ -24,9 +24,9 @@ router.get('/:id', async (req, res) => {
           },
         },
         // Incluir el costo de armado a través de la tabla intermedia
-        trabajosDeArmado: {
+        assemblyJobs: {
           include: {
-            trabajo: true, // Incluir los detalles del TrabajoDeArmado
+            assemblyJob: true, // Include the details of the AssemblyJob
           },
         },
         // Incluir los costos indirectos asignados
@@ -141,38 +141,55 @@ router.delete('/:id/components/:componentId', async (req, res) => {
   }
 });
 
-router.put('/:productId/trabajo-armado', async (req, res) => {
+router.put('/:productId/assembly-job', async (req, res) => {
   const { productId } = req.params;
-  const { trabajoDeArmadoId } = req.body;
+  const { assemblyJobId } = req.body;
 
-  if (!trabajoDeArmadoId) {
-    return res.status(400).json({ error: 'El campo trabajoDeArmadoId es requerido.' });
+  // If assemblyJobId is null, it means we need to disassociate.
+  if (assemblyJobId === null) {
+    try {
+      await prisma.productAssemblyJob.delete({
+        where: { productId: productId },
+      });
+      return res.status(204).send();
+    } catch (error) {
+      if (error.code === 'P2025') {
+        // If it doesn't exist, it's already disassociated, which is fine.
+        return res.status(204).send();
+      }
+      console.error(`Error disassociating assembly job from product ${productId}:`, error);
+      return res.status(500).json({ error: 'Error disassociating assembly job.' });
+    }
+  }
+
+  // If an assemblyJobId is provided, proceed with upsert.
+  if (!assemblyJobId) {
+    return res.status(400).json({ error: 'The assemblyJobId field is required.' });
   }
 
   try {
-    // Use upsert to create or update the many-to-many relationship
-    const productoTrabajoArmado = await prisma.productoTrabajoArmado.upsert({
+    const productAssemblyJob = await prisma.productAssemblyJob.upsert({
       where: {
         productId: productId,
       },
       update: {
-        trabajo: {
-          connect: { id: trabajoDeArmadoId }
+        assemblyJob: {
+          connect: { id: assemblyJobId }
         }
       },
       create: {
-        producto: {
+        product: {
           connect: { id: productId }
         },
-        trabajo: {
-          connect: { id: trabajoDeArmadoId }
+        assemblyJob: {
+          connect: { id: assemblyJobId }
         }
       },
     });
-    res.status(201).json(productoTrabajoArmado);
+    res.status(201).json(productAssemblyJob);
   } catch (error) {
-    console.error(`Error al asignar trabajo de armado al producto ${productId}:`, error);
-    res.status(500).json({ error: 'Error al asignar el trabajo de armado.' });
+    console.error(`Error assigning assembly job to product ${productId}:`, error);
+    res.status(500).json({ error: 'Error assigning assembly job.' });
   }
 });
 

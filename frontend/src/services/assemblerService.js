@@ -2,11 +2,11 @@ import { apiFetch } from './api';
 
 export const assemblerService = {
   /**
-   * Obtiene una lista de todos los armadores.
-   * La API aplica seguridad a nivel de campo según el rol del usuario.
-   * @returns {Promise<Array<object>>} - La lista de armadores.
+   * Fetches a list of all assemblers.
+   * The API applies field-level security based on user role.
+   * @returns {Promise<Array<object>>} - The list of assemblers.
    */
-  getArmadores() {
+  getAssemblers() {
     return apiFetch('/assemblers');
   },
 

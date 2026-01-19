@@ -268,8 +268,8 @@ const ExternalProductionOrderPage = () => {
             {planResponse.assemblySteps.length > 0 ? (
               <ul>
                 {planResponse.assemblySteps.map(item => (
-                  <li key={item.work.id}>
-                    {item.quantity} x {item.work.nombre} @ ${Number(item.work.precio).toFixed(2)} = ${ (item.quantity * Number(item.work.precio)).toFixed(2) }
+                  <li key={item.id}>
+                    {item.quantity} x {item.name} @ ${Number(item.price).toFixed(2)} = ${ (item.quantity * Number(item.price)).toFixed(2) }
                   </li>
                 ))}
               </ul>

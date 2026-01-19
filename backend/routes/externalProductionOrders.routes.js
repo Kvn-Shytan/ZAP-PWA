@@ -42,7 +42,7 @@ const getProductionPlan = async (tx, prodId, requiredQty, visited = new Set()) =
   directAssemblyWork.forEach(aw => {
     const totalWorkQty = 1 * requiredQty;
     const currentQty = flatWorkItems.get(aw.assemblyJob.id)?.quantity || 0;
-    flatWorkItems.set(aw.assemblyJob.id, { work: aw.assemblyJob, quantity: currentQty + totalWorkQty });
+    flatWorkItems.set(aw.assemblyJob.id, { assemblyJob: aw.assemblyJob, quantity: currentQty + totalWorkQty });
   });
 
   for (const item of directComponents) {
@@ -77,7 +77,7 @@ const getProductionPlan = async (tx, prodId, requiredQty, visited = new Set()) =
         });
         subPlan.flatWorkItems.forEach((value, key) => {
           const currentWorkQty = flatWorkItems.get(key)?.quantity || 0;
-          flatWorkItems.set(key, { work: value.work, quantity: currentWorkQty + value.quantity });
+          flatWorkItems.set(key, { assemblyJob: value.assemblyJob, quantity: currentWorkQty + value.quantity });
         });
         subPlan.flatInsufficientStock.forEach(item => flatInsufficientStock.push(item));
       } else {
@@ -103,7 +103,7 @@ router.use(authenticateToken);
 
 // --- ROUTES ---
 
-// POST /api/external-production-orders - Crear o Simular una orden
+// POST /api/external-production-orders - Create or Simulate an order
 router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { mode } = req.query; // 'dry-run' or 'commit'
   const { assemblerId, productId, quantity, expectedCompletionDate, notes, includeSubAssemblies = [] } = req.body;
@@ -144,23 +144,24 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
           mainPlan.flatRawMaterials.set(key, { ...current, quantity: current.quantity + value.quantity });
         });
         subPlan.flatWorkItems.forEach((value, key) => {
-          const current = mainPlan.flatWorkItems.get(key) || { work: value.work, quantity: 0 };
+          const current = mainPlan.flatWorkItems.get(key) || { assemblyJob: value.assemblyJob, quantity: 0 };
           mainPlan.flatWorkItems.set(key, { ...current, quantity: current.quantity + value.quantity });
         });
         mainPlan.flatInsufficientStock.push(...subPlan.flatInsufficientStock);
       }
 
       const workList = Array.from(mainPlan.flatWorkItems.values());
-      const totalCost = workList.reduce((acc, item) => acc + (Number(item.work.precio) * item.quantity), 0);
+      const totalCost = workList.reduce((acc, item) => acc + (Number(item.assemblyJob.price) * item.quantity), 0);
 
       return res.json({
         productionPlan: mainPlan.planTree,
-        assemblySteps: workList,
+        assemblySteps: workList.map(item => ({...item.assemblyJob, quantity: item.quantity })),
         totalAssemblyCost: totalCost,
         insufficientStockItems: mainPlan.flatInsufficientStock,
       });
 
     } catch (error) {
+      console.error("Dry-run simulation failed:", error);
       return res.status(400).json({ error: `Simulación fallida: ${error.message}` });
     }
   }
@@ -189,7 +190,7 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
           consolidated.flatRawMaterials.set(key, { ...current, quantity: current.quantity + value.quantity });
         });
         plan.flatWorkItems.forEach((value, key) => {
-          const current = consolidated.flatWorkItems.get(key) || { work: value.work, quantity: 0 };
+          const current = consolidated.flatWorkItems.get(key) || { assemblyJob: value.assemblyJob, quantity: 0 };
           consolidated.flatWorkItems.set(key, { ...current, quantity: current.quantity + value.quantity });
         });
         consolidated.flatInsufficientStock.push(...plan.flatInsufficientStock);
@@ -201,9 +202,9 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
       }
 
       // NEW VALIDATION: Check if all associated assembly works have a price
-      for (const [, { work }] of consolidated.flatWorkItems) {
-        if (!work.precio || Number(work.precio) <= 0) {
-          throw new Error(`El trabajo de armado '${work.nombre}' no tiene un precio definido o es cero. Por favor, defina un precio en la gestión de trabajos de armado.`);
+      for (const [, { assemblyJob }] of consolidated.flatWorkItems) {
+        if (!assemblyJob.price || Number(assemblyJob.price) <= 0) {
+          throw new Error(`El trabajo de armado '${assemblyJob.name}' no tiene un precio definido o es cero. Por favor, defina un precio en la gestión de trabajos de armado.`);
         }
       }
       // END NEW VALIDATION
@@ -262,7 +263,7 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
             userId: userId,
             notes: `Envío para orden de producción externa #${order.id}`,
             eventId: eventId,
-            externalProductionOrderId: order.id, // NEW
+            externalProductionOrderId: order.id,
           },
         });
 
@@ -273,13 +274,13 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
       }
 
       // 2. Save the required assembly steps for the order
-      for (const [, { work, quantity: workQty }] of consolidated.flatWorkItems) {
+      for (const [, { assemblyJob, quantity: workQty }] of consolidated.flatWorkItems) {
         await tx.orderAssemblyStep.create({
           data: {
             externalProductionOrderId: order.id,
-            trabajoDeArmadoId: work.id,
+            assemblyJobId: assemblyJob.id,
             quantity: workQty,
-            precioUnitario: work.precio, // NEW
+            unitPrice: assemblyJob.price,
           },
         });
       }
@@ -290,13 +291,13 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
     res.status(201).json(result);
 
   } catch (error) {
-    console.error("Error en la transacción de creación de orden externa (commit):", error.message);
+    console.error("Error in external order creation transaction (commit):", error.message);
     res.status(400).json({ error: error.message });
   }
 });
 
 
-// GET /api/external-production-orders - Listar todas las órdenes
+// GET /api/external-production-orders - List all orders
 router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { 
     status, 
@@ -319,7 +320,7 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
       where.status = { in: status.split(',') };
     }
     if (assemblerId) {
-      where.armadorId = assemblerId;
+      where.assemblerId = assemblerId;
     }
     if (dateFrom && dateTo) {
       where.createdAt = {
@@ -341,7 +342,7 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
       prisma.externalProductionOrder.findMany({
         where,
         include: {
-          armador: true,
+          assembler: true,
           deliveryUser: { select: { id: true, name: true } },
           pickupUser: { select: { id: true, name: true } },
           items: { include: { product: { select: { description: true, internalCode: true } } } },
@@ -353,14 +354,9 @@ router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, 
       }),
       prisma.externalProductionOrder.count({ where }),
     ]);
-
-    const formattedOrders = orders.map(order => {
-      const { armador, ...rest } = order;
-      return { ...rest, assembler: armador };
-    });
-
+    
     res.json({
-      orders: formattedOrders,
+      orders: orders,
       pagination: {
         total: totalOrders,
         totalPages: Math.ceil(totalOrders / pageSizeNum),
@@ -383,7 +379,7 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
     const order = await prisma.externalProductionOrder.findUnique({
       where: { id },
       include: {
-        armador: true,
+        assembler: true,
         deliveryUser: { select: { id: true, name: true } },
         pickupUser: { select: { id: true, name: true } },
         items: { 
@@ -404,7 +400,7 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
         },
         assemblySteps: {
           include: {
-            trabajoDeArmado: true
+            assemblyJob: true
           }
         }
       },
@@ -414,10 +410,7 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    const { armador, ...restOfOrder } = order;
-    const orderWithAssembler = { ...restOfOrder, assembler: armador };
-
-    res.json(orderWithAssembler);
+    res.json(order);
   } catch (error) {
     console.error(`Error fetching order ${id}:`, error.message);
     res.status(500).json({ error: 'Failed to fetch order.' });
@@ -425,7 +418,7 @@ router.get('/:id', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (re
 });
 
 
-// PUT /api/external-production-orders/:id/assign - Asignar un repartidor
+// PUT /api/external-production-orders/:id/assign - Assign a delivery person
 router.put('/:id/assign', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   const { deliveryUserId } = req.body;
@@ -456,7 +449,7 @@ router.put('/:id/assign', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, re
   }
 });
 
-// POST /api/external-production-orders/:id/cancel - Cancelar una orden
+// POST /api/external-production-orders/:id/cancel - Cancel an order
 router.post('/:id/cancel', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   const userPerformingReversalId = req.user.userId;
@@ -512,7 +505,7 @@ router.post('/:id/cancel', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, r
   }
 });
 
-// POST /:id/confirm-delivery - Confirmar entrega de materiales al armador
+// POST /:id/confirm-delivery - Confirm material delivery to assembler
 router.post(
   '/:id/confirm-delivery',
   authorizeAssignedUserOrAdmin(['ADMIN', 'SUPERVISOR'], 'deliveryUserId'),
@@ -522,7 +515,7 @@ router.post(
 
     try {
       if (order.status !== 'OUT_FOR_DELIVERY') {
-        return res.status(400).json({ error: `Cannot confirm delivery for an order with status ${order.status}` });
+        return res.status(400).json({ error: `No se puede confirmar la entrega para una orden con estado ${order.status}` });
       }
 
       const updatedOrder = await prisma.externalProductionOrder.update({
@@ -538,7 +531,7 @@ router.post(
   }
 );
 
-// POST /:id/report-failure - Reportar una entrega fallida
+// POST /:id/report-failure - Report a failed delivery
 router.post(
   '/:id/report-failure',
   authorizeAssignedUserOrAdmin(['ADMIN', 'SUPERVISOR'], 'deliveryUserId'),
@@ -549,7 +542,7 @@ router.post(
 
     try {
       if (order.status !== 'OUT_FOR_DELIVERY') {
-        return res.status(400).json({ error: `Cannot report failure for an order with status ${order.status}` });
+        return res.status(400).json({ error: `No se puede reportar una falla para una orden con estado ${order.status}` });
       }
 
       const updatedOrder = await prisma.externalProductionOrder.update({
@@ -589,7 +582,7 @@ router.post('/:id/confirm-assembly', authorizeRole(['ADMIN', 'SUPERVISOR']), asy
     }
 
     if (order.status !== 'IN_ASSEMBLY') {
-      return res.status(400).json({ error: `Cannot confirm assembly for an order with status ${order.status}` });
+      return res.status(400).json({ error: `No se puede confirmar el armado para una orden con estado ${order.status}` });
     }
 
     const updatedOrder = await prisma.externalProductionOrder.update({
@@ -610,7 +603,7 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
   const { userId } = req.body;
 
   if (!userId) {
-    return res.status(400).json({ error: 'userId is required.' });
+    return res.status(400).json({ error: 'userId es requerido.' });
   }
 
   try {
@@ -621,7 +614,7 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
     }
 
     if (!['PENDING_PICKUP', 'PARTIALLY_RECEIVED'].includes(order.status)) {
-      return res.status(400).json({ error: `Cannot assign pickup for an order with status ${order.status}` });
+      return res.status(400).json({ error: `No se puede asignar el retiro para una orden con estado ${order.status}` });
     }
 
     const updatedOrder = await prisma.externalProductionOrder.update({
@@ -646,10 +639,10 @@ router.post(
   async (req, res) => {
     const { id } = req.params;
     const { receivedItems, justified, notes, isFinalDelivery } = req.body; // receivedItems is an array of { productId, quantity: quantityInThisDelivery }
-    const userId = req.user.userId; // Correctly access userId from the JWT payload
+    const userId = req.user.userId;
 
     if (!receivedItems || !Array.isArray(receivedItems)) {
-      return res.status(400).json({ error: 'receivedItems must be an array.' });
+      return res.status(400).json({ error: 'receivedItems debe ser un array.' });
     }
 
     try {
@@ -664,14 +657,11 @@ router.post(
         }
 
         if (!['RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'].includes(order.status)) {
-          throw new Error(`Cannot receive items for an order with status ${order.status}`);
+          throw new Error(`No se pueden recibir ítems para una orden con estado ${order.status}`);
         }
 
         const eventId = crypto.randomUUID();
-
-        console.log('--- DEBUG: Starting reception transaction ---');
-        console.log('Received items from frontend:', JSON.stringify(receivedItems, null, 2));
-
+        
         // Validate quantities before making any changes
         for (const receivedItem of receivedItems) {
           const expectedItem = order.expectedOutputs.find(e => e.productId === receivedItem.productId);
@@ -690,10 +680,6 @@ router.post(
           const quantityInThisDelivery = Number(receivedItem.quantity);
           if (quantityInThisDelivery <= 0) continue;
 
-          console.log(`--- DEBUG: Processing item ${receivedItem.productId} ---`);
-          console.log('Quantity for this delivery:', quantityInThisDelivery);
-          console.log('User ID:', userId);
-
           try {
             // 1. Update stock
             await tx.product.update({
@@ -702,7 +688,6 @@ router.post(
             });
 
             // 2. Create inventory movement
-            console.log('Attempting to create inventory movement...');
             await tx.inventoryMovement.create({
               data: {
                 productId: receivedItem.productId,
@@ -711,10 +696,9 @@ router.post(
                 userId: userId,
                 notes: `Recepción parcial/total de orden externa #${order.id}`,
                 eventId: eventId,
-                externalProductionOrderId: order.id, // NEW
+                externalProductionOrderId: order.id,
               },
             });
-            console.log('...Inventory movement created successfully.');
 
             // 3. Update the quantityReceived on the ExpectedProduction record
             await tx.expectedProduction.update({
@@ -724,7 +708,7 @@ router.post(
           } catch (e) {
             console.error(`--- DEBUG: ERROR processing item ${receivedItem.productId} ---`);
             console.error(e);
-            throw new Error(`Falló el procesamiento para el producto ${receivedItem.productId}.`); // Re-throw to abort transaction
+            throw new Error(`Falló el procesamiento para el producto ${receivedItem.productId}.`);
           }
         }
 
@@ -761,16 +745,6 @@ router.post(
           });
         }
 
-        if (notes) {
-          await tx.orderNote.create({
-            data: {
-              content: notes,
-              authorId: userId,
-              externalProductionOrderId: id,
-            },
-          });
-        }
-
         const updatedOrder = await tx.externalProductionOrder.update({
           where: { id },
           data: { status: finalStatus },
@@ -788,4 +762,3 @@ router.post(
 );
 
 module.exports = router;
-
