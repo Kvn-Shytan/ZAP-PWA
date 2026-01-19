@@ -159,12 +159,10 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
           // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
           // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
           prisma.externalProductionOrder.findMany({
-            where: {
-              status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] },
-              assemblerPaymentId: null,
-              assemblerId: { not: null },
-            },
-            distinct: ['assemblerId'], // Contar ensambladores distintos
+                        where: {
+                          status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] },
+                          assemblerPaymentId: null,
+                        },            distinct: ['assemblerId'], // Contar ensambladores distintos
             select: {
               assembler: { select: { id: true, name: true } },
             },
