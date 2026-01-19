@@ -1,6 +1,18 @@
 # Changelog (Registro de Cambios)
 
-1 ## 2026-01-12 (Parte 3)
+## 2026-01-18 (Finalización de Refactorización y Consolidación)
+-   **[FEAT] Refactorización Completa de Código e Identificadores:**
+    -   Estandarización de todas las convenciones de nombres de identificadores (variables, funciones, rutas, etc.) de español a inglés en todo el backend y frontend.
+    -   Reestructuración significativa de rutas y servicios en el backend para mejorar la modularidad y mantenibilidad.
+-   **[FIX] Corrección Crítica de Dashboard para Rol ADMIN:**
+    -   Resolución de un error `prisma.externalProductionOrder.findMany()` que causaba un crash en el dashboard del administrador. La solución implicó eliminar un filtro redundante (`assemblerId: { not: null }`) que, por un un bug de Prisma, generaba un error de tipo inesperado (`not: String`).
+-   **[FEAT(ui)] Mejora de UX en Modal de Recepción de Mercadería:**
+    -   Implementación de un cambio en el campo de cantidad del modal de recepción de mercadería para permitir que el campo esté vacío durante la edición, en lugar de forzar un valor `0`. Esto mejora la fluidez de la interacción del usuario.
+-   **[CHORE] Documentación y Consolidación:**
+    -   Actualización del `Roadmap.md` para reflejar la completitud de las fases de refactorización (Fase 3.6, 9, 10, 11) y la adición de una nueva sección de "Consolidación y Estabilización".
+    -   Integración exitosa de todos los cambios de la rama `refactor/standardize-identifiers` en la rama `master` del proyecto.
+
+## 2026-01-12 (Parte 3)
     2 -   **[FEAT(ui)] Refactorizada Página de Historial de Movimientos de Inventario (`InventoryHistoryPage`):**
     3     -   Se realizó una refactorización completa a un diseño responsive con "tarjetas de movimiento" inteligentes,
       incluyendo un código de colores mejorado para identificar rápidamente el tipo de movimiento.
