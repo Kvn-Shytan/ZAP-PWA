@@ -8,69 +8,40 @@ import { useAuth } from './contexts/AuthContext';
 import UserManagementPage from './pages/UserManagementPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import InventoryHistoryPage from './pages/InventoryHistoryPage';
-import ProductEditPage from './pages/ProductEditPage'; // Import the new page
+import ProductEditPage from './pages/ProductEditPage';
 import ProductionOrderPage from './pages/ProductionOrderPage';
 import ProductComponentsPage from './pages/ProductComponentsPage';
-import PurchaseOrderPage from './pages/PurchaseOrderPage'; // Import the new page
-import AdminToolsPage from './pages/AdminToolsPage'; // Import the Admin Tools page
-import ClassifyProductsPage from './pages/ClassifyProductsPage'; // Import the Classify Products page
-import AssemblerManagementPage from './pages/AssemblerManagementPage'; // Import the new page
-import OverheadCostPage from './pages/OverheadCostPage'; // Import the new page
+import PurchaseOrderPage from './pages/PurchaseOrderPage';
+import AdminToolsPage from './pages/AdminToolsPage';
+import ClassifyProductsPage from './pages/ClassifyProductsPage';
+import AssemblerManagementPage from './pages/AssemblerManagementPage';
+import OverheadCostPage from './pages/OverheadCostPage';
 import ExternalProductionOrderPage from './pages/ExternalProductionOrderPage';
+import AssemblyJobPage from './pages/AssemblyJobPage'; // Updated import
 import LogisticsDashboardPage from './pages/LogisticsDashboardPage';
-import TrabajoDeArmadoPage from './pages/TrabajoDeArmadoPage';
+import ExternalProductionOrderDetailPage from './pages/ExternalProductionOrderDetailPage';
+import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
+import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage';
+import DashboardPage from './pages/DashboardPage';
+import Navbar from './components/Navbar';
 import './App.css';
 
 function App() {
-  const { user, logout } = useAuth();
-  const location = useLocation(); // Get current location
+  const { user } = useAuth();
+  const location = useLocation();
 
   return (
     <> 
       {/* Navigation bar - visible only if user is logged in AND not on the login page */}
-      {user && location.pathname !== '/login' && (
-        <nav>
-          <Link to="/">Inicio</Link>
-          {user && <Link to="/products">Productos</Link>}
-          {user && <Link to="/categories">Categorías</Link>}
-          {user && <Link to="/suppliers">Proveedores</Link>}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/assemblers">Armadores</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/inventory-history">Historial</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/production-orders">Producción</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/purchase-order">Registrar Compra</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/external-production-orders/new">Crear Orden Externa</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/logistics-dashboard">Panel de Logística</Link>
-          )}
-          {user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
-            <Link to="/users">Usuarios</Link>
-          )}
-          {user && user.role === 'ADMIN' && (
-            <Link to="/admin-tools">Herramientas</Link>
-          )}
-          {user && <Link to="/change-password">Cambiar Contraseña</Link>} 
-          {user ? (
-            <button onClick={logout}>Cerrar Sesión</button>
-          ) : (
-            <Link to="/login">Iniciar Sesión</Link>
-          )}
-        </nav>
-      )}
-
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        {/* Default route - if user is logged in, show welcome, otherwise redirect to login */}
-        <Route path="/" element={user ? <div>Bienvenido, {user.name || user.email}!</div> : <LoginPage />} />
+      {user && location.pathname !== '/login' && <Navbar />}
+      <main className={user && location.pathname !== '/login' ? 'main-content-with-navbar' : 'main-content'}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          {/* Default route - show DashboardPage for authenticated users */}
+        <Route
+          path="/"
+          element={<ProtectedRoute element={<DashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />}
+        />
         
         <Route
           path="/products"
@@ -117,8 +88,8 @@ function App() {
           element={<ProtectedRoute element={<OverheadCostPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
-          path="/admin-tools/assembly-work"
-          element={<ProtectedRoute element={<TrabajoDeArmadoPage />} allowedRoles={['ADMIN']} />}
+          path="/admin-tools/assembly-jobs" // Updated route path
+          element={<ProtectedRoute element={<AssemblyJobPage />} allowedRoles={['ADMIN']} />} // Updated page component
         />
         <Route
           path="/inventory-history"
@@ -140,11 +111,21 @@ function App() {
           path="/logistics-dashboard"
           element={<ProtectedRoute element={<LogisticsDashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
+          <Route path="/external-orders/:id" element={<ProtectedRoute element={<ExternalProductionOrderDetailPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
+        <Route
+          path="/assembler-payment-batch"
+          element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/assembler-payments-history"
+          element={<ProtectedRoute element={<AssemblerPaymentsHistoryPage />} allowedRoles={['ADMIN']} />}
+        />
         <Route
           path="/change-password"
           element={<ProtectedRoute element={<ChangePasswordPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'NO_ROLE']} />} 
         />
       </Routes>
+    </main>
     </>
   );
 }

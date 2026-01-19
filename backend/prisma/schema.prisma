@@ -37,8 +37,8 @@ model Product {
   externalProductionItems ExternalProductionOrderItem[]
   expectedInOrders        ExpectedProduction[]
 
-  // Relación con los trabajos de armado (muchos a muchos)
-  trabajosDeArmado ProductoTrabajoArmado[]
+  // Relation to assembly jobs (many-to-many)
+  assemblyJobs    ProductAssemblyJob[]
   // Relación con los costos indirectos
   overheadCosts   ProductOverhead[]
 }
@@ -92,33 +92,34 @@ model ProductOverhead {
 }
 
 
-// --- MODELOS DEL MÓDULO DE ARMADORES ---
+// --- ASSEMBLY & PRODUCTION MODELS ---
 
-model TrabajoDeArmado {
+model AssemblyJob {
   id          String   @id @default(cuid())
-  nombre      String   @unique
-  precio      Decimal
-  descripcion String?
+  name        String   @unique
+  price       Decimal
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relación a la tabla intermedia
-  productos   ProductoTrabajoArmado[]
-  orderAssemblySteps OrderAssemblyStep[] // Relación a los pasos de orden
+  // Relation to the join table
+  products   ProductAssemblyJob[]
+  orderAssemblySteps OrderAssemblyStep[] // Relation to order steps
 }
 
-model ProductoTrabajoArmado {
-  producto    Product         @relation(fields: [productId], references: [id])
-  productId   String
-  trabajo     TrabajoDeArmado @relation(fields: [trabajoId], references: [id])
-  trabajoId   String
+model ProductAssemblyJob {
+  product      Product     @relation(fields: [productId], references: [id])
+  productId    String      @unique
+  assemblyJob  AssemblyJob @relation(fields: [assemblyJobId], references: [id])
+  assemblyJobId String
 
-  @@id([productId, trabajoId])
+  @@id([productId, assemblyJobId])
 }
 
 model ExternalProductionOrder {
   id                       String                      @id @default(cuid())
-  armadorId                String
+  orderNumber              String                      @unique
+  assemblerId              String
   dateSent                 DateTime
   expectedCompletionDate   DateTime?
   status                   ExternalProductionOrderStatus @default(PENDING_DELIVERY)
@@ -132,16 +133,21 @@ model ExternalProductionOrder {
   pickupUserId             Int?
   pickupUser               User?                       @relation("Pickups", fields: [pickupUserId], references: [id])
 
-  armador         Armador                     @relation(fields: [armadorId], references: [id])
+  assembler       Assembler                   @relation(fields: [assemblerId], references: [id])
   items           ExternalProductionOrderItem[]
   expectedOutputs ExpectedProduction[]
-  assemblySteps   OrderAssemblyStep[] // Relación a los pasos de ensamblaje
+  assemblySteps   OrderAssemblyStep[] // Relation to assembly steps
+  inventoryMovements InventoryMovement[] // New inverse relation
+  orderNotes OrderNote[] // NEW
+
+  assemblerPaymentId String?
+  assemblerPayment   AssemblerPayment? @relation(fields: [assemblerPaymentId], references: [id])
 }
 
 model ExternalProductionOrderItem {
   id                        String                  @id @default(cuid())
   externalProductionOrderId String
-  productId                 String // Componente enviado
+  productId                 String // Component sent
   quantitySent              Decimal
 
   order   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
@@ -167,20 +173,31 @@ model ExpectedProduction {
 model OrderAssemblyStep {
   id                        String   @id @default(cuid())
   quantity                  Int
+  unitPrice                 Decimal // NEW - Renamed from precioUnitario
 
   externalProductionOrderId String
   externalProductionOrder   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
 
-  trabajoDeArmadoId         String
-  trabajoDeArmado           TrabajoDeArmado @relation(fields: [trabajoDeArmadoId], references: [id])
+  assemblyJobId             String
+  assemblyJob               AssemblyJob @relation(fields: [assemblyJobId], references: [id])
 
   @@index([externalProductionOrderId])
-  @@index([trabajoDeArmadoId])
+  @@index([assemblyJobId])
+}
+
+model OrderNote {
+  id                        String   @id @default(cuid())
+  content                   String
+  authorId                  Int
+  author                    User     @relation(fields: [authorId], references: [id])
+  externalProductionOrderId String
+  externalProductionOrder   ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
+  createdAt                 DateTime @default(now())
 }
 
 model AssemblerPayment {
   id          String   @id @default(cuid())
-  armadorId   String
+  assemblerId String
   datePaid    DateTime
   amount      Decimal
   periodStart DateTime
@@ -188,10 +205,11 @@ model AssemblerPayment {
   notes       String?
   createdAt   DateTime @default(now())
 
-  armador Armador @relation(fields: [armadorId], references: [id])
+  assembler Assembler @relation(fields: [assemblerId], references: [id])
+  orders  ExternalProductionOrder[] // Relation to paid orders
 }
 
-model Armador {
+model Assembler {
   id           String       @id @default(cuid())
   name         String       @unique
   contactInfo  String?
@@ -218,6 +236,7 @@ model User {
   movements          InventoryMovement[]
   assignedDeliveries ExternalProductionOrder[] @relation("Deliveries")
   assignedPickups    ExternalProductionOrder[] @relation("Pickups")
+  orderNotes         OrderNote[] // NEW
 }
 
 model InventoryMovement {
@@ -229,11 +248,19 @@ model InventoryMovement {
   notes     String?
   createdAt DateTime     @default(now())
   eventId   String?
+  externalProductionOrderId String? // New field
 
   product   Product      @relation(fields: [productId], references: [id])
   user      User         @relation(fields: [userId], references: [id])
+  externalProductionOrder ExternalProductionOrder? @relation(fields: [externalProductionOrderId], references: [id]) // New relation
 
   @@index([eventId])
+  @@index([externalProductionOrderId]) // New index for the relation
+}
+
+model OrderSequence {
+  date         String @id // YYYY-MM-DD
+  lastSequence Int
 }
 
 // --- ENUMS ---

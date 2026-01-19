@@ -1,0 +1,138 @@
+/* CSS for AssemblerManagementPage */
+
+.assembler-management-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.assembler-management-page h2,
+.assembler-management-page h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* --- Forms (Create & Edit) --- */
+.create-form, .edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.create-form input,
+.create-form select,
+.edit-form input,
+.edit-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* --- Data Table --- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.data-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.data-table button {
+  margin-right: 5px;
+}
+
+
+/* --- Mobile-First Responsive Design --- */
+@media (max-width: 768px) {
+  .assembler-management-page {
+    padding: 15px;
+  }
+
+  .data-table thead {
+    display: none; /* Hide table headers on mobile */
+  }
+
+  .data-table, .data-table tbody, .data-table tr, .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table tr {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+
+  .data-table td {
+    border: none;
+    padding: 10px 0;
+    display: flex; /* Use Flexbox */
+    justify-content: space-between; /* Space between label and data */
+    align-items: center; /* Vertically align items */
+    gap: 10px; /* Add some space between items */
+  }
+
+  .data-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0; /* Prevent label from shrinking */
+  }
+  
+  .data-table td > span {
+    text-align: right; /* Align data to the right */
+    word-break: break-word; /* Wrap long text */
+  }
+
+  .data-table td[data-label="Acciones"] {
+    flex-direction: column; /* Stack label and buttons vertically */
+    align-items: stretch; /* Stretch items to full width */
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .data-table td[data-label="Acciones"]::before {
+    margin-bottom: 5px;
+    text-align: center;
+  }
+  
+  .data-table td[data-label="Acciones"] > div {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .data-table td[data-label="Acciones"] button {
+    width: 100%;
+    padding: 10px;
+    margin: 0;
+  }
+}

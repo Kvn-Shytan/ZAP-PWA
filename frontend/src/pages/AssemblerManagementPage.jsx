@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // Keep useAuth for user role
-import { armadorService } from '../services/armadorService';
+import { useAuth } from '../contexts/AuthContext';
+import { assemblerService } from '../services/assemblerService';
+import './AssemblerManagementPage.css';
 
 const INITIAL_FORM_STATE = {
   name: '',
@@ -37,14 +38,16 @@ function EditForm({ assembler, onSave, onCancel }) {
       <select name="paymentTerms" value={editedAssembler.paymentTerms} onChange={handleChange}>
         {paymentTermOptions.map(term => <option key={term} value={term}>{term}</option>)}
       </select>
-      <button type="submit">Guardar Cambios</button>
-      <button type="button" onClick={onCancel}>Cancelar</button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary">Guardar Cambios</button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
+      </div>
     </form>
   );
 }
 
 function AssemblerManagementPage() {
-  const { user } = useAuth(); // Keep useAuth only for user role
+  const { user } = useAuth();
   const [assemblers, setAssemblers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,21 +55,20 @@ function AssemblerManagementPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAssembler, setNewAssembler] = useState(INITIAL_FORM_STATE);
 
-  // State for editing
   const [editingAssembler, setEditingAssembler] = useState(null);
 
   const fetchAssemblers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await armadorService.getArmadores();
+      const data = await assemblerService.getAssemblers();
       setAssemblers(data);
     } catch (e) {
       setError('Failed to fetch assemblers: ' + e.message);
     } finally {
       setLoading(false);
     }
-  }, []); // No authFetch dependency needed anymore
+  }, []);
 
   useEffect(() => {
     fetchAssemblers();
@@ -80,7 +82,7 @@ function AssemblerManagementPage() {
     e.preventDefault();
     setError(null);
     try {
-      await armadorService.create(newAssembler);
+      await assemblerService.create(newAssembler);
       setNewAssembler(INITIAL_FORM_STATE);
       setShowCreateForm(false);
       fetchAssemblers();
@@ -90,10 +92,10 @@ function AssemblerManagementPage() {
   };
 
   const handleDeleteAssembler = async (assemblerId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este armador?')) return;
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este ensamblador?')) return;
     setError(null);
     try {
-      await armadorService.delete(assemblerId);
+      await assemblerService.delete(assemblerId);
       fetchAssemblers();
     } catch (e) {
       setError('Failed to delete assembler: ' + e.message);
@@ -103,21 +105,20 @@ function AssemblerManagementPage() {
   const handleUpdateAssembler = async (assemblerToUpdate) => {
     setError(null);
     try {
-      await armadorService.update(assemblerToUpdate.id, assemblerToUpdate);
-      setEditingAssembler(null); // Exit edit mode
+      await assemblerService.update(assemblerToUpdate.id, assemblerToUpdate);
+      setEditingAssembler(null);
       fetchAssemblers();
     } catch (e) {
       setError('Failed to update assembler: ' + e.message);
     }
   };
 
-  if (loading) return <p>Cargando armadores...</p>;
+  if (loading) return <p>Cargando ensambladores...</p>;
   if (error) return <p className="error-message">Error: {error}</p>;
 
   const isPrivilegedUser = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
   const paymentTermOptions = ['BI_WEEKLY', 'MONTHLY', 'PER_UNIT'];
 
-  // If editing, show only the edit form
   if (editingAssembler) {
     return (
       <div className="assembler-management-page">
@@ -132,17 +133,17 @@ function AssemblerManagementPage() {
 
   return (
     <div className="assembler-management-page">
-      <h2>Gestión de Armadores</h2>
+      <h2>Gestión de Ensambladores</h2>
       
       {isPrivilegedUser && (
-        <button onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? 'Cancelar' : 'Crear Nuevo Armador'}
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
+          {showCreateForm ? 'Cancelar' : 'Crear Nuevo Ensamblador'}
         </button>
       )}
 
       {showCreateForm && isPrivilegedUser && (
         <form onSubmit={handleCreateAssembler} className="create-form">
-          <h3>Crear Nuevo Armador</h3>
+          <h3>Crear Nuevo Ensamblador</h3>
           <input type="text" name="name" placeholder="Nombre Completo" value={newAssembler.name} onChange={handleNewAssemblerChange} required />
           <input type="text" name="contactInfo" placeholder="Persona de Contacto" value={newAssembler.contactInfo} onChange={handleNewAssemblerChange} />
           <input type="text" name="address" placeholder="Dirección" value={newAssembler.address} onChange={handleNewAssemblerChange} />
@@ -151,11 +152,11 @@ function AssemblerManagementPage() {
           <select name="paymentTerms" value={newAssembler.paymentTerms} onChange={handleNewAssemblerChange}>
             {paymentTermOptions.map(term => <option key={term} value={term}>{term}</option>)}
           </select>
-          <button type="submit">Guardar Armador</button>
+          <button type="submit" className="btn btn-success">Guardar Ensamblador</button>
         </form>
       )}
 
-      <h3>Lista de Armadores</h3>
+      <h3>Lista de Ensambladores</h3>
       <table className="data-table">
         <thead>
           <tr>
@@ -174,16 +175,18 @@ function AssemblerManagementPage() {
         <tbody>
           {assemblers.map((assembler) => (
             <tr key={assembler.id}>
-              <td>{assembler.name}</td>
-              <td>{assembler.phone || '-'}</td>
-              <td>{assembler.address || '-'}</td>
+              <td data-label="Nombre"><span>{assembler.name}</span></td>
+              <td data-label="Teléfono"><span>{assembler.phone || '-'}</span></td>
+              <td data-label="Dirección"><span>{assembler.address || '-'}</span></td>
               {isPrivilegedUser && (
                 <>
-                  <td>{assembler.email || '-'}</td>
-                  <td>{assembler.paymentTerms}</td>
-                  <td>
-                    <button onClick={() => setEditingAssembler(assembler)}>Editar</button>
-                    {user.role === 'ADMIN' && <button onClick={() => handleDeleteAssembler(assembler.id)}>Eliminar</button>}
+                  <td data-label="Email"><span>{assembler.email || '-'}</span></td>
+                  <td data-label="Condiciones de Pago"><span>{assembler.paymentTerms}</span></td>
+                  <td data-label="Acciones">
+                    <div>
+                      <button className="btn btn-secondary" onClick={() => setEditingAssembler(assembler)}>Editar</button>
+                      {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={() => handleDeleteAssembler(assembler.id)}>Eliminar</button>}
+                    </div>
                   </td>
                 </>
               )}

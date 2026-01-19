@@ -5,7 +5,7 @@ const { validate, createProductSchema } = require('../validators/product.validat
 const prisma = require('../prisma/client');
 const router = express.Router();
 
-// Crear un nuevo producto
+// Create a new product
 router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), validate(createProductSchema), async (req, res) => {
   console.log('Create Body:', req.body); // Diagnostic log
   const { user } = req;
@@ -32,7 +32,7 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), vali
   }
 });
 
-// Obtener todos los productos con filtros
+// Get all products with filters
 router.get('/', authenticateToken, async (req, res) => {
   const { user } = req;
   const { search, categoryId, type, page = 1, pageSize = 25 } = req.query;
@@ -115,7 +115,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Obtener productos no clasificados
+// Get unclassified products
 router.get('/unclassified', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   console.log('[/api/products/unclassified] Request received.');
   try {
@@ -132,12 +132,12 @@ router.get('/unclassified', authenticateToken, authorizeRole(['ADMIN', 'SUPERVIS
     console.log(`[/api/products/unclassified] Found ${unclassifiedProducts.length} unclassified products.`);
     res.json(unclassifiedProducts);
   } catch (error) {
-    console.error("[/api/products/unclassified] Error al obtener productos no clasificados:", error.message);
+    console.error("[/api/products/unclassified] Error fetching unclassified products:", error.message);
     res.status(500).json({ error: 'Failed to fetch unclassified products.' });
   }
 });
 
-// Obtener un solo producto por su ID
+// Get a single product by ID
 router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
   const { id } = req.params;
   try {
@@ -156,15 +156,15 @@ router.get('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMP
     if (product) {
       res.json(product);
     } else {
-      res.status(404).json({ error: 'Producto no encontrado' });
+      res.status(404).json({ error: 'Product not found' });
     }
   } catch (error) {
     console.error('Error fetching product by ID:', error);
-    res.status(500).json({ error: 'Error al obtener el producto' });
+    res.status(500).json({ error: 'Failed to fetch product.' });
   }
 });
 
-// Obtener los componentes de un producto (receta)
+// Get product components (recipe)
 router.get('/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   console.log('Fetching components for product ID:', id);
@@ -186,12 +186,12 @@ router.get('/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERV
     });
     res.json(productComponents);
   } catch (error) {
-    console.error('Error al obtener los componentes del producto:', error);
-    res.status(500).json({ error: 'Error al obtener los componentes del producto' });
+    console.error('Error fetching product components:', error);
+    res.status(500).json({ error: 'Failed to fetch product components.' });
   }
 });
 
-// Añadir un componente a un producto
+// Add a component to a product
 router.post('/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id: productId } = req.params;
   const { componentId, quantity } = req.body;
@@ -202,7 +202,7 @@ router.post('/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPER
 
   // Critical Validation: Prevent a product from being its own component
   if (productId === componentId) {
-    return res.status(400).json({ error: 'Un producto no puede ser componente de sí mismo.' });
+    return res.status(400).json({ error: 'A product cannot be its own component.' });
   }
 
   try {
@@ -216,13 +216,13 @@ router.post('/:id/components', authenticateToken, authorizeRole(['ADMIN', 'SUPER
   } catch (error) {
     console.error('Error adding component to product:', error);
     if (error.code === 'P2002') {
-      return res.status(409).json({ error: 'Este componente ya existe en la receta del producto.' });
+      return res.status(409).json({ error: 'This component already exists in the product recipe.' });
     }
-    res.status(500).json({ error: 'Error al añadir el componente.' });
+    res.status(500).json({ error: 'Failed to add component.' });
   }
 });
 
-// Quitar un componente de un producto
+// Remove a component from a product
 router.delete('/:productId/components/:componentId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId, componentId } = req.params;
 
@@ -241,12 +241,12 @@ router.delete('/:productId/components/:componentId', authenticateToken, authoriz
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Component relation not found.' });
     }
-    res.status(500).json({ error: 'Error al quitar el componente.' });
+    res.status(500).json({ error: 'Failed to remove component.' });
   }
 });
 
 
-// Actualizar un producto
+// Update a product
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
   const { user } = req; // User from token
@@ -264,7 +264,7 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), as
     lowStockThreshold: lowStockThreshold ? lowStockThreshold : undefined,
     categoryId: categoryId ? parseInt(categoryId) : undefined,
     supplierId: supplierId ? parseInt(supplierId) : undefined,
-    isClassified: typeof isClassified === 'boolean' ? isClassified : undefined, // Añadir isClassified
+    isClassified: typeof isClassified === 'boolean' ? isClassified : undefined,
   };
 
   // Rule: Only ADMIN can update prices
@@ -290,7 +290,7 @@ router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), as
 });
 
 
-// Eliminar un producto por ID
+// Delete a product by ID
 router.delete('/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res) => {
   const { id } = req.params;
   try {
@@ -304,87 +304,87 @@ router.delete('/:id', authenticateToken, authorizeRole('ADMIN'), async (req, res
     }
     // Foreign key constraint violation (product is a component for another product)
     if (error.code === 'P2003') {
-      return res.status(409).json({ error: 'Este producto no se puede eliminar porque está siendo utilizado como componente en otra receta.' });
+      return res.status(409).json({ error: 'This product cannot be deleted because it is used as a component in another recipe.' });
     }
     console.error(error);
     res.status(500).json({ error: 'Failed to delete product.' });
   }
 });
 
-// --- GESTIÓN DE RECETA DE ARMADO ---
+// --- ASSEMBLY RECIPE MANAGEMENT ---
 
-// Obtener la receta de armado de un producto
-router.get('/:productId/trabajos-armado', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+// Get a product's assembly recipe
+router.get('/:productId/assembly-jobs', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId } = req.params;
   try {
-    const trabajosAsignados = await prisma.productoTrabajoArmado.findMany({
+    const assignedJobs = await prisma.productAssemblyJob.findMany({
       where: { productId },
       include: {
-        trabajo: true, // Incluir los detalles del trabajo de armado
+        assemblyJob: true, // Include the details of the assembly job
       },
       orderBy: {
-        trabajo: { nombre: 'asc' },
+        assemblyJob: { name: 'asc' },
       },
     });
-    res.json(trabajosAsignados);
+    res.json(assignedJobs);
   } catch (error) {
-    console.error(`Error fetching trabajos de armado for product ${productId}:`, error);
-    res.status(500).json({ error: 'Error al obtener la receta de armado.' });
+    console.error(`Error fetching assembly jobs for product ${productId}:`, error);
+    res.status(500).json({ error: 'Failed to fetch assembly recipe.' });
   }
 });
 
-// Asignar un trabajo de armado a un producto
-router.post('/:productId/trabajos-armado', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+// Assign an assembly job to a product
+router.post('/:productId/assembly-jobs', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId } = req.params;
-  const { trabajoId } = req.body;
+  const { assemblyJobId } = req.body;
 
-  if (!trabajoId) {
-    return res.status(400).json({ error: 'El campo trabajoId es requerido.' });
+  if (!assemblyJobId) {
+    return res.status(400).json({ error: 'The assemblyJobId field is required.' });
   }
 
   try {
-    const nuevaAsignacion = await prisma.productoTrabajoArmado.create({
+    const newAssignment = await prisma.productAssemblyJob.create({
       data: {
         productId,
-        trabajoId,
+        assemblyJobId,
       },
     });
-    res.status(201).json(nuevaAsignacion);
+    res.status(201).json(newAssignment);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(409).json({ error: 'Este trabajo de armado ya está asignado a este producto.' });
+      return res.status(409).json({ error: 'This assembly job is already assigned to this product.' });
     }
-    console.error(`Error assigning trabajo ${trabajoId} to product ${productId}:`, error);
-    res.status(500).json({ error: 'Error al asignar el trabajo de armado.' });
+    console.error(`Error assigning assembly job ${assemblyJobId} to product ${productId}:`, error);
+    res.status(500).json({ error: 'Failed to assign assembly job.' });
   }
 });
 
-// Quitar un trabajo de armado de un producto
-router.delete('/:productId/trabajos-armado/:trabajoId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { productId, trabajoId } = req.params;
+// Remove an assembly job from a product
+router.delete('/:productId/assembly-jobs/:assemblyJobId', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { productId, assemblyJobId } = req.params;
 
   try {
-    await prisma.productoTrabajoArmado.delete({
+    await prisma.productAssemblyJob.delete({
       where: {
-        productId_trabajoId: {
+        productId_assemblyJobId: {
           productId,
-          trabajoId,
+          assemblyJobId,
         },
       },
     });
     res.status(204).send();
   } catch (error) {
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Asignación de trabajo no encontrada.' });
+      return res.status(404).json({ error: 'Assembly job assignment not found.' });
     }
-    console.error(`Error removing trabajo ${trabajoId} from product ${productId}:`, error);
-    res.status(500).json({ error: 'Error al quitar el trabajo de armado.' });
+    console.error(`Error removing assembly job ${assemblyJobId} from product ${productId}:`, error);
+    res.status(500).json({ error: 'Failed to remove assembly job.' });
   }
 });
 
 module.exports = router;
 
-// NUEVO ENDPOINT: Dónde se usa un componente
+// Where-used endpoint for a component
 router.get('/:id/where-used', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id: componentId } = req.params;
 
@@ -394,7 +394,7 @@ router.get('/:id/where-used', authenticateToken, authorizeRole(['ADMIN', 'SUPERV
         componentId: componentId,
       },
       include: {
-        product: { // Incluir los datos del producto "padre"
+        product: { // Include the "parent" product data
           select: {
             id: true,
             internalCode: true,
@@ -404,13 +404,12 @@ router.get('/:id/where-used', authenticateToken, authorizeRole(['ADMIN', 'SUPERV
       },
     });
 
-    // Mapear el resultado para que sea una lista limpia de productos
+    // Map the result to a clean list of products
     const result = parentProducts.map(pc => pc.product);
 
     res.json(result);
   } catch (error) {
     console.error(`Error fetching where-used for component ${componentId}:`, error);
-    res.status(500).json({ error: 'Error al obtener la información de uso del componente.' });
+    res.status(500).json({ error: 'Failed to fetch component usage information.' });
   }
 });
-

@@ -1,75 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../services/api';
-
-const tableStyle = { width: '100%', marginTop: '1rem', borderCollapse: 'collapse' };
-const thStyle = { borderBottom: '1px solid #ccc', padding: '8px', textAlign: 'left' };
-const trStyle = { cursor: 'pointer' };
-const paginationStyle = { display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' };
-
-const ProductTable = ({ onProductSelect, searchTerm }) => {
-  const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: currentPage,
-        pageSize: 25,
-        type: 'PRE_ASSEMBLED,FINISHED', // Assuming backend can handle comma-separated values
-        search: searchTerm,
-      });
-      const data = await apiFetch(`/products?${params.toString()}`);
-      setProducts(data.products || []);
-      setPagination({ totalPages: data.totalPages, currentPage: data.currentPage });
-    } catch (error) {
-      console.error("Error fetching manufacturable products:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, searchTerm]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        fetchProducts();
-    }, 300); // Debounce search
-    return () => clearTimeout(timer);
-  }, [fetchProducts]);
-
-  return (
-    <div>
-      {loading ? <p>Cargando tabla...</p> : (
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyle}>Código</th>
-              <th style={thStyle}>Descripción</th>
-              <th style={thStyle}>Tipo</th>
-              <th style={thStyle}>Stock</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(p => (
-              <tr key={p.id} onClick={() => onProductSelect(p)} style={trStyle}>
-                <td>{p.internalCode}</td>
-                <td>{p.description}</td>
-                <td>{p.type}</td>
-                <td>{p.stock}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      <div style={paginationStyle}>
-        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={pagination.currentPage <= 1}>Anterior</button>
-        <span style={{ margin: '0 1rem' }}>Página {pagination.currentPage} de {pagination.totalPages}</span>
-        <button onClick={() => setCurrentPage(p => p + 1)} disabled={pagination.currentPage >= pagination.totalPages}>Siguiente</button>
-      </div>
-    </div>
-  );
-};
+import ProductionProductTable from '../components/ProductionProductTable';
+import './ProductionOrderPage.css';
 
 const ProductionOrderPage = () => {
   const [recipe, setRecipe] = useState([]);
@@ -174,15 +106,15 @@ const ProductionOrderPage = () => {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="production-order-container">
       <h2>Nueva Orden de Producción Interna</h2>
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
       
-      <form onSubmit={handleSubmit} style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
+      <form onSubmit={handleSubmit} className="production-form">
         <div className="form-group">
           <label>Producto a Fabricar</label>
-          <input type="text" readOnly value={selectedProduct ? `${selectedProduct.internalCode} - ${selectedProduct.description}` : 'Seleccione un producto de la tabla de abajo'} style={{ width: '100%', backgroundColor: '#eee' }}/>
+          <input type="text" readOnly value={selectedProduct ? `${selectedProduct.internalCode} - ${selectedProduct.description}` : 'Seleccione un producto de la tabla de abajo'} className="readonly-input"/>
         </div>
         <div className="form-group">
           <label>Cantidad a Producir</label>
@@ -194,7 +126,7 @@ const ProductionOrderPage = () => {
             </p>
         )}
         {selectedProduct && recipe.length > 0 && (
-            <div>
+            <div className="component-requirements">
                 <h4>Requisitos de Componentes:</h4>
                 <ul>
                     {recipe.map(item => {
@@ -203,7 +135,7 @@ const ProductionOrderPage = () => {
                         const available = componentStocks[item.component.id] || 0;
                         const isInsufficient = required > available;
                         return (
-                            <li key={item.component.id} style={{ color: isInsufficient ? 'red' : 'inherit' }}>
+                            <li key={item.component.id} className={isInsufficient ? 'insufficient' : ''}>
                                 {item.component.description}: {required} (Disponible: {available})
                             </li>
                         );
@@ -214,7 +146,7 @@ const ProductionOrderPage = () => {
         <button type="submit" disabled={isLoading || !selectedProduct || !allComponentsAvailable}>Registrar Producción</button>
       </form>
 
-      <hr style={{ margin: '2rem 0' }}/>
+      <hr className="section-divider"/>
 
       <div>
         <h3>Catálogo de Productos Fabricables</h3>
@@ -223,9 +155,9 @@ const ProductionOrderPage = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar en tabla..."
-            style={{ width: '100%', padding: '8px', marginBottom: '1rem' }}
+            className="search-input"
         />
-        <ProductTable onProductSelect={handleSelectProduct} searchTerm={searchTerm} />
+        <ProductionProductTable onProductSelect={handleSelectProduct} searchTerm={searchTerm} />
       </div>
     </div>
   );

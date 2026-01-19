@@ -1,0 +1,49 @@
+/* AssignAssemblyJobModal.css */
+
+.assign-assembly-job-input-group {
+  margin-bottom: 1rem;
+}
+
+.assign-assembly-job-input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #a0aec0;
+}
+
+/* Re-using general form styles */
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #4a5568;
+  background-color: #2d3748;
+  color: #ffffff;
+  border-radius: 0.375rem;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 1px #4299e1;
+}
+
+.assign-assembly-job-actions-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.assign-assembly-job-link-button {
+  background: none;
+  border: none;
+  color: #63b3ed;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.assign-assembly-job-link-button:hover {
+  text-decoration: underline;
+}

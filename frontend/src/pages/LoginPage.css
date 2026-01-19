@@ -1,0 +1,85 @@
+/* CSS for LoginPage */
+
+.login-page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box; /* Ensures padding doesn't add to the total width/height */
+  
+  /* Background image properties moved from useEffect */
+  background-image: url('../assets/Fondo login PWA.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-form-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; /* Increased gap for better spacing */
+  
+  width: 100%;
+  max-width: 420px; /* A bit wider to give more space */
+  
+  padding: 32px; /* More generous padding */
+  border-radius: 12px;
+  background-color: rgba(20, 20, 20, 0.85); /* Dark, semi-transparent background */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-logo {
+  width: 100%;
+  max-width: 350px;
+  height: auto;
+  margin-bottom: 16px; /* Space between logo and title */
+}
+
+.login-form-card h2 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-form label {
+  color: #e0e0e0;
+  font-weight: 500;
+}
+
+.login-form input {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background-color: #252525;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--color-primary-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.3);
+}
+
+.login-error-message {
+  color: var(--color-error);
+  text-align: center;
+  margin-top: 5px;
+}

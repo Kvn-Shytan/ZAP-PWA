@@ -1,0 +1,84 @@
+/* Styles for ProductionProductTable.jsx */
+
+.production-product-table-container {
+    /* No specific styles needed for the container itself yet */
+}
+
+.production-product-table {
+    width: 100%;
+    margin-top: 1rem;
+    border-collapse: collapse;
+}
+
+.production-product-table th,
+.production-product-table td {
+    border-bottom: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.production-product-table th {
+    border-bottom-width: 2px;
+}
+
+.production-product-table tbody tr {
+    cursor: pointer;
+}
+
+.production-product-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.production-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+        gap: 1rem;
+    }
+    
+    /* Mobile Styles for Table (Table-to-Cards Transformation) */
+    @media (max-width: 767px) {
+      .production-product-table thead {
+        display: none;
+      }
+    
+      .production-product-table, 
+      .production-product-table tbody, 
+      .production-product-table tr, 
+      .production-product-table td {
+        display: block;
+        width: 100%;
+      }
+    
+      .production-product-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1rem;
+        background-color: #fff;
+      }
+    
+      .production-product-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        border: none;
+        border-bottom: 1px solid #eee;
+        padding: 0.75rem 0;
+      }
+    
+      .production-product-table tr td:last-child {
+        border-bottom: none;
+      }
+    
+      .production-product-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        padding-right: 1rem;
+      }
+    }
+    

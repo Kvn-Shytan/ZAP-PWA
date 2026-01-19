@@ -1,0 +1,149 @@
+/* Styles for ProductList.jsx */
+
+.product-list-container {
+  padding: 2rem;
+}
+
+.product-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-filter-container {
+  display: flex;
+  flex-direction: column; /* Stack vertically on mobile */
+  gap: 10px;
+  margin: 1rem 0;
+}
+
+.product-filter-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%; /* Full width on mobile */
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .product-filter-container {
+    flex-direction: row; /* Horizontal on desktop */
+  }
+  .product-filter-input {
+    width: auto; /* Revert to auto width on desktop */
+    min-width: 200px;
+  }
+}
+
+.product-table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+
+.product-table th {
+  border-bottom: 2px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+.product-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+}
+
+.product-pagination-container {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-top: 1rem;
+
+}
+
+
+
+/* Mobile Styles for Table (Table-to-Cards Transformation) */
+
+@media (max-width: 767px) {
+
+  .product-table thead {
+
+    display: none;
+
+  }
+
+
+
+  .product-table, .product-table tbody, .product-table tr, .product-table td {
+
+    display: block;
+
+    width: 100%;
+
+  }
+
+
+
+  .product-table tr {
+
+    margin-bottom: 1.5rem;
+
+    border: 1px solid #ddd;
+
+    border-radius: 8px;
+
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    padding: 1rem;
+
+    background-color: #fff;
+
+  }
+
+
+
+  .product-table td {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    text-align: right;
+
+    border: none;
+
+    border-bottom: 1px solid #eee;
+
+    padding: 0.75rem 0;
+
+  }
+
+
+
+  .product-table tr td:last-child {
+
+    border-bottom: none;
+
+  }
+
+
+
+  .product-table td::before {
+
+    content: attr(data-label);
+
+    font-weight: bold;
+
+    text-align: left;
+
+    padding-right: 1rem;
+
+  }
+
+}

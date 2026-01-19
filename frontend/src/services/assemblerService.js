@@ -1,12 +1,12 @@
 import { apiFetch } from './api';
 
-export const armadorService = {
+export const assemblerService = {
   /**
-   * Obtiene una lista de todos los armadores.
-   * La API aplica seguridad a nivel de campo según el rol del usuario.
-   * @returns {Promise<Array<object>>} - La lista de armadores.
+   * Fetches a list of all assemblers.
+   * The API applies field-level security based on user role.
+   * @returns {Promise<Array<object>>} - The list of assemblers.
    */
-  getArmadores() {
+  getAssemblers() {
     return apiFetch('/assemblers');
   },
 
@@ -44,5 +44,14 @@ export const armadorService = {
     return apiFetch(`/assemblers/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  /**
+   * Obtiene el historial de pagos a armadores.
+   * @param {URLSearchParams} queryParams - Los parámetros de consulta para filtrar y paginar.
+   * @returns {Promise<object>} - Un objeto con los datos de los pagos y la paginación.
+   */
+  getPaymentHistory(queryParams) {
+    return apiFetch(`/assemblers/payments?${queryParams.toString()}`);
   },
 };

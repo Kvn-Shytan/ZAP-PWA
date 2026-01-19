@@ -2,12 +2,33 @@ import React from 'react';
 
 const PRODUCT_TYPES = ['RAW_MATERIAL', 'PRE_ASSEMBLED', 'FINISHED'];
 
-const ProductForm = ({ product, setProduct, categories, suppliers, isEdit = false }) => {
+const ProductForm = ({ product, setProduct, categories, suppliers, onOpenAssignModal, isEdit = false }) => {
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    const val = type === 'number' ? parseFloat(value) : value;
-    setProduct(prev => ({ ...prev, [name]: val }));
+    const { name, value } = e.target;
+
+    const numericFields = [
+      'priceARS', 
+      'priceUSD', 
+      'lowStockThreshold', 
+      'categoryId', 
+      'supplierId'
+    ];
+
+    let processedValue = value;
+
+    if (numericFields.includes(name)) {
+      // If the field is empty, set to null to allow optional/nullable fields
+      // Otherwise, parse it as a float.
+      processedValue = value === '' ? null : parseFloat(value);
+      
+      // Zod validation might fail on NaN if parseFloat results in it from invalid input
+      if (isNaN(processedValue)) {
+          processedValue = null;
+      }
+    }
+
+    setProduct(prev => ({ ...prev, [name]: processedValue }));
   };
 
   return (
@@ -38,9 +59,29 @@ const ProductForm = ({ product, setProduct, categories, suppliers, isEdit = fals
           {PRODUCT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
         </select>
       </div>
+
+      {/* Conditional Assembly Job Display */}
+      {(product.type === 'PRE_ASSEMBLED' || product.type === 'FINISHED') && (
+        <div style={inputGroupStyle}>
+          <label>Trabajo de Ensamblaje</label>
+          <div style={assemblyJobDisplayBoxStyle}>
+            {product.assemblyJob ? (
+              <span>
+                {product.assemblyJob.label}
+              </span>
+            ) : (
+              <span style={{ fontStyle: 'italic', color: '#666' }}>Ninguno asignado</span>
+            )}
+            <button type="button" onClick={onOpenAssignModal} style={assignButtonStyle}>
+              {product.assemblyJob ? 'Cambiar' : 'Asignar'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={inputGroupStyle}>
         <label>Umbral de Bajo Stock</label>
-        <input type="number" name="lowStockThreshold" value={product.lowStockThreshold || 0} onChange={handleChange} style={inputStyle} min="0" />
+        <input type="number" name="lowStockThreshold" value={product.lowStockThreshold || ''} onChange={handleChange} style={inputStyle} min="0" />
       </div>
       <div style={inputGroupStyle}>
         <label>Categoría</label>
@@ -73,5 +114,22 @@ const ProductForm = ({ product, setProduct, categories, suppliers, isEdit = fals
 const formStyle = { display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '600px', margin: 'auto' };
 const inputGroupStyle = { display: 'flex', flexDirection: 'column' };
 const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px' };
+const assemblyJobDisplayBoxStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '10px',
+  border: '1px solid #ccc',
+  borderRadius: '4px',
+  backgroundColor: '#f9f9f9',
+};
+const assignButtonStyle = {
+  padding: '5px 10px',
+  border: '1px solid #007bff',
+  backgroundColor: 'white',
+  color: '#007bff',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
 
 export default ProductForm;

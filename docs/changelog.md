@@ -1,5 +1,182 @@
 # Changelog (Registro de Cambios)
 
+1 ## 2026-01-12 (Parte 3)
+    2 -   **[FEAT(ui)] Refactorizada Página de Historial de Movimientos de Inventario (`InventoryHistoryPage`):**
+    3     -   Se realizó una refactorización completa a un diseño responsive con "tarjetas de movimiento" inteligentes,
+      incluyendo un código de colores mejorado para identificar rápidamente el tipo de movimiento.
+    4     -   Se implementó un buscador de productos escalable (`react-select AsyncSelect`) para el filtro de productos,
+      mejorando la usabilidad con grandes volúmenes de datos.
+    5     -   Se eliminaron todos los estilos en línea y se trasladaron a `InventoryHistoryPage.css`.
+    6 -   **[FEAT(ui)] Refactorizada Página de Herramientas de Administración (`AdminToolsPage`):**
+    7     -   Se refactorizó el layout de la página a un diseño responsivo de cuadrícula (`grid`) para las tarjetas de
+      herramientas, eliminando los estilos en línea y trasladándolos a `AdminToolsPage.css`.
+    8 -   **[REFACTOR(ui)] Eliminado Enlace Redundante de `Navbar`:**
+    9     -   Se eliminó el enlace "Costos Indirectos" del menú desplegable "Administración" en `Navbar.jsx` para evitar
+      redundancia, ya que es accesible a través de "Otras Herramientas".
+   10 -   **[FIX(ui)] Corregido Padding de `Navbar` en Escritorio:**
+   11     -   Se solucionó el problema del exceso de padding en la `Navbar` en la vista de escritorio, que se introdujo
+      ajustar el menú móvil. Se añadió un reset de padding en el media query de escritorio en `Navbar.css`.
+
+## 2026-01-12 (Parte 2)
+-   **[REFACTOR(ui)] Reorganización de la Arquitectura de Navegación (`Navbar`):**
+    -   Se refactorizó por completo la barra de navegación para agrupar las secciones en menús desplegables más intuitivos: "Producción" y "Armado".
+    -   Se renombró el enlace "Productos" a "Inventario" para mayor claridad.
+    -   Se añadió un enlace principal "Historial" para el historial de inventario.
+    -   Se simplificó el menú "Administración" y se eliminó el menú "Herramientas" redundante para el rol de Supervisor, integrando sus enlaces en las nuevas secciones.
+    -   El orden de los enlaces principales se ha reorganizado para un flujo de trabajo más lógico.
+-   **[FEAT(ui)] Refactorizada la Página de Gestión de Usuarios (`UserManagementPage`):**
+    -   Se implementó el diseño responsivo "Mobile-First", convirtiendo la tabla de usuarios en una lista de tarjetas en la vista móvil para mejorar la usabilidad en pantallas pequeñas.
+    -   Se estandarizaron todos los botones y estilos del formulario de creación para mantener la consistencia visual con el resto de la aplicación.
+
+## 2026-01-12 (Continuación)
+-   **[FEAT(ui)] Refactorizada la Página de Login (`LoginPage`):**
+    -   Se realizó una refactorización completa del layout, eliminando estilos en línea y el `useEffect` que manipulaba el `document.body`.
+    -   Se implementó un diseño centrado con Flexbox en el contenedor principal (`login-page-container`) para asegurar que el contenido esté siempre visible y bien espaciado, sin necesidad de scroll vertical.
+    -   Se creó un `login-form-card` para agrupar el logo, título y formulario, dándole una apariencia de tarjeta y resolviendo el problema de los elementos pegados a los bordes.
+    -   Se aseguró la correcta integración visual del logo y la trama de fondo, elementos clave de la marca.
+    -   Todos los estilos fueron movidos a `frontend/src/pages/LoginPage.css` para una mayor mantenibilidad.
+-   **[FIX(ui)] Eliminada Barra Blanca Superior en Página de Login:**
+    -   Se solucionó el problema de la "barra blanca" superior visible en la página de Login.
+    -   La causa fue un `padding-top` fijo en `.main-content` que se aplicaba universalmente.
+    -   La solución implementada fue renombrar la clase en `App.css` a `.main-content-with-navbar` y aplicar esta clase condicionalmente en `App.jsx`, solo cuando la barra de navegación está visible.
+
+## 2026-01-12
+-   **[FEAT(ui)] Refactorizada la Página de Gestión de Armadores (`AssemblerManagementPage`):**
+    -   Se implementó el diseño responsivo "Mobile-First", transformando la tabla de armadores en una lista de tarjetas en la vista móvil.
+    -   Se corrigió un problema de desbordamiento horizontal en las tarjetas móviles reemplazando el layout de anchos fijos por un sistema flexible basado en Flexbox.
+-   **[FEAT(ui)] Mejorada la Página de Cambio de Contraseña (`ChangePasswordPage`):**
+    -   Se solucionó el problema de espaciado, añadiendo un contenedor tipo "tarjeta" centrado que evita que los campos del formulario se peguen a los bordes de la pantalla.
+    -   Se estandarizaron los estilos de los inputs y el botón para mayor consistencia con el resto de la aplicación.
+-   **[FIX(dev)] Corregido Error de Sintaxis en `ChangePasswordPage`:**
+    -   Se resolvió un error `Missing semicolon` causado por una operación de reemplazo de texto fallida, restaurando la funcionalidad de la página.
+
+## 2026-01-06 (Parte 3)
+-   **[FEAT(ui)] Implementado diseño responsivo en el Listado de Productos:**
+    -   Se aplicó la estrategia "Mobile-First" a la página del Listado de Productos.
+    -   La tabla de productos ahora se transforma en una lista de tarjetas en la vista móvil para una mejor usabilidad y legibilidad.
+    -   Los controles de filtro de productos ahora se apilan verticalmente en la vista móvil.
+-   **[FEAT(ui)] Mejorado el diseño responsivo del Modal "Asignar Trabajo de Armado":**
+    -   El modal fue refactorizado para usar el componente `Modal` reutilizable.
+    -   Los estilos en línea fueron migrados a un archivo CSS dedicado (`AssignTrabajoModal.css`).
+    -   Los botones de acción dentro del modal ahora se apilan verticalmente en móvil, resolviendo problemas de visibilidad y usabilidad.
+-   **[REFACTOR] Centralización de Estilos de Botones Globales:**
+    -   Las clases de botones genéricos (`.btn`, `.btn-primary`, `.btn-success`, `.btn-danger`, `.btn-secondary`, `.btn-outline-primary`) fueron movidas a `index.css` para su reutilización y consistencia en toda la aplicación.
+
+## 2026-01-06 (Parte 2)
+-   **[FEAT(ui)] Implementado diseño responsivo en el Panel de Logística:**
+    -   Se aplicó la estrategia "Mobile-First" a la página del Panel de Logística.
+    -   La tabla de órdenes ahora se transforma en una lista de tarjetas en la vista móvil para una mejor usabilidad y legibilidad.
+    -   Los controles de filtro ahora se apilan verticalmente en la vista móvil.
+-   **[REFACTOR] Modularización de Estilos y Componentes:**
+    -   Se migraron todos los estilos en línea de `LogisticsDashboardPage.jsx` a un archivo CSS dedicado (`LogisticsDashboardPage.css`).
+    -   El componente `Modal` fue extraído a su propio archivo (`src/components/Modal.jsx`) para su reutilización en toda la aplicación.
+
+## 2026-01-06
+-   **[REFACTOR] Refactorización Completa de la Barra de Navegación:**
+    -   Se movió toda la lógica de navegación a un componente dedicado (`Navbar.jsx`) para mejorar la mantenibilidad.
+    -   Se implementó un encabezado fijo (`position: fixed`) en toda la aplicación para una visibilidad constante.
+    -   Se diseñó e implementó un menú de hamburguesa funcional para la vista móvil y menús desplegables para la vista de escritorio.
+    -   Se actualizó el branding en el encabezado a "ZAP - FlowApp -".
+    -   Se corrigieron múltiples bugs de CSS relacionados con el `z-index`, `transform`, y especificidad de selectores que causaban problemas de visualización y usabilidad en ambas vistas.
+-   **[CHORE] Estrategia de UI/UX:**
+    -   Se estableció formalmente la estrategia de diseño "Mobile-First" para guiar la refactorización responsiva de toda la aplicación.
+
+## 2025-12-10
+-   **[FEAT] Implementación de Dashboard por Rol:**
+    -   Se implementó un nuevo Dashboard como página de inicio para todos los roles, mostrando tareas, alertas y KPIs relevantes para cada usuario.
+    -   El dashboard del `EMPLOYEE` ahora muestra en tiempo real las tareas de entrega y recolección que tiene asignadas.
+    -   El dashboard del `SUPERVISOR` muestra tareas de asignación y revisión, alertas de bajo stock y KPIs de órdenes en proceso.
+    -   El dashboard del `ADMIN` incluye sus propias tareas y una vista expandible del panel del `SUPERVISOR`.
+-   **[FEAT] Alertas de Stock Inteligentes:**
+    -   Las alertas por bajo stock en el dashboard ahora tienen un botón "Resolver" que dirige al usuario a la página correcta (Registrar Compra o Crear Orden Externa) y pre-selecciona el producto en cuestión.
+-   **[FEAT] Mejora de Flujo para Empleados:**
+    -   Se añadió la dirección y el teléfono del armador en la página de "Detalle de Orden de Producción Externa" para que el empleado tenga toda la información necesaria para la entrega.
+-   **[FIX] Estabilidad General:**
+    -   Solucionados múltiples bugs en el formulario de creación/edición de productos, incluyendo errores de validación de tipos de datos y problemas de usabilidad en campos numéricos.
+    -   Corregido un error crítico que provocaba un `500 Internal Server Error` al cargar el dashboard del empleado debido a una inconsistencia en los nombres de campos (`deliveryById` vs `deliveryUserId`).
+-   **[CHORE] Documentación:**
+    -   Actualizado el `Roadmap.md` para reflejar los avances en el nuevo dashboard y la experiencia de usuario.
+
+## 2025-12-09
+-   **[FEAT] Rediseño del Módulo de Gestión de Trabajos de Armado:**
+    -   La página de "Gestión de Trabajos de Armado" ha sido completamente rediseñada como un "Panel Maestro" de dos columnas para una experiencia de usuario superior.
+    -   **UI/UX:** La nueva interfaz presenta una lista de selección a la izquierda y un panel de detalles dinámico a la derecha para la edición y visualización.
+    -   **Backend:** Creado un nuevo endpoint `GET /api/trabajos-armado/:id/linked-products` para obtener productos vinculados. El endpoint principal ahora incluye un contador de productos asociados para cada trabajo de armado.
+    -   **Funcionalidad:** Al seleccionar un trabajo, ahora se muestra una lista de todos los productos que lo utilizan, proporcionando un contexto crucial antes de cualquier modificación.
+    -   **Funcionalidad:** Se añadieron indicadores visuales (puntos verde/gris) para identificar rápidamente si un trabajo está en uso o es "huérfano".
+-   **[FEAT] Mejora del Flujo de Asignación de Trabajos en Productos:**
+    -   En la página de edición de productos, se eliminó el menú desplegable para asignar trabajos de armado.
+    -   Se implementó un nuevo flujo con un botón contextual (`Asignar`/`Cambiar`) que abre un modal "Selector/Creador", mejorando la integridad de los datos y la experiencia de usuario.
+-   **[FIX] Corrección de Múltiples Bugs:**
+    -   Solucionado un bug que impedía que la selección de un trabajo de armado en el modal se mantuviera en la página de edición.
+    -   Solucionado un crasheo en la página de gestión de trabajos al editar un ítem con valores `null`.
+    -   Corregido un `ReferenceError` que ocurría después de guardar una actualización en el nuevo panel maestro.
+    -   Mejorada la UX del campo de precio para permitir que sea vaciado y adaptado para el uso de números enteros.
+-   **[CHORE] Documentación:**
+    -   Actualizado el `Roadmap.md` para reflejar las tareas completadas y los nuevos rediseños.
+
+## 2025-11-26
+-   **[FEAT] Nueva Página de "Historial de Pagos a Armadores":**
+    -   Implementada una nueva sección para `ADMIN` que permite visualizar el historial de todos los pagos realizados a los armadores.
+    -   **Backend:** Creado un nuevo endpoint `GET /api/assemblers/payments` optimizado para obtener datos históricos y agregados de forma concurrente y eficiente.
+    -   **UI/UX:**
+        -   Los filtros de fecha cargan por defecto el primer y último día del mes actual para una visualización inmediata.
+        -   Añadidas tarjetas de resumen ("Total Pagado en Período" y "Total de Unidades Producidas") que se actualizan con los filtros.
+        -   La tabla de pagos es paginada y permite expandir cada pago para ver en detalle las órdenes de producción que lo componen.
+-   **[FIX] Corrección de Bugs en Desarrollo:**
+    -   Solucionado un error `TypeError: Cannot read properties of null (reading 'role')` añadiendo una verificación del objeto `user` antes de acceder a sus propiedades.
+    -   Corregido un error `TypeError: .toFixed is not a function` al convertir el `totalPaid` (que llega como string desde la API) a número antes de formatearlo.
+
+## 2025-11-25
+-   **[FIX] Módulo de Liquidación de Pagos:**
+    -   Solucionado un bug crítico que impedía cerrar la quincena y registrar pagos (`POST /api/assemblers/close-fortnight-batch`).
+    -   La causa raíz era una inconsistencia entre el frontend (que enviaba `assemblerIds`) y el backend (que esperaba `armadorIds`). Se aplicó una capa de traducción en la API como solución pragmática.
+    -   Solucionado un error `net::ERR_EMPTY_RESPONSE` que causaba la caída del servidor al calcular liquidaciones, provocado por un inicio prematuro de la aplicación por parte del usuario.
+-   **[FEAT] UI/UX Mejorada en Liquidación de Pagos:**
+    -   La página de "Liquidación de Pagos a Armadores por Lotes" ahora solo muestra en la tabla a los armadores que tienen un monto de pago pendiente mayor a cero.
+    -   Se ha añadido un mensaje claro ("No se encontraron armadores con pagos pendientes...") cuando no hay liquidaciones para mostrar en el período de fechas seleccionado.
+-   **[CHORE] Gestión de Deuda Técnica:**
+    -   Creado el archivo `TECH_DEBT.md` para documentar formalmente las tareas de refactorización y estandarización pendientes.
+    -   Establecida la convención de que todo el código nuevo debe escribirse en inglés para mejorar la consistencia del proyecto a largo plazo.
+
+## 2025-10-28
+-   **[FEAT] Flujo Completo de Gestión de Costos de Armado y Liquidaciones:**
+    -   **[REFACTOR] DB:** Se corrigió el modelo de datos `ProductoTrabajoArmado` (`schema.prisma`) para asegurar una relación 1:1 entre Producto y Trabajo de Armado, aplicando una nueva migración.
+    -   **[REFACTOR] Backend:** Se deprecó el endpoint obsoleto `POST /product-design/:id/assembly-cost` y se implementó el nuevo endpoint `PUT /product-design/:productId/trabajo-armado` para vincular productos con trabajos de armado.
+    -   **[REFACTOR] Backend:** Se corrigió el endpoint `GET /product-design/:id` para incluir correctamente la relación `trabajosDeArmado`.
+    -   **[FEAT] Frontend:** Se añadió un campo de selección de "Trabajo de Armado" (usando `react-select`) en la página de edición de productos (`ProductEditPage.jsx` y `ProductForm.jsx`), visible para productos `PRE_ASSEMBLED` y `FINISHED`.
+    -   **[FIX] Backend:** Se corrigieron múltiples errores en el endpoint `POST /external-production-orders` relacionados con el cálculo de cantidades y el acceso a propiedades de `TrabajoDeArmado`.
+    -   **[FIX] Backend:** Se corrigieron errores de sintaxis de Prisma en el `upsert` del endpoint `PUT /product-design/:productId/trabajo-armado`.
+    -   **[FIX] Backend:** Se corrigió la lógica de cálculo en el endpoint `GET /assemblers/payment-summary-batch` para usar el `precioUnitario` guardado en `OrderAssemblyStep`.
+    -   **[FIX] Backend:** Se añadió el filtro `assemblerPaymentId: null` al endpoint `GET /assemblers/payment-summary-batch` para mostrar solo órdenes no pagadas.
+    -   **[FIX] Frontend:** Se corrigió un error `TypeError` en `ExternalProductionOrderPage` al mostrar `totalAssemblyCost` cuando era `null`.
+    -   **[FIX] Routing:** Se corrigieron inconsistencias en las rutas del backend (`/api/armadores` vs `/api/assemblers`) y se reordenaron las rutas en `armadores.routes.js` para evitar conflictos.
+    -   **[CHORE] Performance:** Se configuró `nodemon.json` para mejorar el rendimiento del backend en desarrollo.
+
+## 2025-10-21
+-   **[FEAT] Panel de Logística Mejorado:**
+    -   **Backend:** Implementado filtrado (por rango de fechas, armador, búsqueda de texto) y paginación en el endpoint de órdenes de producción externa.
+    -   **Frontend:** Añadidos controles de filtro y paginación al Panel de Logística.
+    -   **[FIX] UX Filtro de Búsqueda:** Implementado "debounce" en el filtro de búsqueda del Panel de Logística y en el Listado de Productos para evitar interrupciones al escribir.
+    -   **[FIX] UX Foco de Input:** Corregido el problema de pérdida de foco en el input de búsqueda del Panel de Logística al reestructurar el renderizado condicional.
+-   **[FEAT] Vista de Detalle de Orden de Producción Externa:**
+    -   Implementada página de detalle de orden (`/external-orders/:id`) con vista de solo lectura y botón de impresión.
+    -   Añadido enlace desde el Panel de Logística a la página de detalle.
+-   **[FEAT] Mejora UX Modal de Recepción de Mercadería:**
+    -   Rediseñado el Paso 2 del modal de recepción con botones de acción claros ("Entrega Parcial", "Entrega con Devoluciones", "Otro Motivo") y doble confirmación para una mejor experiencia de usuario.
+-   **[FIX] Errores de Importación en `App.jsx`:** Corregidos errores de importación duplicados y rutas incorrectas en `App.jsx`.
+
+## 2025-10-16
+-   **[FEAT] Implementación Completa de Recepción Parcial:**
+    -   **DB:** Añadido `quantityReceived` a `ExpectedProduction` y `PARTIALLY_RECEIVED` a `ExternalProductionOrderStatus`.
+    -   **Backend:** Reescripto el endpoint `POST /:id/receive` para soportar recepciones incrementales, validar cantidades y actualizar estados (`PARTIALLY_RECEIVED`, `COMPLETED`).
+    -   **Frontend:** Rediseñado el modal de recepción para mostrar cantidades detalladas (esperado, recibido, pendiente) y limitar la entrada de cantidad.
+-   **[FIX] Creación de `ExpectedProduction`:** Corregido bug donde no se creaban registros `ExpectedProduction` al confirmar una orden.
+-   **[FIX] Error de `InventoryMovement`:** Resuelto el error `tx.inventorymovement.create() invocation failed` en la recepción de mercadería.
+-   **[FIX] Asignación de Recogida:** Permitida la reasignación de recogida para órdenes en estado `PARTIALLY_RECEIVED`.
+-   **[FIX] Visualización de Asignado a:** Corregida la columna "Asignado a" en el Panel de Logística para mostrar el usuario correcto según el estado de la orden.
+-   **[FIX] Typo en `userId`:** Corregido el typo `req.user.id` a `req.user.userId` en el endpoint de recepción.
+
 ## 2025-10-11
 -   **[FEAT] Validación de Entradas para Categorías (Fase 9.3 - Parcial):**
     -   Implementada la validación de entradas usando `zod` para las rutas `POST /api/categories` y `PUT /api/categories/:id`.

@@ -23,8 +23,12 @@ router.get('/:id', async (req, res) => {
             },
           },
         },
-        // Incluir el costo de armado
-        trabajoDeArmado: true,
+        // Incluir el costo de armado a través de la tabla intermedia
+        assemblyJobs: {
+          include: {
+            assemblyJob: true, // Include the details of the AssemblyJob
+          },
+        },
         // Incluir los costos indirectos asignados
         overheadCosts: {
           orderBy: { overheadCost: { name: 'asc' } },
@@ -137,39 +141,55 @@ router.delete('/:id/components/:componentId', async (req, res) => {
   }
 });
 
-// Crear o actualizar el costo de armado de un producto
-router.post('/:id/assembly-cost', async (req, res) => {
-  const { id: productId } = req.params;
-  const { precio, nombre, descripcion } = req.body;
+router.put('/:productId/assembly-job', async (req, res) => {
+  const { productId } = req.params;
+  const { assemblyJobId } = req.body;
 
-  if (precio === undefined || precio < 0) {
-    return res.status(400).json({ error: 'El precio es requerido y no puede ser negativo.' });
+  // If assemblyJobId is null, it means we need to disassociate.
+  if (assemblyJobId === null) {
+    try {
+      await prisma.productAssemblyJob.delete({
+        where: { productId: productId },
+      });
+      return res.status(204).send();
+    } catch (error) {
+      if (error.code === 'P2025') {
+        // If it doesn't exist, it's already disassociated, which is fine.
+        return res.status(204).send();
+      }
+      console.error(`Error disassociating assembly job from product ${productId}:`, error);
+      return res.status(500).json({ error: 'Error disassociating assembly job.' });
+    }
+  }
+
+  // If an assemblyJobId is provided, proceed with upsert.
+  if (!assemblyJobId) {
+    return res.status(400).json({ error: 'The assemblyJobId field is required.' });
   }
 
   try {
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) {
-      return res.status(404).json({ error: 'Producto no encontrado.' });
-    }
-
-    const assemblyCost = await prisma.trabajoDeArmado.upsert({
-      where: { productoId: productId },
+    const productAssemblyJob = await prisma.productAssemblyJob.upsert({
+      where: {
+        productId: productId,
+      },
       update: {
-        precio: precio,
-        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
-        descripcion: descripcion,
+        assemblyJob: {
+          connect: { id: assemblyJobId }
+        }
       },
       create: {
-        productoId: productId,
-        precio: precio,
-        nombre: nombre || product.description, // Usa el nombre del producto si no se provee
-        descripcion: descripcion,
+        product: {
+          connect: { id: productId }
+        },
+        assemblyJob: {
+          connect: { id: assemblyJobId }
+        }
       },
     });
-    res.status(201).json(assemblyCost);
+    res.status(201).json(productAssemblyJob);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al guardar el costo de armado.' });
+    console.error(`Error assigning assembly job to product ${productId}:`, error);
+    res.status(500).json({ error: 'Error assigning assembly job.' });
   }
 });
 

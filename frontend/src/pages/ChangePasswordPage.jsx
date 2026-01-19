@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { apiFetch } from '../services/api';
+import './ChangePasswordPage.css';
 
 function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -69,7 +70,7 @@ function ChangePasswordPage() {
             required
           />
         </div>
-        <button type="submit">Cambiar Contraseña</button>
+        <button type="submit" className="btn btn-primary">Cambiar Contraseña</button>
       </form>
 
       {message && <p className="success-message">{message}</p>}

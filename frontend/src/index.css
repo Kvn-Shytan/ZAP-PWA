@@ -88,3 +88,42 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* --- Global Button Styles --- */
+.btn {
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #007bff; /* Note: This color is not in the palette, using as is */
+  color: white;
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.btn-danger {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--color-neutral-gray-dark);
+  color: white;
+}
+
+.btn-outline-primary {
+  padding: 4px 8px;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  color: #007bff;
+}

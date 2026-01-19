@@ -367,6 +367,9 @@ router.get('/movements', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
         user: {
           select: { name: true, email: true },
         },
+        externalProductionOrder: { // NEW
+          select: { id: true, orderNumber: true }, // NEW
+        }, // NEW
       },
     });
 

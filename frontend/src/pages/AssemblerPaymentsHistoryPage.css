@@ -1,0 +1,177 @@
+/* CSS for AssemblerPaymentsHistoryPage */
+
+.payment-history-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.payment-history-page h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* --- Summary Cards --- */
+.summary-cards {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.summary-card {
+  border: 1px solid #ddd;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-grow: 1;
+  min-width: 240px;
+  text-align: center;
+}
+
+.summary-card h4 {
+  margin: 0 0 10px 0;
+  color: #555;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-card p {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* --- Filters --- */
+.filters {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.filters input[type="date"],
+.filters select {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+/* --- Table --- */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.history-table th {
+  background-color: #f2f2f2;
+}
+
+.history-table tr.expanded-details-row td {
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+.history-table .expanded-details-content h4 {
+  margin-top: 0;
+}
+
+.history-table .expanded-details-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.history-table .expanded-details-content li {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+
+/* --- Pagination --- */
+.pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- Mobile-First Responsive Design --- */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table, .history-table tbody, .history-table tr, .history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .history-table tr {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+  }
+
+  tr.expanded-details-row {
+    margin-bottom: 0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    margin-top: -15px;
+  }
+
+  .history-table td {
+    border: none;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .history-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .history-table td > span {
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .history-table td[data-label="Acciones"] {
+    justify-content: center;
+  }
+  .history-table td[data-label="Acciones"] button {
+    width: 100%;
+  }
+}

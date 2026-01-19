@@ -1,0 +1,67 @@
+/* Styles for ProductionOrderPage.jsx */
+
+.production-order-container {
+  padding: 2rem;
+}
+
+.production-form {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-group .readonly-input {
+  background-color: #eee;
+}
+
+.component-requirements h4 {
+  margin-top: 1.5rem;
+}
+
+.component-requirements ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.component-requirements ul li.insufficient {
+  color: red !important;
+}
+
+.section-divider {
+  margin: 2rem 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 1rem;
+}
+.success-message {
+    color: green;
+    margin-bottom: 1rem;
+}

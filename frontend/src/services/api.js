@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = 'http://localhost:3001/api';
 
 // Función wrapper para fetch que centraliza la lógica de autenticación y errores.
 export const apiFetch = async (endpoint, options = {}) => {

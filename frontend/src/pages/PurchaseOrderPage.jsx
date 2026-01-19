@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import { apiFetch } from '../services/api';
 import './PurchaseOrderPage.css';
@@ -11,6 +12,31 @@ const PurchaseOrderPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const productId = params.get('productId');
+
+    if (productId && !selectedProduct) {
+      apiFetch(`/products/${productId}`)
+        .then(product => {
+          if (product) {
+            const productOption = {
+              value: product.id,
+              label: `${product.internalCode} - ${product.description}`,
+              unit: product.unit,
+            };
+            setSelectedProduct(productOption);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to pre-fill product:", err);
+          setError("No se pudo precargar el producto, por favor búsquelo manualmente.");
+        });
+    }
+  }, [location.search, selectedProduct]);
 
   const loadOptions = (inputValue, callback) => {
     if (!inputValue) {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
+import './ProductList.css';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -50,7 +51,13 @@ function ProductList() {
   }, [filters]);
 
   useEffect(() => {
-    fetchProducts();
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 500); // Debounce search
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [fetchProducts]);
 
   const handleFilterChange = (e) => {
@@ -75,18 +82,18 @@ function ProductList() {
   const canManage = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="product-list-container">
+      <div className="product-list-header">
         <h3>Listado de Productos</h3>
         {canManage && (
-          <Link to="/products/new" style={buttonStyle}>
+          <Link to="/products/new" className="btn btn-success">
             Crear Nuevo Producto
           </Link>
         )}
       </div>
 
       {/* Filter Controls */}
-      <div style={filterContainerStyle}>
+      <div className="product-filter-container">
         <input 
           type="text"
           name="search"
@@ -94,13 +101,13 @@ function ProductList() {
           value={filters.search}
           onChange={handleFilterChange}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          style={inputStyle}
+          className="product-filter-input"
         />
         <select 
           name="categoryId"
           value={filters.categoryId}
           onChange={handleFilterChange}
-          style={inputStyle}
+          className="product-filter-input"
         >
           <option value="">Todas las Categorías</option>
           {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
@@ -109,12 +116,12 @@ function ProductList() {
           name="type"
           value={filters.type}
           onChange={handleFilterChange}
-          style={inputStyle}
+          className="product-filter-input"
         >
           <option value="">Todos los Tipos</option>
           {PRODUCT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
         </select>
-        <button onClick={handleSearch} style={{...buttonStyle, backgroundColor: '#007bff'}}>Buscar</button>
+        <button onClick={handleSearch} className="btn btn-primary">Buscar</button>
       </div>
 
       {loading ? (
@@ -123,28 +130,28 @@ function ProductList() {
         <p>No hay productos que coincidan con los filtros.</p>
       ) : (
         <>
-          <table style={{ width: '100%', marginTop: '1rem', borderCollapse: 'collapse' }}>
+          <table className="product-table">
             <thead>
               <tr>
-                <th style={tableHeaderStyle}>Código Interno</th>
-                <th style={tableHeaderStyle}>Descripción</th>
-                <th style={tableHeaderStyle}>Stock</th>
-                {products[0]?.priceUSD !== undefined && <th style={tableHeaderStyle}>Precio USD</th>}
-                {products[0]?.priceARS !== undefined && <th style={tableHeaderStyle}>Precio ARS</th>}
-                {canManage && <th style={tableHeaderStyle}>Acciones</th>}
+                <th>Código Interno</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+                {products[0]?.priceUSD !== undefined && <th>Precio USD</th>}
+                {products[0]?.priceARS !== undefined && <th>Precio ARS</th>}
+                {canManage && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
-                  <td>{product.internalCode}</td>
-                  <td>{product.description}</td>
-                  <td>{`${product.stock} ${product.unit}`}</td>
-                  {product.priceUSD !== undefined && <td>${product.priceUSD}</td>}
-                  {product.priceARS !== undefined && <td>${product.priceARS}</td>}
+                  <td data-label="Código Interno">{product.internalCode}</td>
+                  <td data-label="Descripción">{product.description}</td>
+                  <td data-label="Stock">{`${product.stock} ${product.unit}`}</td>
+                  {product.priceUSD !== undefined && <td data-label="Precio USD">${product.priceUSD}</td>}
+                  {product.priceARS !== undefined && <td data-label="Precio ARS">${product.priceARS}</td>}
                   {canManage && (
-                    <td>
-                      <Link to={`/products/edit/${product.id}`} style={editButtonStyle}>
+                    <td data-label="Acciones">
+                      <Link to={`/products/edit/${product.id}`} className="btn btn-outline-primary">
                         Editar
                       </Link>
                     </td>
@@ -153,7 +160,7 @@ function ProductList() {
               ))}
             </tbody>
           </table>
-          <div style={paginationStyle}>
+          <div className="product-pagination-container">
             <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage <= 1}>Anterior</button>
             <span>
               Página {pagination.currentPage || '-'} de {pagination.totalPages || '-'} (Total: {pagination.totalProducts} productos)
@@ -165,13 +172,5 @@ function ProductList() {
     </div>
   );
 }
-
-// Styles
-const tableHeaderStyle = { borderBottom: '2px solid black', textAlign: 'left', padding: '8px' };
-const buttonStyle = { padding: '8px 12px', border: 'none', backgroundColor: '#28a745', color: 'white', borderRadius: '4px', textDecoration: 'none' };
-const editButtonStyle = { padding: '4px 8px', border: '1px solid #007bff', backgroundColor: 'transparent', color: '#007bff', borderRadius: '4px', textDecoration: 'none' };
-const filterContainerStyle = { display: 'flex', gap: '10px', margin: '1rem 0' };
-const inputStyle = { padding: '8px', border: '1px solid #ccc', borderRadius: '4px', minWidth: '200px' };
-const paginationStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' };
 
 export default ProductList;

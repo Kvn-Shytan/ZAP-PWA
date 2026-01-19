@@ -3,14 +3,15 @@ const cors = require('cors');
 const productRoutes = require('./routes/products.routes');
 const categoryRoutes = require('./routes/categories.routes');
 const supplierRoutes = require('./routes/suppliers.routes');
-const armadoresRoutes = require('./routes/armadores.routes.js');
-const trabajoDeArmadoRoutes = require('./routes/trabajoDeArmado.routes.js');
+const assemblersRoutes = require('./routes/assemblers.routes.js');
+const assemblyJobsRoutes = require('./routes/assemblyJobs.routes.js');
 const usersRoutes = require('./routes/users.routes.js');
 const inventoryRoutes = require('./routes/inventory.routes.js');
 const externalProductionOrdersRoutes = require('./routes/externalProductionOrders.routes.js');
 const overheadCostsRoutes = require('./routes/overheadCosts.routes.js');
 const productDesignRoutes = require('./routes/productDesign.routes.js');
 const authRoutes = require('./routes/auth.routes.js');
+const dashboardRoutes = require('./routes/dashboard.routes.js'); // NUEVO: Importar dashboardRoutes
 const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
@@ -34,10 +35,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/suppliers', supplierRoutes);
 
 // Use armadores routes
-app.use('/api/assemblers', armadoresRoutes);
+app.use('/api/assemblers', assemblersRoutes);
 
 // Use trabajo de armado routes
-app.use('/api/trabajos-armado', trabajoDeArmadoRoutes);
+app.use('/api/assembly-jobs', assemblyJobsRoutes);
 
 // Use external production orders routes
 app.use('/api/external-production-orders', externalProductionOrdersRoutes);
@@ -56,6 +57,9 @@ app.use('/api/users', usersRoutes);
 
 // Use inventory routes
 app.use('/api/inventory', inventoryRoutes);
+
+// NUEVO: Usar dashboard routes
+app.use('/api/dashboard', dashboardRoutes);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
