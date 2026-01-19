@@ -202,7 +202,18 @@ const LogisticsDashboardPage = () => {
   const handleReceivedQuantityChange = (productId, quantity) => {
     const newItems = receivedItems.map(item => {
       if (item.productId === productId) {
+        // Allow empty string for temporary editing
+        if (quantity === '') {
+          return { ...item, quantityForThisDelivery: '' }; // Keep it as an empty string
+        }
+
         let newQuantity = Number(quantity);
+        // If it's not a valid number (e.g., "abc"), keep the input value as is
+        // so the user can correct it.
+        if (isNaN(newQuantity)) {
+            return { ...item, quantityForThisDelivery: quantity };
+        }
+
         // Validation: cannot be negative or more than pending
         if (newQuantity < 0) newQuantity = 0;
         if (newQuantity > item.pending) newQuantity = item.pending;
