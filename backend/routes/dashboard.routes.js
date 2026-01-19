@@ -157,6 +157,7 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
           ordersInProgressCount
         ] = await Promise.all([
           // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
+          // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
           prisma.externalProductionOrder.findMany({
             where: {
               status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] },
