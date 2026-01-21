@@ -1,5 +1,23 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-19 (Fase 13.1: Inventario de Armadores - Progreso y Bugfix)
+-   **[FEAT] Backend: Implementación de Control de Inventario Externo para Armadores:**
+    -   Se creó la tabla `OrderSentComponent` en `schema.prisma` para registrar los componentes enviados a los armadores como "snapshot" del inventario en su poder.
+    -   Se modificó el endpoint `POST /api/external-production-orders` para poblar la tabla `OrderSentComponent` al confirmar una orden de producción externa.
+    -   Se creó el endpoint `GET /api/assemblers/:id/inventory` para calcular y devolver el inventario pendiente de un armador (materiales enviados y productos finales esperados).
+    -   Se corrigió un `500 Internal Server Error` en `GET /api/assemblers/:id/inventory` causado por una invocación incorrecta de Prisma, refactorizando la consulta para filtrar órdenes activas y luego los componentes enviados/esperados.
+-   **[FEAT] Frontend: Interfaz para Control de Inventario Externo en Gestión de Armadores:**
+    -   Se implementó un botón "Pendientes" en la página de Gestión de Armadores que abre un modal con el inventario detallado del armador.
+    -   Se restauró la funcionalidad de edición y eliminación en línea en la página de Gestión de Armadores.
+    -   Se movió el componente `EditForm` a `frontend/src/components/EditForm.jsx` para reusabilidad.
+    -   Se agregaron estilos (`AssemblerManagementPage.css`) para el modal de inventario pendiente.
+-   **[FIX] Estabilidad y Coherencia del Frontend:**
+    -   Se corrigieron errores de rutas de importación en `AssemblerDetailsPage.jsx` (posteriormente revertida).
+    -   Se corrigió un error `Identifier 'React' has already been declared` en `AssemblerManagementPage.jsx` eliminando una importación duplicada de React.
+    -   Se corrigió un `ReferenceError: useNavigate is not defined` en `AssemblerManagementPage.jsx` eliminando la declaración `const navigate = useNavigate();` que ya no era necesaria tras el cambio de flujo.
+    -   Se eliminó la página `AssemblerDetailsPage.jsx` y su ruta de `App.jsx` para simplificar el flujo de usuario.
+    -   **[BUG]** El modal de "Pendientes" aún no funciona correctamente o muestra errores en la carga de datos.
+
 ## 2026-01-18 (Finalización de Refactorización y Consolidación)
 -   **[FEAT] Refactorización Completa de Código e Identificadores:**
     -   Estandarización de todas las convenciones de nombres de identificadores (variables, funciones, rutas, etc.) de español a inglés en todo el backend y frontend.
@@ -160,7 +178,7 @@
     -   **[FIX] Backend:** Se corrigieron múltiples errores en el endpoint `POST /external-production-orders` relacionados con el cálculo de cantidades y el acceso a propiedades de `TrabajoDeArmado`.
     -   **[FIX] Backend:** Se corrigieron errores de sintaxis de Prisma en el `upsert` del endpoint `PUT /product-design/:productId/trabajo-armado`.
     -   **[FIX] Backend:** Se corrigió la lógica de cálculo en el endpoint `GET /assemblers/payment-summary-batch` para usar el `precioUnitario` guardado en `OrderAssemblyStep`.
-    -   **[FIX] Backend:** Se añadió el filtro `assemblerPaymentId: null` al endpoint `GET /assemblers/payment-summary-batch` para mostrar solo órdenes no pagadas.
+    -   **[FIX] Backend:** Se añadió el filtro `assemblerPaymentId: null` al endpoint `GET /api/assemblers/payment-summary-batch` para mostrar solo órdenes no pagadas.
     -   **[FIX] Frontend:** Se corrigió un error `TypeError` en `ExternalProductionOrderPage` al mostrar `totalAssemblyCost` cuando era `null`.
     -   **[FIX] Routing:** Se corrigieron inconsistencias en las rutas del backend (`/api/armadores` vs `/api/assemblers`) y se reordenaron las rutas en `armadores.routes.js` para evitar conflictos.
     -   **[CHORE] Performance:** Se configuró `nodemon.json` para mejorar el rendimiento del backend en desarrollo.

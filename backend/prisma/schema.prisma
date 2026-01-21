@@ -36,6 +36,7 @@ model Product {
   componentOf             ProductComponent[] @relation("componentOf")
   externalProductionItems ExternalProductionOrderItem[]
   expectedInOrders        ExpectedProduction[]
+  orderSentComponents     OrderSentComponent[] // NEW
 
   // Relation to assembly jobs (many-to-many)
   assemblyJobs    ProductAssemblyJob[]
@@ -141,6 +142,8 @@ model ExternalProductionOrder {
   orderNotes OrderNote[] // NEW
 
   assemblerPaymentId String?
+  orderSentComponents OrderSentComponent[] // NEW
+
   assemblerPayment   AssemblerPayment? @relation(fields: [assemblerPaymentId], references: [id])
 }
 
@@ -183,6 +186,18 @@ model OrderAssemblyStep {
 
   @@index([externalProductionOrderId])
   @@index([assemblyJobId])
+}
+
+model OrderSentComponent {
+  id                        String @id @default(cuid())
+  externalProductionOrderId String
+  productId                 String
+  quantitySent              Int
+
+  externalProductionOrder ExternalProductionOrder @relation(fields: [externalProductionOrderId], references: [id])
+  product                 Product                 @relation(fields: [productId], references: [id])
+
+  @@unique([externalProductionOrderId, productId])
 }
 
 model OrderNote {

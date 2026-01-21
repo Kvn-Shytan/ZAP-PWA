@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { assemblerService } from '../services/assemblerService';
+import Modal from '../components/Modal'; // Assuming a reusable Modal component exists
 import './AssemblerManagementPage.css';
 
 const INITIAL_FORM_STATE = {
@@ -11,6 +12,84 @@ const INITIAL_FORM_STATE = {
   email: '',
   paymentTerms: 'BI_WEEKLY',
 };
+
+// Sub-component for Pending Inventory Modal
+function PendingInventoryModal({ assembler, onClose }) {
+  const [pendingInventory, setPendingInventory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isMaterialsVisible, setIsMaterialsVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const data = await assemblerService.getAssemblerInventory(assembler.id);
+        setPendingInventory(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (assembler?.id) {
+      fetchInventory();
+    }
+  }, [assembler?.id]);
+
+  return (
+    <Modal isOpen={true} title={`Inventario Pendiente de ${assembler.name}`} onClose={onClose}>
+      {loading && <p>Cargando inventario pendiente...</p>}
+      {error && <p className="error-message">Error: {error}</p>}
+      {pendingInventory && (
+        <div className="pending-inventory-details">
+          <div className="pending-finished-products">
+            <h4>Productos Finales Esperados</h4>
+            {pendingInventory.pendingFinishedProducts.length > 0 ? (
+              <ul className="pending-list">
+                {pendingInventory.pendingFinishedProducts.map((item, index) => (
+                  <li key={index} className="pending-item">
+                    <span>{item.product.description} ({item.product.internalCode}):</span>
+                    <span className="quantity">{item.quantity} {item.product.unit}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No hay productos finales pendientes.</p>
+            )}
+          </div>
+
+          <div className="pending-materials-section">
+            <button 
+              onClick={() => setIsMaterialsVisible(!isMaterialsVisible)}
+              className="btn btn-secondary toggle-materials-btn"
+            >
+              {isMaterialsVisible ? 'Ocultar' : 'Ver'} Materiales Enviados
+            </button>
+            
+            {isMaterialsVisible && (
+              <div className="pending-materials">
+                <h4>Materiales Enviados (en poder del armador)</h4>
+                {pendingInventory.pendingMaterials.length > 0 ? (
+                  <ul className="pending-list">
+                    {pendingInventory.pendingMaterials.map((item, index) => (
+                      <li key={index} className="pending-item">
+                        <span>{item.product.description} ({item.product.internalCode}):</span>
+                        <span className="quantity">{item.quantity} {item.product.unit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No hay materiales enviados pendientes.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Modal>
+  );
+}
 
 // Edit Form Sub-Component
 function EditForm({ assembler, onSave, onCancel }) {
@@ -46,6 +125,7 @@ function EditForm({ assembler, onSave, onCancel }) {
   );
 }
 
+
 function AssemblerManagementPage() {
   const { user } = useAuth();
   const [assemblers, setAssemblers] = useState([]);
@@ -54,8 +134,11 @@ function AssemblerManagementPage() {
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAssembler, setNewAssembler] = useState(INITIAL_FORM_STATE);
-
   const [editingAssembler, setEditingAssembler] = useState(null);
+
+  const [showPendingInventoryModal, setShowPendingInventoryModal] = useState(false);
+  const [selectedAssemblerForPending, setSelectedAssemblerForPending] = useState(null);
+
 
   const fetchAssemblers = useCallback(async () => {
     setLoading(true);
@@ -113,11 +196,13 @@ function AssemblerManagementPage() {
     }
   };
 
+
   if (loading) return <p>Cargando ensambladores...</p>;
   if (error) return <p className="error-message">Error: {error}</p>;
 
   const isPrivilegedUser = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
   const paymentTermOptions = ['BI_WEEKLY', 'MONTHLY', 'PER_UNIT'];
+
 
   if (editingAssembler) {
     return (
@@ -174,8 +259,7 @@ function AssemblerManagementPage() {
         </thead>
         <tbody>
           {assemblers.map((assembler) => (
-            <tr key={assembler.id}>
-              <td data-label="Nombre"><span>{assembler.name}</span></td>
+            <tr key={assembler.id}><td data-label="Nombre"><span>{assembler.name}</span></td>
               <td data-label="Teléfono"><span>{assembler.phone || '-'}</span></td>
               <td data-label="Dirección"><span>{assembler.address || '-'}</span></td>
               {isPrivilegedUser && (
@@ -183,9 +267,19 @@ function AssemblerManagementPage() {
                   <td data-label="Email"><span>{assembler.email || '-'}</span></td>
                   <td data-label="Condiciones de Pago"><span>{assembler.paymentTerms}</span></td>
                   <td data-label="Acciones">
-                    <div>
-                      <button className="btn btn-secondary" onClick={() => setEditingAssembler(assembler)}>Editar</button>
-                      {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={() => handleDeleteAssembler(assembler.id)}>Eliminar</button>}
+                    <div className="action-buttons">
+                      <button 
+                        className="btn btn-info" 
+                        onClick={(e) => { 
+                          e.stopPropagation(); // Prevent row click if it were enabled
+                          setSelectedAssemblerForPending(assembler); 
+                          setShowPendingInventoryModal(true); 
+                        }}
+                      >
+                        Pendientes
+                      </button>
+                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setEditingAssembler(assembler); }}>Editar</button>
+                      {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDeleteAssembler(assembler.id); }}>Eliminar</button>}
                     </div>
                   </td>
                 </>
@@ -194,6 +288,13 @@ function AssemblerManagementPage() {
           ))}
         </tbody>
       </table>
+
+      {showPendingInventoryModal && selectedAssemblerForPending && (
+        <PendingInventoryModal 
+          assembler={selectedAssemblerForPending} 
+          onClose={() => setShowPendingInventoryModal(false)} 
+        />
+      )}
     </div>
   );
 }

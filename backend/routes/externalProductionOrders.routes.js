@@ -255,6 +255,15 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
           },
         });
 
+        // NEW: Create OrderSentComponent record
+        await tx.orderSentComponent.create({
+          data: {
+            externalProductionOrderId: order.id,
+            productId: product.id,
+            quantitySent: requiredQty,
+          },
+        });
+
         await tx.inventoryMovement.create({
           data: {
             productId: product.id,

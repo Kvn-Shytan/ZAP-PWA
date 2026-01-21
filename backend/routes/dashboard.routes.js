@@ -44,13 +44,13 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         const deliveryTasks = deliveries.map(order => ({
           id: `delivery-${order.id}`,
           text: `Entregar orden ${order.orderNumber} a ${order.assembler?.name || '[Armador no especificado]'}`,
-          link: `/external-orders/${order.id}`,
+          link: `/logistics-dashboard`,
         }));
 
         const pickupTasks = pickups.map(order => ({
           id: `pickup-${order.id}`,
           text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
-          link: `/external-orders/${order.id}`,
+          link: `/logistics-dashboard`,
         }));
 
         dashboardData.tasks = [...deliveryTasks, ...pickupTasks];
@@ -70,6 +70,7 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         const [
           pendingAssignmentOrders,
           failedDeliveryOrders,
+          pickupOrders, // <-- ADDED
           productsWithThreshold,
           ordersInProgressCount
         ] = await Promise.all([
@@ -82,6 +83,14 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
             where: { status: 'DELIVERY_FAILED' },
             include: { assembler: true },
             orderBy: { updatedAt: 'desc' },
+          }),
+          // <-- ADDED: Query for supervisor's pickup tasks
+          prisma.externalProductionOrder.findMany({
+            where: {
+              pickupUserId: user.userId,
+              status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
+            },
+            include: { assembler: true },
           }),
           // Alerta: Productos con bajo stock (se filtran en memoria)
           prisma.product.findMany({
@@ -105,10 +114,17 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         const failedTasks = failedDeliveryOrders.map(order => ({
           id: `task-failed-${order.id}`,
           text: `Revisar entrega fallida para orden ${order.orderNumber} (${order.assembler?.name || 'N/A'})`,
-          link: `/external-orders/${order.id}`,
+          link: `/logistics-dashboard`,
         }));
         
-        dashboardData.tasks = [...pendingTasks, ...failedTasks];
+        // <-- ADDED: Map pickup tasks
+        const pickupTasks = pickupOrders.map(order => ({
+          id: `pickup-${order.id}`,
+          text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
+          link: `/logistics-dashboard`,
+        }));
+
+        dashboardData.tasks = [...pendingTasks, ...failedTasks, ...pickupTasks];
 
         // Mapear Alertas
         const lowStockAlerts = productsWithThreshold
@@ -149,6 +165,10 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
     if (user.role === 'ADMIN') {
       try {
         const [
+          // ADMIN: Personal tasks
+          adminDeliveries,
+          adminPickups,
+          // ADMIN: General tasks
           pendingPaymentOrders,
           // Supervisor data (re-using supervisor queries)
           pendingAssignmentOrders,
@@ -156,7 +176,22 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
           productsWithThreshold,
           ordersInProgressCount
         ] = await Promise.all([
-          // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
+          // ADMIN: Tareas de Entrega
+          prisma.externalProductionOrder.findMany({
+            where: {
+              deliveryUserId: user.userId,
+              status: 'OUT_FOR_DELIVERY',
+            },
+            include: { assembler: true },
+          }),
+          // ADMIN: Tareas de Recolección
+          prisma.externalProductionOrder.findMany({
+            where: {
+              pickupUserId: user.userId,
+              status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
+            },
+            include: { assembler: true },
+          }),
           // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
           prisma.externalProductionOrder.findMany({
                         where: {
@@ -191,6 +226,19 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
           }),
         ]);
 
+        // ADMIN: Mapear Tareas Personales (entrega y recogida)
+        const adminDeliveryTasks = adminDeliveries.map(order => ({
+            id: `delivery-admin-${order.id}`,
+            text: `Entregar orden ${order.orderNumber} a ${order.assembler?.name || '[Armador no especificado]'}`,
+            link: `/logistics-dashboard`,
+        }));
+        const adminPickupTasks = adminPickups.map(order => ({
+            id: `pickup-admin-${order.id}`,
+            text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
+            link: `/logistics-dashboard`,
+        }));
+
+
         // ADMIN: Mapear Tareas (Pagos pendientes)
         const adminPaymentTasks = pendingPaymentOrders
           .filter(order => order.assembler) // Safely filter out orders with null assembler
@@ -212,7 +260,7 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
         };
 
         dashboardData.adminData = {
-          tasks: adminPaymentTasks,
+          tasks: [...adminDeliveryTasks, ...adminPickupTasks, ...adminPaymentTasks],
           alerts: adminAlerts,
           kpis: adminKpis,
         };

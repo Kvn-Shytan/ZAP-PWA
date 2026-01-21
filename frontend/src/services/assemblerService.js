@@ -23,6 +23,27 @@ export const assemblerService = {
   },
 
   /**
+   * Fetches the pending inventory for a specific assembler.
+   * @param {string} id - The ID of the assembler.
+   * @returns {Promise<object>} - An object containing pending materials and finished products.
+   */
+  getAssemblerInventory(id) {
+    return apiFetch(`/assemblers/${id}/inventory`);
+  },
+
+  /**
+   * Crea un nuevo armador.
+   * @param {object} assemblerData - Los datos del nuevo armador.
+   * @returns {Promise<object>} - El armador creado.
+   */
+  create(assemblerData) {
+    return apiFetch('/assemblers', {
+      method: 'POST',
+      body: JSON.stringify(assemblerData),
+    });
+  },
+
+  /**
    * Actualiza un armador existente.
    * @param {string} id - El ID del armador a actualizar.
    * @param {object} assemblerData - Los datos actualizados del armador.

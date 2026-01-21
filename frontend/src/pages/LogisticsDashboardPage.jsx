@@ -80,7 +80,7 @@ const LogisticsDashboardPage = () => {
       try {
         if (currentUser && (currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN')) {
           const allUsers = await apiFetch('/users');
-          const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR');
+          const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR' || u.role === 'ADMIN').map(u => ({ id: u.id, name: u.name || u.email }));
           setUsers(assignableUsers);
         }
 
@@ -340,14 +340,14 @@ const LogisticsDashboardPage = () => {
   const renderOrderActions = (order) => {
     if (!currentUser) return null; // Don't render if user context is not loaded yet
 
-    const isSupervisor = currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN';
+    const isPrivilegedUser = currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN';
     const isEmployee = currentUser.role === 'EMPLOYEE';
-    const isDeliveryPerson = order.deliveryUserId === currentUser.id;
-    const isPickupPerson = order.pickupUserId === currentUser.id;
+    const isDeliveryPerson = Number(order.deliveryUserId) === Number(currentUser.id);
+    const isPickupPerson = Number(order.pickupUserId) === Number(currentUser.id);
 
     switch (order.status) {
       case 'PENDING_DELIVERY':
-        if (isSupervisor) {
+        if (isPrivilegedUser) {
           return (
             <>
               <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Asignar Reparto</button>
@@ -358,7 +358,7 @@ const LogisticsDashboardPage = () => {
         return null;
 
       case 'OUT_FOR_DELIVERY':
-        if (isSupervisor) {
+        if (isPrivilegedUser && !isDeliveryPerson) {
           return (
             <>
               <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Forzar Entrega</button>
@@ -366,7 +366,7 @@ const LogisticsDashboardPage = () => {
             </>
           );
         }
-        if (isEmployee && isDeliveryPerson) {
+        if ((isEmployee || isPrivilegedUser) && isDeliveryPerson) {
           return (
             <>
               <button onClick={() => handleConfirmDelivery(order.id)} className="action-button green-light">Confirmar Entrega</button>
@@ -377,19 +377,27 @@ const LogisticsDashboardPage = () => {
         return null;
 
       case 'DELIVERY_FAILED':
-        if (isSupervisor) {
+        if (isPrivilegedUser) {
           return <button onClick={() => handleOpenAssignModal(order, 'delivery')} className="action-button gray-light">Reintentar Asignación</button>;
         }
         return null;
 
       case 'IN_ASSEMBLY':
-        if (isSupervisor) {
+        if (isPrivilegedUser) {
           return <button onClick={() => handleConfirmAssembly(order.id)} className="action-button green-light">Confirmar Fin de Armado</button>;
         }
         return null;
         
       case 'PENDING_PICKUP':
-        if (isSupervisor) {
+        if (isPrivilegedUser && isPickupPerson) {
+          return (
+            <>
+              <button onClick={() => handleConfirmPickup(order.id)} className="action-button green-light">Confirmar Recolección</button>
+              <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Reasignar Recogida</button>
+            </>
+          );
+        }
+        if (isPrivilegedUser && !isPickupPerson) {
           return <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Asignar Recogida</button>;
         }
         if (isEmployee && isPickupPerson) {
@@ -399,7 +407,7 @@ const LogisticsDashboardPage = () => {
 
       case 'RETURN_IN_TRANSIT':
       case 'PARTIALLY_RECEIVED':
-        if (isSupervisor) {
+        if (isPrivilegedUser) {
           return (
             <>
               <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>

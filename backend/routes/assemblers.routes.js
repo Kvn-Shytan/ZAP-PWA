@@ -133,6 +133,89 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
   }
 });
 
+// GET /api/assemblers/:id/inventory - Get pending inventory for an assembler
+router.get('/:id/inventory', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  const { id: assemblerId } = req.params;
+
+  try {
+    // Step 1: Find all active external production order IDs for this assembler
+    const activeOrderIds = await prisma.externalProductionOrder.findMany({
+      where: {
+        assemblerId: assemblerId,
+        status: {
+          notIn: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY', 'CANCELLED'] // Only active orders
+        }
+      },
+      select: {
+        id: true // Select only the ID
+      }
+    });
+
+    const externalProductionOrderIds = activeOrderIds.map(order => order.id);
+
+    // If no active orders, return empty arrays
+    if (externalProductionOrderIds.length === 0) {
+      return res.json({
+        assemblerId,
+        pendingMaterials: [],
+        pendingFinishedProducts: [],
+      });
+    }
+
+    // 1. Get all sent components for these active orders
+    const sentComponents = await prisma.orderSentComponent.findMany({
+      where: {
+        externalProductionOrderId: {
+          in: externalProductionOrderIds
+        }
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    // 2. Get all expected production items (finished goods) for these active orders
+    const expectedProductions = await prisma.expectedProduction.findMany({
+      where: {
+        externalProductionOrderId: {
+          in: externalProductionOrderIds
+        }
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    const pendingMaterials = new Map(); // productId -> { product, quantity }
+    const pendingFinishedProducts = new Map(); // productId -> { product, quantity }
+
+    // Aggregate sent components
+    for (const item of sentComponents) {
+      const current = pendingMaterials.get(item.productId) || { product: item.product, quantity: 0 };
+      pendingMaterials.set(item.productId, { ...current, quantity: current.quantity + item.quantitySent });
+    }
+
+    // Aggregate expected (but not yet received) finished products
+    for (const item of expectedProductions) {
+      const pendingQty = Number(item.quantityExpected) - Number(item.quantityReceived);
+      if (pendingQty > 0) {
+        const current = pendingFinishedProducts.get(item.productId) || { product: item.product, quantity: 0 };
+        pendingFinishedProducts.set(item.productId, { ...current, quantity: current.quantity + pendingQty });
+      }
+    }
+
+    res.json({
+      assemblerId,
+      pendingMaterials: Array.from(pendingMaterials.values()),
+      pendingFinishedProducts: Array.from(pendingFinishedProducts.values()),
+    });
+
+  } catch (error) {
+    console.error(`Error fetching pending inventory for assembler ${assemblerId}:`, error);
+    res.status(500).json({ error: `Failed to fetch pending inventory: ${error.message}` });
+  }
+});
+
 // POST /api/assemblers/close-fortnight-batch - Close the fortnight and register payments
 router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']), async (req, res) => {
   const { assemblerIds, startDate, endDate } = req.body;

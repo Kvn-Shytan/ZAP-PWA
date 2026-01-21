@@ -136,3 +136,90 @@
     margin: 0;
   }
 }
+
+/* Styles for action buttons */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+  gap: 5px; /* Spacing between buttons */
+}
+
+.action-buttons .btn {
+  flex: 1 1 auto; /* Allow buttons to grow and shrink */
+  min-width: 80px; /* Minimum width for buttons */
+}
+
+/* Modal specific styles (using existing Modal component's structure) */
+.pending-inventory-details {
+  display: flex;
+  flex-direction: column; /* Stack vertically by default for mobile */
+  gap: 1.5rem; /* Spacing between sections */
+}
+
+.pending-inventory-details h4 {
+  color: var(--secondary-color); /* Assuming --secondary-color is defined in a global CSS */
+  margin-bottom: 0.8rem;
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--border-color); /* Assuming --border-color is defined */
+  padding-bottom: 0.4rem;
+}
+
+.pending-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pending-item {
+  background-color: var(--background-color); /* Assuming --background-color is defined */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius); /* Assuming --border-radius is defined */
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.pending-item span:first-child {
+  font-weight: 500;
+  color: var(--primary-text-color); /* Assuming --primary-text-color is defined */
+  overflow-wrap: break-word; /* Fix for long text */
+  min-width: 0; /* Allow the item to shrink */
+}
+
+.pending-item .quantity {
+  font-weight: bold;
+  color: var(--accent-color); /* Assuming --accent-color is defined */
+}
+
+.pending-materials-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toggle-materials-btn {
+  align-self: flex-start; /* Don't stretch the button */
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.pending-materials {
+  margin-top: 0.5rem; /* Space between button and the revealed content */
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 768px) {
+  .pending-inventory-details {
+    flex-direction: row; /* Display side-by-side on larger screens */
+    justify-content: space-around;
+    gap: 2rem; /* Add some gap for better separation */
+  }
+
+  .pending-materials-section, .pending-finished-products {
+    flex: 1; /* Distribute space evenly */
+    min-width: 0; /* Let them shrink if needed */
+  }
+}
