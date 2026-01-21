@@ -1,5 +1,17 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-21 (Fase 15: Refinamientos de UI/UX y Flujos de Trabajo)
+-   **[FEAT/FIX] Refactorización y Corrección de Flujos de Tareas Logísticas:**
+    -   **[FIX] UI/UX Modal "Pendientes":** Se corrigió el desbordamiento de texto en la vista de escritorio del modal "Pendientes" en la página de gestión de ensambladores.
+    -   **[FEAT] UI/UX Modal "Pendientes":** Se implementó un submenú colapsable para visualizar los materiales enviados en el modal "Pendientes".
+    -   **[FEAT] UI/UX Botón "Pendientes":** Se cambió el color del botón "Pendientes" a un amarillo claro para mejorar su visibilidad.
+    -   **[FIX] Backend Dashboard:** Se ajustaron los enlaces de las tareas de órdenes de producción externa en el dashboard para que dirijan al "Panel de Logística" (`/logistics-dashboard`).
+    -   **[FIX] Frontend Flujo PENDING_PICKUP:** Se corrigió un bug crítico que impedía a `SUPERVISOR`s y `ADMIN`s confirmar sus propias tareas de recogida. El problema se debía a una inconsistencia de tipos entre `order.pickupUserId` (Number) y `currentUser.id` (String).
+    -   **[FEAT] Extensión de Roles:** Se extendieron las capacidades de asignación y confirmación de tareas de recogida y entrega al rol `ADMIN`.
+## 2026-01-21 (Fase 16 y 17: Plan de Acción para PWA y Despliegue)
+-   **[CHORE] Documentación:** Se ha añadido al `Roadmap.md` un plan de acción detallado para la implementación de las capacidades PWA y el despliegue en la nube.
+    -   Se creó la **Fase 16: Implementación de Capacidades PWA (Offline y Instalación)**, que detalla los pasos para crear el `manifest.json` y el `sw.js` (Service Worker).
+    -   Se creó la **Fase 17: Despliegue en la Nube y Puesta en Producción**, que describe el proceso para migrar la base de datos, el backend y el frontend a una infraestructura en la nube (Google Cloud).
 ## 2026-01-19 (Fase 13.1: Inventario de Armadores - Progreso y Bugfix)
 -   **[FEAT] Backend: Implementación de Control de Inventario Externo para Armadores:**
     -   Se creó la tabla `OrderSentComponent` en `schema.prisma` para registrar los componentes enviados a los armadores como "snapshot" del inventario en su poder.

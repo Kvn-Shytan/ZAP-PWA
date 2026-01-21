@@ -396,19 +396,19 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
 <br>
 
--   **Fase 13: Control de Inventario Externo y Alertas de Inactividad (En Progreso)**
+-   **Fase 13: Control de Inventario Externo y Alertas de Inactividad (Completada)**
     > **Objetivo:** Obtener visibilidad en tiempo real del inventario en manos de armadores externos y ser notificado proactivamente sobre posibles demoras.
 
-    *   **13.1: Inventario de Armadores ("Pendientes") (En Progreso - Modal)**
+    *   **13.1: Inventario de Armadores ("Pendientes") (Completada)**
         *   **Objetivo:** Visualizar todos los materiales (productos finales y materias primas) que un armador tiene en su poder.
         *   **Acciones Backend:**
             *   `[x]` **(DB):** Crear tabla `OrderSentComponent` para guardar un "snapshot" de los materiales enviados en cada orden y optimizar el rendimiento.
-            *   `[x]` **(API):** Modificar el endpoint de creación de órdenes para poblar la nueva tabla `OrderSentComponent`.
+            *   `[x]` **(API)::** Modificar el endpoint de creación de órdenes para poblar la nueva tabla `OrderSentComponent`.
             *   `[x]` **(API):** Crear nuevo endpoint `GET /api/assemblers/:id/inventory` para calcular y devolver los pendientes de un armador basándose en el "snapshot" y las entregas parciales.
         *   **Acciones Frontend:**
             *   `[x]` **(UI):** Implementar la gestión de armadores con botones de acción "Pendientes", "Editar" y "Eliminar".
             *   `[x]` **(UI):** Re-integrar la funcionalidad de edición en línea dentro de la página de gestión de armadores.
-            *   `[ ]` **(UI):** Implementar un modal "Pendientes" que muestre los productos finales y materias primas pendientes del armador. (Bug en progreso: modal muestra error o no carga datos correctamente).
+            *   `[x]` **(UI):** Implementar un modal "Pendientes" que muestre los productos finales y materias primas pendientes del armador, con correcciones visuales para escritorio y submenú colapsable.
 
     *   **13.2: Alertas por Inactividad (Pendiente)**
         *   **Objetivo:** Notificar a Supervisores y Administradores si una orden no presenta cambios de estado por más de 3 días hábiles.
@@ -452,6 +452,88 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
     
 
+    <br>
+    
+    -   **Fase 15: Refinamientos de UI/UX y Flujos de Trabajo (En Progreso)**
+        > **Objetivo:** Asegurar la fluidez y coherencia en la interacción del usuario con las tareas logísticas, mejorando la visibilidad y accesibilidad de las acciones clave.
+    
+        *   `[x]` **(UI/UX)** Corrección visual del modal "Pendientes" en la gestión de ensambladores:
+            *   Resolución del desbordamiento de texto en la vista de escritorio.
+            *   Implementación de submenú colapsable para materiales enviados.
+        *   `[x]` **(UI/UX)** Mejorar visibilidad del botón "Pendientes" en la gestión de ensambladores:
+            *   Cambio de color a amarillo claro.
+        *   `[x]` **(Backend)** Corrección de enlaces de tareas del Dashboard:
+            *   Las tareas de órdenes de producción externa ahora enlazan al "Panel de Logística" para su gestión.
+        *   `[x]` **(Frontend)** Habilitar acciones de recogida para `ADMIN` y `SUPERVISOR` asignados:
+            *   Corrección del bug que impedía a los usuarios privilegiados confirmar sus propias tareas de recogida.
+            *   Extensión de la capacidad de asignación y confirmación de tareas de recogida/entrega al rol `ADMIN`.
+    
+<br>
+
+-   **Fase 16: Implementación de Capacidades PWA (Offline y Instalación) (Pendiente)**
+    > **Objetivo:** Convertir la aplicación web en una Progressive Web App (PWA) instalable, con funcionamiento offline para las funcionalidades clave, cumpliendo con uno de los requisitos fundamentales del proyecto.
+
+    *   **16.1: Hacer la Aplicación "Instalable" (Web App Manifest)**
+        *   `[ ]` **Acción (Frontend):** Crear el archivo `frontend/public/manifest.json`.
+        *   `[ ]` **Contenido:** Definir las propiedades clave de la PWA: `name`, `short_name`, `description`, `start_url`, `display` (standalone), `background_color`, `theme_color` e `icons`.
+        *   `[ ]` **Acción (Frontend):** Preparar y añadir iconos de la aplicación en diferentes tamaños (ej. 192x192, 512x512) en la carpeta `frontend/public/icons/`.
+        *   `[ ]` **Acción (Frontend):** Vincular el manifest en `frontend/index.html` usando `<link rel="manifest" href="/manifest.json">`.
+        *   `[ ]` **Verificación:** Utilizar la pestaña "Application" en las herramientas de desarrollador de Chrome para confirmar que el manifest se carga y es válido.
+
+    *   **16.2: Implementar Funcionalidad Offline Básica (Service Worker)**
+        *   `[ ]` **Acción (Frontend):** Crear el archivo del Service Worker `frontend/public/sw.js`.
+        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `install` para crear un caché (ej. `zap-flowapp-cache-v1`) y precargar los recursos estáticos de la "App Shell" (HTML, CSS, JS, iconos).
+        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `fetch` con una estrategia "Cache First" para los assets estáticos. Si el recurso está en caché, se sirve desde ahí; si no, se busca en la red.
+        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `activate` para gestionar y eliminar cachés antiguas, asegurando que los usuarios reciban actualizaciones.
+        *   `[ ]` **Acción (Frontend):** Registrar el Service Worker en `frontend/src/main.jsx`, asegurándose de que el navegador del usuario lo instale.
+        *   `[ ]` **Verificación:** Usar las herramientas de desarrollador para simular el modo offline y verificar que la aplicación carga su interfaz básica.
+
+    *   **16.3: Estrategia de Caching para Datos Dinámicos (API)**
+        *   `[ ]` **Acción (Frontend - sw.js):** Mejorar el evento `fetch` para manejar las peticiones a la API (`/api/`).
+        *   `[ ]` **Estrategia:** Implementar una estrategia "Network First, then Cache" para las peticiones `GET`. La app intentará obtener datos frescos de la red, pero si no hay conexión, servirá la última versión guardada en el caché.
+        *   `[ ]` **(Avanzado - Opcional):** Implementar "Background Sync" para las peticiones `POST` y `PUT`. Si el usuario crea o modifica algo offline, la petición se guarda y se envía automáticamente cuando se recupera la conexión.
+
+<br>
+
+-   **Fase 17: Despliegue en la Nube y Puesta en Producción (Pendiente)**
+    > **Objetivo:** Mover la aplicación desde el entorno de desarrollo local a una infraestructura en la nube robusta, segura y siempre disponible, permitiendo el acceso desde cualquier dispositivo con internet.
+
+    *   **17.1: Preparación del Entorno de Nube**
+        *   `[ ]` **Acción (Infra):** Crear un nuevo proyecto en Google Cloud Platform (GCP).
+        *   `[ ]` **Acción (Infra):** Habilitar las APIs necesarias: Cloud Run, Cloud SQL, Artifact Registry, Secret Manager.
+        *   `[ ]` **Acción (Infra):** Configurar la facturación y aprovechar los créditos gratuitos para nuevos usuarios.
+
+    *   **17.2: Despliegue de la Base de Datos**
+        *   `[ ]` **Acción (Infra):** Crear una instancia de **Google Cloud SQL** con PostgreSQL.
+        *   `[ ]` **Configuración:** Elegir la instancia más pequeña (`db-f1-micro`) para mantener los costos bajos (~$7-10/mes).
+        *   `[ ]` **Seguridad:** Configurar la contraseña de la base de datos y almacenarla de forma segura en **Google Secret Manager**.
+        *   `[ ]` **Acción (DB):** Migrar el esquema de la base de datos local a la base de datos en la nube ejecutando las migraciones de Prisma.
+
+    *   **17.3: Despliegue del Backend**
+        *   `[ ]` **Acción (Código):** Optimizar `backend/Dockerfile` para producción (builds multi-etapa, dependencias de producción únicamente).
+        *   `[ ]` **Acción (Infra):** Crear un repositorio en **Google Artifact Registry** para almacenar las imágenes de Docker.
+        *   `[ ]` **Acción (CI/CD):** Construir la imagen Docker del backend y subirla a Artifact Registry.
+        *   `[ ]` **Acción (Infra):** Crear un nuevo servicio en **Google Cloud Run** y desplegar la imagen del backend desde Artifact Registry.
+        *   `[ ]` **Configuración:**
+            *   Inyectar la contraseña de la base de datos desde Secret Manager como una variable de entorno.
+            *   Configurar la URL de la base de datos en la nube.
+            *   Asegurar que el servicio tenga una URL pública y siempre disponible.
+
+    *   **17.4: Despliegue del Frontend**
+        *   `[ ]` **Opción A (Recomendada): Firebase Hosting**
+            *   `[ ]` **Acción (Infra):** Crear un proyecto de Firebase y vincularlo al proyecto de GCP.
+            *   `[ ]` **Acción (Frontend):** Instalar las herramientas de Firebase CLI y configurar el proyecto en `frontend/`.
+            *   `[ ]` **Acción (Frontend):** Configurar el `VITE_API_URL` en las variables de entorno para que apunte a la URL pública del backend en Cloud Run.
+            *   `[ ]` **Acción (CI/CD):** Ejecutar el build de producción de React (`npm run build`) y desplegar los archivos estáticos a Firebase Hosting.
+        *   `[ ]` **Opción B: Google Cloud Run**
+            *   `[ ]` **Acción (Código):** Optimizar `frontend/Dockerfile` para producción (build multi-etapa con Nginx).
+            *   `[ ]` **Acción (CI/CD):** Construir y subir la imagen Docker del frontend a Artifact Registry.
+            *   `[ ]` **Acción (Infra):** Desplegar la imagen en un nuevo servicio de Cloud Run.
+
+    *   **17.5: Verificación Final**
+        *   `[ ]` **Acción:** Acceder a la URL pública del frontend (ej. `https://zap-flowapp.web.app`).
+        *   `[ ]` **Prueba:** Verificar que la aplicación funciona, se conecta al backend en la nube y que las capacidades PWA (instalación y offline) están activas.
+        
     ## 2. Changelog (Registro de Cambios)
 
 ## 2026-01-19 (Fase 13.1: Inventario de Armadores - Progreso y Bugfix)

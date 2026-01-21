@@ -268,17 +268,16 @@ function AssemblerManagementPage() {
                   <td data-label="Condiciones de Pago"><span>{assembler.paymentTerms}</span></td>
                   <td data-label="Acciones">
                     <div className="action-buttons">
-                      <button 
-                        className="btn btn-info" 
-                        onClick={(e) => { 
-                          e.stopPropagation(); // Prevent row click if it were enabled
-                          setSelectedAssemblerForPending(assembler); 
-                          setShowPendingInventoryModal(true); 
-                        }}
-                      >
-                        Pendientes
-                      </button>
-                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setEditingAssembler(assembler); }}>Editar</button>
+                                            <button
+                                              className="btn btn-pending-inventory"
+                                              onClick={(e) => {
+                                                e.stopPropagation(); // Prevent row click if it were enabled
+                                                setSelectedAssemblerForPending(assembler);
+                                                setShowPendingInventoryModal(true);
+                                              }}
+                                            >
+                                              Pendientes
+                                            </button>                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setEditingAssembler(assembler); }}>Editar</button>
                       {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDeleteAssembler(assembler.id); }}>Eliminar</button>}
                     </div>
                   </td>

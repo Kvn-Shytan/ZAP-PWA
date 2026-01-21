@@ -149,6 +149,19 @@
   min-width: 80px; /* Minimum width for buttons */
 }
 
+/* Specific style for the "Pendientes" button */
+.btn-pending-inventory {
+  background-color: #FFC107; /* Light yellow */
+  color: #343a40; /* Dark text for contrast */
+  border-color: #FFC107;
+}
+
+.btn-pending-inventory:hover {
+  background-color: #e0a800; /* Slightly darker yellow on hover */
+  border-color: #e0a800;
+  color: #343a40;
+}
+
 /* Modal specific styles (using existing Modal component's structure) */
 .pending-inventory-details {
   display: flex;
