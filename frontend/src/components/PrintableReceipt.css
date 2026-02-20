@@ -1,0 +1,235 @@
+/* PrintableReceipt.css */
+
+.printable-receipt-container {
+  display: block;
+  width: 100%;
+}
+
+@media print {
+  body, html, #root, .printable-receipt-container {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 5mm; 
+  }
+}
+
+.receipt-box {
+  width: 100%;
+  max-width: 190mm; 
+  margin: 0 auto;
+  border: 2px solid #000;
+  border-radius: 15px;
+  padding: 20px 30px;
+  font-family: 'Arial', sans-serif;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 240mm; 
+  display: flex;
+  flex-direction: column;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Cuadro "X" */
+.receipt-type-box {
+  position: absolute;
+  top: 0; 
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 85px; /* Aumentado para cubrir completamente la leyenda */
+  background: white;
+  border: 2px solid #000;
+  border-top: none;
+  text-align: center;
+  font-size: 8.5px;
+  font-weight: bold;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.receipt-type-letter {
+  font-size: 28px;
+  display: block;
+  margin-bottom: -3px;
+}
+
+/* Encabezado */
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 25px;
+}
+
+.logo-img {
+  width: 220px; /* Logo más grande como solicitaste */
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.company-info {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.receipt-date {
+  font-size: 16px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.receipt-title {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.receipt-number {
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+/* Cliente */
+.client-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+.client-info-box {
+  width: 65%;
+}
+
+.client-row {
+  display: flex;
+  margin-bottom: 8px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 2px;
+}
+
+.client-label {
+  font-weight: bold;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.client-value {
+  flex: 1;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* Tabla */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #000;
+  table-layout: fixed; /* Asegura anchos fijos */
+}
+
+.items-table th {
+  border: 2px solid #000;
+  padding: 10px;
+  font-size: 14px;
+  background-color: #f2f2f2 !important;
+}
+
+.items-table td {
+  border: 1px solid #000;
+  padding: 8px 12px;
+  font-size: 13px;
+  height: 28px;
+  overflow: hidden; /* Evitar desbordes */
+}
+
+/* Alineación de columnas coincidente con el footer */
+.col-cant { width: 10%; text-align: center; }
+.col-art { width: 50%; text-align: left; }
+.col-precio { width: 18%; text-align: right; }
+.col-total { width: 22%; text-align: right; font-weight: bold; }
+
+/* Pie de Tabla (Alineado con columnas de tabla) */
+.footer-section {
+  display: flex;
+  border: 2px solid #000;
+  border-top: none;
+}
+
+.observations-box {
+  width: 60%; /* Coincide con Cant + Articulo (10% + 50%) */
+  padding: 10px;
+  font-size: 13px;
+  border-right: 2px solid #000;
+  min-height: 80px;
+}
+
+.observations-title {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.total-container {
+  width: 40%; /* Coincide con Precio Unit + Total (18% + 22%) */
+  display: flex;
+}
+
+.total-label-box {
+  width: 45%; /* Aproximado a la columna Precio Unitario */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border-right: 2px solid #000;
+  font-size: 14px;
+  background: #f2f2f2 !important;
+}
+
+.total-value-box {
+  width: 55%; /* Aproximado a la columna Total */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px; /* Reducido un punto para asegurar que entren los millones */
+  font-weight: 900;
+  padding: 0 5px;
+}
+
+/* Firma */
+.signature-section {
+  margin-top: 45px; /* Espacio aumentado según solicitud */
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 30px; /* Más espacio abajo */
+}
+
+.signature-box {
+  width: 220px;
+  border-top: 2px solid #000;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  padding-top: 5px;
+}
+
+.legal-footer {
+  text-align: center;
+  font-size: 11px;
+  margin-top: 15px;
+}

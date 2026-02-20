@@ -142,13 +142,18 @@ router.post('/purchase', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
   }
 });
 
-// Registrar una Venta
-router.post('/sale', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+
+
+// Registrar una Disminución por Desecho (Wastage)
+router.post('/wastage', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { productId, quantity, notes } = req.body;
   const userId = req.user.userId;
 
   if (!productId || !quantity || quantity <= 0) {
     return res.status(400).json({ error: 'productId and a positive quantity are required.' });
+  }
+  if (!notes || notes.trim().length < 5) {
+    return res.status(400).json({ error: 'Notes (reason for wastage) are required and must be at least 5 characters long.' });
   }
 
   try {
@@ -157,24 +162,20 @@ router.post('/sale', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) =>
       if (!product) {
         throw new Error('Producto no encontrado.');
       }
-      // Opcional: verificar que sea un producto FINISHED
-      if (product.type !== 'FINISHED') {
-        throw new Error('Solo se pueden vender productos de tipo FINISHED.');
-      }
 
       // Verificar stock
       if (product.stock < quantity) {
-        throw new Error(`Stock insuficiente. Disponible: ${product.stock}, Requerido: ${quantity}`);
+        throw new Error(`Stock insuficiente para desecho. Disponible: ${product.stock}, Requerido: ${quantity}`);
       }
 
-      // Crear el movimiento de salida
-      const saleMovement = await prisma.inventoryMovement.create({
+      // Crear el movimiento de salida por desecho
+      const wastageMovement = await tx.inventoryMovement.create({
         data: {
           productId: productId,
-          type: 'SALE',
+          type: 'WASTAGE',
           quantity: quantity,
           userId: userId,
-          notes: notes || `Venta de ${quantity} unidades.`
+          notes: notes,
         }
       });
 
@@ -184,13 +185,13 @@ router.post('/sale', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) =>
         data: { stock: { decrement: quantity } },
       });
 
-      return saleMovement;
+      return wastageMovement;
     });
 
     res.status(201).json(result);
 
   } catch (error) {
-    console.error("Error en la transacción de venta:", error.message);
+    console.error("Error en la transacción de desecho:", error.message);
     res.status(400).json({ error: error.message });
   }
 });
@@ -235,10 +236,19 @@ router.post('/reversal', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
         let stockChange;
         const isIncome = ['PURCHASE', 'PRODUCTION_IN', 'CUSTOMER_RETURN', 'ADJUSTMENT_IN'].includes(mov.type);
 
+        // --- NUEVA VALIDACIÓN ESTRICTA ---
         if (isIncome) {
+          // Si es una entrada, anularla implica una SALIDA de stock.
+          // Debemos verificar que tengamos suficiente stock para "devolver".
+          const product = await tx.product.findUnique({ where: { id: mov.productId } });
+          if (Number(product.stock) < Number(mov.quantity)) {
+            throw new Error(`No se puede anular el movimiento #${mov.id} porque el stock resultante de ${product.description} sería negativo (${Number(product.stock) - Number(mov.quantity)}). El material ya ha sido utilizado en otros procesos.`);
+          }
           reversalType = 'ADJUSTMENT_OUT';
           stockChange = { decrement: mov.quantity };
         } else {
+          // Si es una salida, anularla implica una ENTRADA de stock.
+          // Esto siempre es seguro para el inventario.
           reversalType = 'ADJUSTMENT_IN';
           stockChange = { increment: mov.quantity };
         }
@@ -256,7 +266,7 @@ router.post('/reversal', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
 
         await tx.product.update({
           where: { id: mov.productId },
-          data: { stock: { decrement: mov.quantity } },
+          data: { stock: stockChange },
         });
       }
 
@@ -333,7 +343,11 @@ router.get('/movements', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
     where.userId = parseInt(userId);
   }
   if (type) {
-    where.type = type;
+    if (type.includes(',')) {
+      where.type = { in: type.split(',') };
+    } else {
+      where.type = type;
+    }
   }
   if (startDate || endDate) {
     where.createdAt = {};
@@ -367,9 +381,16 @@ router.get('/movements', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
         user: {
           select: { name: true, email: true },
         },
-        externalProductionOrder: { // NEW
-          select: { id: true, orderNumber: true }, // NEW
-        }, // NEW
+        externalProductionOrder: { 
+          select: { id: true, orderNumber: true }, 
+        },
+        salesOrder: {
+          include: {
+            client: {
+              select: { name: true }
+            }
+          }
+        }
       },
     });
 

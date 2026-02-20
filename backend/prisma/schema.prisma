@@ -11,6 +11,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- SALES & CLIENT MODELS ---
+
+enum PaymentStatus {
+  PENDING
+  CREDITED
+  PAID_PARTIAL
+}
+
+model PriceTier {
+  id                 String  @id @default(cuid())
+  name               String  @unique
+  description        String?
+  discountPercentage Decimal @default(0) // e.g., 0.10 for 10% discount
+
+  clients   Client[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  address     String?
+  phone       String?
+  email       String?
+  priceTierId String?
+  
+  priceTier PriceTier? @relation(fields: [priceTierId], references: [id], onDelete: Restrict)
+  salesOrders SalesOrder[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesOrder {
+  id                    String      @id @default(cuid())
+  orderNumber           String      @unique // For a sales order number if needed (e.g., SO-YYYYMMDD-XXXX)
+  clientId              String
+  client                Client      @relation(fields: [clientId], references: [id])
+  date                  DateTime    @default(now())
+  paymentStatus         PaymentStatus @default(PENDING)
+  salesPlatform         String?     // "Plataforma de ventas" from Google Sheet
+  notes                 String?     // "Notas" from Google Sheet
+  totalAmount           Decimal     // Total for the entire order
+  items                 SalesOrderItem[]
+  inventoryMovement     InventoryMovement? @relation("SalesMovementLink") // Inverse relation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SalesOrderItem {
+  id            String    @id @default(cuid())
+  salesOrderId  String
+  salesOrder    SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id])
+  quantity      Decimal
+  unitPrice     Decimal // Price of this specific product in this sale
+  totalPrice    Decimal // quantity * unitPrice
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Product {
   id                String    @id @default(cuid())
   internalCode      String    @unique
@@ -42,6 +104,7 @@ model Product {
   assemblyJobs    ProductAssemblyJob[]
   // Relación con los costos indirectos
   overheadCosts   ProductOverhead[]
+  salesOrderItems SalesOrderItem[] // NEW inverse relation
 }
 
 model ProductComponent {
@@ -264,13 +327,16 @@ model InventoryMovement {
   createdAt DateTime     @default(now())
   eventId   String?
   externalProductionOrderId String? // New field
+  salesOrderId String? @unique // New field, unique for 1:1 link to SalesOrder
 
   product   Product      @relation(fields: [productId], references: [id])
   user      User         @relation(fields: [userId], references: [id])
   externalProductionOrder ExternalProductionOrder? @relation(fields: [externalProductionOrderId], references: [id]) // New relation
+  salesOrder              SalesOrder?              @relation("SalesMovementLink", fields: [salesOrderId], references: [id]) // New relation
 
   @@index([eventId])
   @@index([externalProductionOrderId]) // New index for the relation
+  @@index([salesOrderId]) // New index for the sales order relation
 }
 
 model OrderSequence {

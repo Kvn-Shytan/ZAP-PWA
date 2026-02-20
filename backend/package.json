@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "prisma generate && nodemon index.js",
-    "test": "set DATABASE_URL=postgresql://postgres:postgres@localhost:5433/zappwa_test && npx prisma generate && npx prisma migrate deploy && jest --detectOpenHandles --forceExit",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development npx prisma generate && nodemon -L --env-file ./.env.development index.js",
+    "test": "cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" npx prisma generate && cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" npx prisma migrate deploy && cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" jest --detectOpenHandles --forceExit",
+    "check-env": "echo %DATABASE_URL%",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -14,19 +15,23 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^2.0.3",
     "@prisma/client": "^6.16.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "winston": "^3.18.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.16.1",

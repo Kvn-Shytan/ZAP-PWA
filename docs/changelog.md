@@ -1,5 +1,25 @@
 # Changelog (Registro de Cambios)
 
+## 2026-01-28 (Integración Cloud, PWA y Corrección de Bugs Críticos)
+-   **[FEAT] Configuración de Infraestructura en Google Cloud:**
+    -   Creación y configuración del proyecto `zap-pwa` en GCP.
+    -   Habilitación de APIs esenciales (Compute, Cloud Run, Artifact Registry, Cloud Build, SQL Admin, Secret Manager).
+    -   Creación de instancia de Cloud SQL (PostgreSQL `zap-db`) y base de datos (`zap_pwa_db`).
+    -   Creación de usuario `zap_pwa_user` para la base de datos y almacenamiento seguro de la `DATABASE_URL` en Google Secret Manager.
+-   **[FEAT] Implementación Básica del Modo Offline (PWA):**
+    -   Instalación y configuración de `vite-plugin-pwa` para el frontend.
+    -   Generación automática de `manifest.webmanifest` y `sw.js` (Service Worker).
+    -   Configuración inicial de iconos para la PWA.
+    -   Implementación de estrategia `NetworkFirst` con caché para llamadas a la API (confirmado su funcionamiento para datos ya vistos online).
+    -   Confirmación de que el "App Shell" carga offline.
+-   **[FIX] Estabilización del Entorno de Desarrollo Local:**
+    -   Corrección de problemas de conexión del backend local a Cloud SQL mediante la configuración correcta de la `DATABASE_URL` en `backend/.env` (eliminando comillas y espacios, y usando `dotenv`).
+    -   Resolución de error de conectividad a la base de datos (IP pública no autorizada en Cloud SQL).
+    -   Aplicación de migraciones (`npx prisma migrate deploy`) y seed (`npx prisma db seed`) a la base de datos de Cloud SQL.
+    -   Corrección de error de CORS al conectar el frontend preview con el backend local.
+-   **[FIX] Bug Crítico en Panel de Logística:**
+    -   Resolución del bug que impedía a los usuarios `EMPLOYEE` ver y usar los botones de acción para órdenes en estado `PARTIALLY_RECEIVED` en el Panel de Logística.
+
 ## 2026-01-21 (Fase 15: Refinamientos de UI/UX y Flujos de Trabajo)
 -   **[FEAT/FIX] Refactorización y Corrección de Flujos de Tareas Logísticas:**
     -   **[FIX] UI/UX Modal "Pendientes":** Se corrigió el desbordamiento de texto en la vista de escritorio del modal "Pendientes" en la página de gestión de ensambladores.

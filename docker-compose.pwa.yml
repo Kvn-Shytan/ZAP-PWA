@@ -1,0 +1,9 @@
+# docker-compose.pwa.yml
+# Este archivo extiende la configuración base para habilitar el modo PWA en desarrollo.
+# Usar con: docker-compose -f docker-compose.yml -f docker-compose.pwa.yml up
+
+version: '3.8'
+services:
+  frontend:
+    environment:
+      VITE_PWA_DEV_ENABLED: "true"

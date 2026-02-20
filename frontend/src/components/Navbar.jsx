@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import NetworkStatusIndicator from './NetworkStatusIndicator'; // Import NetworkStatusIndicator
 import './Navbar.css';
 
 export default function Navbar() {
@@ -54,6 +55,10 @@ export default function Navbar() {
           </span>
           <span className="brand-suffix"> - FlowApp -</span>
         </Link>
+
+        {/* Network Status Indicator */}
+        <NetworkStatusIndicator /> {/* Placement here */}
+
         <button className="navbar-toggle" onClick={() => setIsOpen(!isOpen)}>
           <span className="bar"></span>
           <span className="bar"></span>
@@ -103,6 +108,7 @@ export default function Navbar() {
                 <button className="dropdown-toggle">Administración</button>
                 <ul className="dropdown-menu">
                   <li><Link to="/users">Gestión de Usuarios</Link></li>
+                  {user.role === 'ADMIN' && <li><Link to="/inventory-adjustments">Venta/Rechazo</Link></li>}
                   <li><Link to="/admin-tools">Otras Herramientas</Link></li>
                 </ul>
               </li>

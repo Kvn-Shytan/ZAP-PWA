@@ -12,6 +12,9 @@ const overheadCostsRoutes = require('./routes/overheadCosts.routes.js');
 const productDesignRoutes = require('./routes/productDesign.routes.js');
 const authRoutes = require('./routes/auth.routes.js');
 const dashboardRoutes = require('./routes/dashboard.routes.js'); // NUEVO: Importar dashboardRoutes
+const clientsRoutes = require('./routes/clients.routes.js'); // NEW
+const priceTiersRoutes = require('./routes/priceTiers.routes.js'); // NEW
+const salesRoutes = require('./routes/sales.routes.js'); // NEW
 const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
@@ -19,7 +22,20 @@ const app = express();
 const port = 3001;
 
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:5173' })); // Use cors middleware
+// Define allowed origins
+const allowedOrigins = ['http://localhost:4173', 'http://localhost:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
 
 app.get('/api/', (req, res) => {
   res.send('¡El Backend de ZAP PWA está funcionando!');
@@ -57,6 +73,15 @@ app.use('/api/users', usersRoutes);
 
 // Use inventory routes
 app.use('/api/inventory', inventoryRoutes);
+
+// Use clients routes
+app.use('/api/clients', clientsRoutes); // NEW
+
+// Use price tiers routes
+app.use('/api/price-tiers', priceTiersRoutes); // NEW
+
+// Use sales routes
+app.use('/api/sales', salesRoutes); // NEW
 
 // NUEVO: Usar dashboard routes
 app.use('/api/dashboard', dashboardRoutes);

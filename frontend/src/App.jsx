@@ -13,6 +13,8 @@ import ProductionOrderPage from './pages/ProductionOrderPage';
 import ProductComponentsPage from './pages/ProductComponentsPage';
 import PurchaseOrderPage from './pages/PurchaseOrderPage';
 import AdminToolsPage from './pages/AdminToolsPage';
+import PriceTierManagementPage from './pages/PriceTierManagementPage';
+import ClientManagementPage from './pages/ClientManagementPage';
 import ClassifyProductsPage from './pages/ClassifyProductsPage';
 import AssemblerManagementPage from './pages/AssemblerManagementPage';
 import OverheadCostPage from './pages/OverheadCostPage';
@@ -24,19 +26,25 @@ import AssemblerPaymentBatchPage from './pages/AssemblerPaymentBatchPage';
 import AssemblerPaymentsHistoryPage from './pages/AssemblerPaymentsHistoryPage';
 import DashboardPage from './pages/DashboardPage';
 import Navbar from './components/Navbar';
+import InventoryAdjustmentPage from './pages/InventoryAdjustmentPage';
+import ReceiptPage from './pages/ReceiptPage';
 import './App.css';
 
 function App() {
   const { user } = useAuth();
   const location = useLocation();
+  
+  // Hide navbar on login and receipt pages
+  const showNavbar = user && location.pathname !== '/login' && !location.pathname.startsWith('/receipt/');
 
   return (
     <> 
-      {/* Navigation bar - visible only if user is logged in AND not on the login page */}
-      {user && location.pathname !== '/login' && <Navbar />}
-      <main className={user && location.pathname !== '/login' ? 'main-content-with-navbar' : 'main-content'}>
+      {/* Navigation bar */}
+      {showNavbar && <Navbar />}
+      <main className={showNavbar ? 'main-content-with-navbar' : 'main-content'}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/receipt/:id" element={<ProtectedRoute element={<ReceiptPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
           {/* Default route - show DashboardPage for authenticated users */}
         <Route
           path="/"
@@ -80,6 +88,14 @@ function App() {
           element={<ProtectedRoute element={<AdminToolsPage />} allowedRoles={['ADMIN']} />}
         />
         <Route
+          path="/admin-tools/price-tiers"
+          element={<ProtectedRoute element={<PriceTierManagementPage />} allowedRoles={['ADMIN']} />}
+        />
+        <Route
+          path="/admin-tools/clients"
+          element={<ProtectedRoute element={<ClientManagementPage />} allowedRoles={['ADMIN']} />}
+        />
+        <Route
           path="/admin-tools/classify-products"
           element={<ProtectedRoute element={<ClassifyProductsPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
@@ -94,6 +110,10 @@ function App() {
         <Route
           path="/inventory-history"
           element={<ProtectedRoute element={<InventoryHistoryPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/inventory-adjustments" // New Route
+          element={<ProtectedRoute element={<InventoryAdjustmentPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/production-orders"

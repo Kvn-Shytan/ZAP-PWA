@@ -87,8 +87,12 @@ const LogisticsDashboardPage = () => {
         const allAssemblers = await assemblerService.getAssemblers();
         setAssemblers(allAssemblers);
       } catch (err) {
-        console.error("Failed to fetch initial data:", err);
-        setError(err.message);
+        if (err instanceof TypeError && err.message === 'Failed to fetch') {
+          console.warn('Offline: No se pudieron cargar datos iniciales (usuarios/armadores). Se usará el caché si está disponible.');
+        } else {
+          console.error("Failed to fetch initial data:", err);
+          setError(err.message);
+        }
       }
     };
     fetchInitialData();
@@ -283,7 +287,15 @@ const LogisticsDashboardPage = () => {
       handleModalClose();
       fetchOrders();
     } catch (err) {
-      alert(`Error al recibir la orden: ${err.message}`);
+      // If the error is a network error, assume it's been queued by the service worker
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        console.log('Offline: La solicitud ha sido encolada para sincronización.');
+        // Close the modal and let the user continue. The UI will sync when connection returns.
+        handleModalClose();
+      } else {
+        // For other errors (e.g., server errors, validation errors), show the message.
+        alert(`Error al recibir la orden: ${err.message}`);
+      }
     }
   };
 
@@ -407,11 +419,20 @@ const LogisticsDashboardPage = () => {
 
       case 'RETURN_IN_TRANSIT':
       case 'PARTIALLY_RECEIVED':
+        // Privileged users (SUPERVISOR/ADMIN) can always see these actions
         if (isPrivilegedUser) {
           return (
             <>
               <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>
               <button onClick={() => handleOpenAssignModal(order, 'pickup')} className="action-button gray-light">Reasignar Recogida</button>
+            </>
+          );
+        }
+        // Employees (pickupPerson) can only receive merchandise
+        if (isEmployee && isPickupPerson) {
+          return (
+            <>
+              <button onClick={() => handleOpenReceiveModal(order)} className="action-button green-light">Recibir Mercadería</button>
             </>
           );
         }

@@ -74,7 +74,7 @@ const ProductEditPage = () => {
   const handleCloseAssignModal = () => setIsAssignModalOpen(false);
 
   const handleAssemblyJobAssigned = (assignedAssemblyJob) => {
-    console.log('Received assigned job in ProductEditPage:', assignedAssemblyJob); // DEBUG
+
     
     // If the assigned job is new, add it to the options list
     if (!assemblyJobOptions.some(opt => opt.value === assignedAssemblyJob.value)) {

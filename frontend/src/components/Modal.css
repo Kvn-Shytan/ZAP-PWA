@@ -12,16 +12,20 @@
 
 .modal-content {
   position: fixed;
-  top: 50%;
+  top: 80px; /* Space for the fixed navbar (usually ~60-70px) */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   background-color: white;
-  padding: 2rem;
+  padding: 1.5rem;
   z-index: 1000;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  width: 400px; /* Base width */
-  max-width: 90%; /* Responsive adjustment */
+  width: 450px; /* Base width slightly wider */
+  max-width: 95%; /* Responsive adjustment */
+  max-height: calc(100vh - 100px); /* Adjust height relative to the new top position */
+  overflow-y: auto; /* Enable vertical scrolling for content */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Styles for modal inner containers */

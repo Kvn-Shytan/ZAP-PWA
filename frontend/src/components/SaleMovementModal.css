@@ -1,0 +1,164 @@
+/* SaleMovementModal.css */
+
+.sale-modal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  /* El ancho se controla ahora desde el componente Modal genérico o mediante una clase extra */
+}
+
+/* Forzar un ancho mayor para este modal específico en escritorio */
+@media (min-width: 768px) {
+  .modal-content.sale-modal-container {
+    width: 900px !important;
+    max-width: 95vw;
+  }
+}
+
+.sale-section {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.sale-section-title {
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.client-selection-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.client-info-display {
+  background: #eef2f7;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  border-left: 4px solid #007bff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item-add-box {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.item-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Tabla de items agregados */
+.items-list-container {
+  margin-top: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.items-list-header {
+  display: grid;
+  grid-template-columns: 2fr 80px 100px 100px 40px;
+  padding: 0.5rem;
+  background: #343a40;
+  color: white;
+  font-weight: bold;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.items-list-body {
+  max-height: 150px;
+  overflow-y: auto;
+  background: white;
+}
+
+.sale-item-row {
+  display: grid;
+  grid-template-columns: 2fr 80px 100px 100px 40px;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.sale-item-description {
+  text-align: left;
+  padding-left: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sale-item-total {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.sale-total-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 2px solid var(--primary-color);
+}
+
+.sale-total-label {
+  font-size: 1rem;
+  color: #666;
+}
+
+.sale-total-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+/* Responsividad para Escritorio */
+@media (min-width: 768px) {
+  .client-selection-row {
+    grid-template-columns: 3fr 2fr;
+  }
+
+  .item-inputs-grid {
+    grid-template-columns: 2fr 100px 100px 80px auto;
+    align-items: flex-end;
+  }
+
+  .items-list-header, .sale-item-row {
+    grid-template-columns: 3fr 100px 150px 150px 50px;
+  }
+}
+
+/* Estilos de botones dentro del modal para que sean más compactos */
+.sale-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.stock-warning {
+  color: #dc3545;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: bold;
+}

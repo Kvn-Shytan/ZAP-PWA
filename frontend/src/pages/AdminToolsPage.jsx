@@ -21,6 +21,14 @@ const AdminToolsPage = () => {
           <h2>Gestionar Trabajos de Ensamblaje</h2>
           <p>Define y gestiona los tipos de trabajos de ensamblaje y sus precios.</p>
         </Link>
+        <Link to="/admin-tools/price-tiers" className="tool-card">
+          <h2>Gestionar Niveles de Precio</h2>
+          <p>Define los niveles de descuento dinámicos para clientes.</p>
+        </Link>
+        <Link to="/admin-tools/clients" className="tool-card">
+          <h2>Gestionar Clientes</h2>
+          <p>Administra la base de datos de clientes y sus niveles de precio.</p>
+        </Link>
         {/* Próximamente: aquí irán más tarjetas o enlaces a las herramientas */}
       </div>
     </div>

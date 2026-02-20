@@ -160,11 +160,55 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
     
 
-    -   **Fase 6: Funcionalidad Offline y PWA (Pendiente)**
+    -   **Fase 6: Funcionalidad Offline y PWA**
 
-        -   `[ ]` Implementar Service Workers para el funcionamiento offline.
+    
 
-        -   `[ ]` Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio.
+        -   `[x]` Configuración del entorno PWA: Integración de `vite-plugin-pwa` y generación de Service Worker/Manifest.
+
+    
+
+        -   `[x]` Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio (App Shell precaching).
+
+    
+
+        -   `[x]` Implementación inicial de caché de APIs (estrategia `NetworkFirst`) para datos dinámicos.
+
+    
+
+        -   `[ ]` **Fase 6.1: Precaching Proactivo y Lectura Offline-First (En Curso)**
+
+    
+
+            -   `[ ]` Modificar `vite.config.js` para usar estrategia `StaleWhileRevalidate` en APIs críticas (dashboard, external production orders).
+
+    
+
+            -   `[ ]` Implementar llamadas proactivas a APIs críticas después del login para poblar caché.
+
+    
+
+        -   `[ ]` **Fase 6.2: Entrada y Sincronización de Datos Offline (Pendiente)**
+
+    
+
+            -   `[ ]` Implementar almacenamiento local de acciones pendientes (IndexedDB).
+
+    
+
+            -   `[ ]` Integrar Workbox Background Sync para sincronización de cambios al recuperar conexión.
+
+    
+
+            -   `[ ]` Diseñar backend para idempotencia de acciones.
+
+    
+
+            -   `[ ]` Implementar feedback visual de sincronización.
+
+    
+
+            -   `[ ]` Implementar feedback visual de sincronización.
 
     
 
@@ -386,7 +430,38 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
             ---
 
-    -   **Fase 12: Consolidación y Estabilización (Completada)**
+        -   **Fase 11.5: Gestión de Clientes y Ventas (Módulo `SalesOrder`)**
+        > **Objetivo:** Implementar un sistema robusto para la gestión de clientes, precios dinámicos por tiers y el ciclo de vida completo de las órdenes de venta, incluyendo la generación de recibos.
+
+        *   `[x]` **11.5.1: Modificaciones del Esquema (`schema.prisma`):**
+            *   `[x]` Crear modelo `PriceTier` (name, description, discountPercentage).
+            *   `[x]` Crear modelo `Client` (name, address, phone, email, priceTierId).
+            *   `[x]` Crear enum `PaymentStatus` (PENDING, CREDITED, PAID_PARTIAL).
+            *   `[x]` Crear modelo `SalesOrder` (clientId, date, paymentStatus, salesPlatform, notes, totalAmount, items, inventoryMovementId).
+            *   `[x]` Crear modelo `SalesOrderItem` (salesOrderId, productId, quantity, unitPrice, totalPrice).
+            *   `[x]` Modificar `InventoryMovement`: Añadir `salesOrderId`, eliminar `clientId`, `unitPrice`, `totalPrice`, `paymentStatus`, `salesPlatform`.
+            *   `[x]` Generar nueva migración de base de datos.
+        *   `[x]` **11.5.2: Backend - API para `PriceTier` y `Client`:**
+            *   `[x]` Crear `priceTiers.routes.js` (CRUD para `PriceTier`).
+            *   `[x]` Crear `clients.routes.js` (CRUD para `Client`).
+        *   `[x]` **11.5.3: Backend - API para `SalesOrder`:**
+            *   `[x]` Crear `sales.routes.js` (API para crear `SalesOrder`, que incluya la lógica de stock).
+            *   `[x]` Modificar `POST /api/inventory/sale` para usar la lógica de `SalesOrder`.
+        *   `[x]` **11.5.4: Frontend - UI para Gestión de `PriceTier` y `Client`:**
+            *   `[x]` Página de Gestión de `PriceTier` (CRUD, accesible desde "Admin Tools").
+            *   `[x]` Página de Gestión de Clientes (CRUD, asignación de `PriceTier`, accesible desde "Admin Tools").
+        *   `[x]` **11.5.5: Frontend - UI para `SalesOrder` y Recibos:**
+            *   `[x]` Modal `SaleMovementModal.jsx` (selección de producto, cliente, cantidad, precio unitario sugerido/override, precio total calculado, estado de pago, notas, plataforma de ventas).
+            *   `[x]` Integración en `InventoryAdjustmentPage.jsx` para mostrar datos de `SalesOrder`/`SalesOrderItem` y vista móvil optimizada (tarjetas).
+            *   `[x]` Implementar generación de recibo profesional (Remito ZAP4) con página independiente para impresión (`/receipt/:id`).
+        *   `[x]` **11.5.6: Tests del Backend:**
+            *   `[x]` Corregir errores de `Foreign key constraint` actualizando el orden de limpieza en los `beforeEach` de todos los tests.
+            *   `[x]` Corregir aserciones de Zod y lógica en los tests de `sales`, `clients`, `priceTiers`, `products`, `externalProductionOrders`.
+        *   `[x]` **11.5.7: Lógica de Stock Especial:**
+            *   `[x]` Permitir stock negativo exclusivamente para Órdenes de Venta.
+            *   `[x]` Implementar bloqueo estricto de stock negativo en Anulaciones y Producción.
+
+-   **Fase 12: Consolidación y Estabilización (Completada)**
         *   `[x]` Todos los cambios de refactorización y mejoras de UI/UX, así como las correcciones de errores, se han integrado con éxito en la rama `master`.
         *   `[x]` La aplicación se considera estable y lista para futuras fases de desarrollo.
 
@@ -408,7 +483,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   **Acciones Frontend:**
             *   `[x]` **(UI):** Implementar la gestión de armadores con botones de acción "Pendientes", "Editar" y "Eliminar".
             *   `[x]` **(UI):** Re-integrar la funcionalidad de edición en línea dentro de la página de gestión de armadores.
-            *   `[x]` **(UI):** Implementar un modal "Pendientes" que muestre los productos finales y materias primas pendientes del armador, con correcciones visuales para escritorio y submenú colapsable.
+            -   `[x]` **(UI):** Implementar un modal "Pendientes" que muestre los productos finales y materias primas pendientes del armador, con correcciones visuales para escritorio y submenú colapsable.
 
     *   **13.2: Alertas por Inactividad (Pendiente)**
         *   **Objetivo:** Notificar a Supervisores y Administradores si una orden no presenta cambios de estado por más de 3 días hábiles.
@@ -470,71 +545,95 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     
 <br>
 
--   **Fase 16: Implementación de Capacidades PWA (Offline y Instalación) (Pendiente)**
-    > **Objetivo:** Convertir la aplicación web en una Progressive Web App (PWA) instalable, con funcionamiento offline para las funcionalidades clave, cumpliendo con uno de los requisitos fundamentales del proyecto.
+-   **Fase 16 (Prioridad Alta): Infraestructura Cloud y Despliegue Inicial**
+    > **Objetivo:** Poner la aplicación en un entorno de producción mínimo y de bajo costo para empezar a trabajar en la funcionalidad PWA y validar el despliegue.
 
-    *   **16.1: Hacer la Aplicación "Instalable" (Web App Manifest)**
-        *   `[ ]` **Acción (Frontend):** Crear el archivo `frontend/public/manifest.json`.
-        *   `[ ]` **Contenido:** Definir las propiedades clave de la PWA: `name`, `short_name`, `description`, `start_url`, `display` (standalone), `background_color`, `theme_color` e `icons`.
-        *   `[ ]` **Acción (Frontend):** Preparar y añadir iconos de la aplicación en diferentes tamaños (ej. 192x192, 512x512) en la carpeta `frontend/public/icons/`.
-        *   `[ ]` **Acción (Frontend):** Vincular el manifest en `frontend/index.html` usando `<link rel="manifest" href="/manifest.json">`.
-        *   `[ ]` **Verificación:** Utilizar la pestaña "Application" en las herramientas de desarrollador de Chrome para confirmar que el manifest se carga y es válido.
-
-    *   **16.2: Implementar Funcionalidad Offline Básica (Service Worker)**
-        *   `[ ]` **Acción (Frontend):** Crear el archivo del Service Worker `frontend/public/sw.js`.
-        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `install` para crear un caché (ej. `zap-flowapp-cache-v1`) y precargar los recursos estáticos de la "App Shell" (HTML, CSS, JS, iconos).
-        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `fetch` con una estrategia "Cache First" para los assets estáticos. Si el recurso está en caché, se sirve desde ahí; si no, se busca en la red.
-        *   `[ ]` **Acción (Frontend - sw.js):** Implementar el evento `activate` para gestionar y eliminar cachés antiguas, asegurando que los usuarios reciban actualizaciones.
-        *   `[ ]` **Acción (Frontend):** Registrar el Service Worker en `frontend/src/main.jsx`, asegurándose de que el navegador del usuario lo instale.
-        *   `[ ]` **Verificación:** Usar las herramientas de desarrollador para simular el modo offline y verificar que la aplicación carga su interfaz básica.
-
-    *   **16.3: Estrategia de Caching para Datos Dinámicos (API)**
-        *   `[ ]` **Acción (Frontend - sw.js):** Mejorar el evento `fetch` para manejar las peticiones a la API (`/api/`).
-        *   `[ ]` **Estrategia:** Implementar una estrategia "Network First, then Cache" para las peticiones `GET`. La app intentará obtener datos frescos de la red, pero si no hay conexión, servirá la última versión guardada en el caché.
-        *   `[ ]` **(Avanzado - Opcional):** Implementar "Background Sync" para las peticiones `POST` y `PUT`. Si el usuario crea o modifica algo offline, la petición se guarda y se envía automáticamente cuando se recupera la conexión.
+    *   `[ ]` **16.1: Configuración de Google Cloud:**
+        *   Crear proyecto en GCP, habilitar APIs (Cloud Run, Cloud SQL, Artifact Registry, Secret Manager).
+    *   `[ ]` **16.2: Despliegue de la Base de Datos:**
+        *   Crear instancia de Cloud SQL (PostgreSQL) usando el tamaño más pequeño (`db-f1-micro`) para minimizar costos.
+        *   Almacenar la contraseña en Secret Manager.
+        *   Ejecutar las migraciones de Prisma en la base de datos de la nube.
+    *   `[ ]` **16.3: Despliegue del Backend:**
+        *   Optimizar `backend/Dockerfile` para producción.
+        *   Subir la imagen de Docker a Artifact Registry.
+        *   Desplegar el backend en Cloud Run, inyectando los secretos de la base de datos.
+    *   `[ ]` **16.4: Despliegue del Frontend:**
+        *   Configurar `VITE_API_URL` para que apunte al backend en Cloud Run.
+        *   Desplegar los archivos estáticos del frontend usando Firebase Hosting.
 
 <br>
 
--   **Fase 17: Despliegue en la Nube y Puesta en Producción (Pendiente)**
-    > **Objetivo:** Mover la aplicación desde el entorno de desarrollo local a una infraestructura en la nube robusta, segura y siempre disponible, permitiendo el acceso desde cualquier dispositivo con internet.
+-   **Fase 17 (Paralelo): Implementación de Service Worker Básico (PWA)**
+    > **Objetivo:** Hacer la aplicación instalable y cachear la "App Shell" para que la interfaz básica cargue instantáneamente y offline.
 
-    *   **17.1: Preparación del Entorno de Nube**
-        *   `[ ]` **Acción (Infra):** Crear un nuevo proyecto en Google Cloud Platform (GCP).
-        *   `[ ]` **Acción (Infra):** Habilitar las APIs necesarias: Cloud Run, Cloud SQL, Artifact Registry, Secret Manager.
-        *   `[ ]` **Acción (Infra):** Configurar la facturación y aprovechar los créditos gratuitos para nuevos usuarios.
+    *   `[ ]` **17.1: Crear el Web App Manifest (`manifest.json`):** Definir nombre, iconos, colores y `display: standalone`.
+    *   `[ ]` **17.2: Crear el Service Worker (`sw.js`):** Implementar el evento `install` para cachear los archivos estáticos principales (HTML, CSS, JS).
+    *   `[ ]` **17.3: Implementar Estrategia "Cache First":** En el evento `fetch` del Service Worker, servir los archivos estáticos desde el caché primero.
+    *   `[ ]` **17.4: Registrar el Service Worker:** Añadir el código de registro en `main.jsx`.
 
-    *   **17.2: Despliegue de la Base de Datos**
-        *   `[ ]` **Acción (Infra):** Crear una instancia de **Google Cloud SQL** con PostgreSQL.
-        *   `[ ]` **Configuración:** Elegir la instancia más pequeña (`db-f1-micro`) para mantener los costos bajos (~$7-10/mes).
-        *   `[ ]` **Seguridad:** Configurar la contraseña de la base de datos y almacenarla de forma segura en **Google Secret Manager**.
-        *   `[ ]` **Acción (DB):** Migrar el esquema de la base de datos local a la base de datos en la nube ejecutando las migraciones de Prisma.
+<br>
 
-    *   **17.3: Despliegue del Backend**
-        *   `[ ]` **Acción (Código):** Optimizar `backend/Dockerfile` para producción (builds multi-etapa, dependencias de producción únicamente).
-        *   `[ ]` **Acción (Infra):** Crear un repositorio en **Google Artifact Registry** para almacenar las imágenes de Docker.
-        *   `[ ]` **Acción (CI/CD):** Construir la imagen Docker del backend y subirla a Artifact Registry.
-        *   `[ ]` **Acción (Infra):** Crear un nuevo servicio en **Google Cloud Run** y desplegar la imagen del backend desde Artifact Registry.
-        *   `[ ]` **Configuración:**
-            *   Inyectar la contraseña de la base de datos desde Secret Manager como una variable de entorno.
-            *   Configurar la URL de la base de datos en la nube.
-            *   Asegurar que el servicio tenga una URL pública y siempre disponible.
+-   **Fase 18 (Continua): Desarrollo "Offline-First"**
+    > **Objetivo:** Construir todas las nuevas funcionalidades aplicando un patrón offline.
 
-    *   **17.4: Despliegue del Frontend**
-        *   `[ ]` **Opción A (Recomendada): Firebase Hosting**
-            *   `[ ]` **Acción (Infra):** Crear un proyecto de Firebase y vincularlo al proyecto de GCP.
-            *   `[ ]` **Acción (Frontend):** Instalar las herramientas de Firebase CLI y configurar el proyecto en `frontend/`.
-            *   `[ ]` **Acción (Frontend):** Configurar el `VITE_API_URL` en las variables de entorno para que apunte a la URL pública del backend en Cloud Run.
-            *   `[ ]` **Acción (CI/CD):** Ejecutar el build de producción de React (`npm run build`) y desplegar los archivos estáticos a Firebase Hosting.
-        *   `[ ]` **Opción B: Google Cloud Run**
-            *   `[ ]` **Acción (Código):** Optimizar `frontend/Dockerfile` para producción (build multi-etapa con Nginx).
-            *   `[ ]` **Acción (CI/CD):** Construir y subir la imagen Docker del frontend a Artifact Registry.
-            *   `[ ]` **Acción (Infra):** Desplegar la imagen en un nuevo servicio de Cloud Run.
+    *   `[ ]` **18.1: Definir la Estrategia de Datos Offline:**
+        *   Investigar e implementar una librería para gestionar `IndexedDB` (ej. `dexie.js`) para almacenar los datos de la aplicación en el navegador.
+    *   `[ ]` **18.2: Implementar Sincronización en Segundo Plano:**
+        *   Utilizar la API de "Background Sync" en el Service Worker para encolar las modificaciones (`POST`, `PUT`, `DELETE`) realizadas sin conexión y enviarlas a la API cuando se recupere la conectividad.
+    *   `[ ]` **18.3: Aplicar el Patrón a Nuevas Funcionalidades:**
+        *   Todas las nuevas funcionalidades se desarrollarán con la arquitectura "Offline-First": la UI interactúa principalmente con `IndexedDB` y la sincronización es un proceso de fondo.
 
-    *   **17.5: Verificación Final**
-        *   `[ ]` **Acción:** Acceder a la URL pública del frontend (ej. `https://zap-flowapp.web.app`).
-        *   `[ ]` **Prueba:** Verificar que la aplicación funciona, se conecta al backend en la nube y que las capacidades PWA (instalación y offline) están activas.
+<br>
+
+-   **Fase 13.2: Alertas por Inactividad (Re-priorizada, Pendiente)**
+    > **Objetivo:** Notificar a Supervisores y Administradores si una orden no presenta cambios de estado por más de 3 días hábiles. Se puede desarrollar en paralelo una vez que el backend esté en la nube.
+
+    *   **Acciones Backend:**
+        *   `[ ]` **(DB):** Crear nueva tabla `Alert` para almacenar las notificaciones generadas.
+        *   `[ ]` **(Infra):** Implementar un trabajo programado (`scheduled job`) diario en el backend (ej. Cloud Scheduler).
+        *   `[ ]` **(Job):** El job escaneará órdenes en estado `IN_ASSEMBLY`, y si no han tenido cambios por 3 días hábiles (Lun-Sab), creará una alerta.
+        *   `[ ]` **(API):** Crear endpoints para leer (`GET /api/alerts`) y desestimar temporalmente (`POST /api/alerts/:id/dismiss`) las alertas.
+        *   `[ ]` **(API):** Implementar la lógica para que una alerta se resuelva automáticamente cuando el estado de la orden asociada cambie.
+    *   **Acciones Frontend:**
+        *   `[ ]` **(UI):** Añadir una sección de "Alertas" en el dashboard de `SUPERVISOR` y `ADMIN`.
+        *   `[ ]` **(UI):** Cada alerta deberá tener un botón para "Desestimar".
+
+<br>
+
+-   **Fase 14: Gestión de Rechazos y Control de Calidad (Re-priorizada, Siguiente)**
+    > **Objetivo:** Implementar un sistema robusto para gestionar material defectuoso, separando el proceso logístico del de calidad. **Esta será la primera funcionalidad en ser desarrollada con la arquitectura "Offline-First" (Fase 18).**
+
+    *   **14.1: Control de Calidad en Recepción y Ajuste de Pago (Pendiente)**
+        *   `[ ]` **(DB):** Crear tabla `RejectedMaterialLog` para un historial auditable de rechazos.
+        *   `[ ]` **(API):** Refactorizar el endpoint de recepción del supervisor para aceptar `quantityAccepted` y `quantityRejected`.
+        *   `[ ]` **(API):** La lógica de recepción aumentará el stock con las unidades aceptadas, creará un movimiento de desecho (`WASTE_OUT`) con las rechazadas, y guardará el registro en `RejectedMaterialLog`.
+        *   `[ ]` **(API):** Modificar la API de cálculo de pagos para que reste el valor de las unidades marcadas con `deductFromAssemblerPayment: true`.
+        *   `[ ]` **(UI - Supervisor):** El modal de recepción del supervisor tendrá campos para "Cantidad Aceptada" y "Cantidad Rechazada", y un checkbox `[ ] ¿Descontar del pago?`.
+
+    *   **14.2: Herramienta de Ajuste General de Inventario por Rechazo (Pendiente)**
+        *   `[ ]` **(UI):** Crear una nueva página en "Inventario": "Gestión de Rechazos".
+        *   `[ ]` **(UI):** La página contendrá un formulario simple para seleccionar un producto, cantidad y una razón para el ajuste.
+        *   `[ ]` **(API):** Crear un endpoint `POST /api/inventory/reject-general` que cree el `InventoryMovement` de tipo `WASTE_OUT` y el registro correspondiente en `RejectedMaterialLog`.
+
         
     ## 2. Changelog (Registro de Cambios)
+
+## 2026-02-18 (Fase 11.5: Módulo de Ventas, Clientes y Recibos - Completado)
+-   **[FEAT] Backend: Implementación Integral de Ventas:**
+    -   Finalizado el endpoint de creación de ventas con generación de número de orden único (`SO-YYMMDD-NNNN`) y control de secuencia por base de datos.
+    -   Implementada lógica de stock permisiva para ventas (permite stock negativo) y restrictiva para el resto de movimientos (anulaciones, producción).
+    -   Creado endpoint `GET /api/sales/:id` para recuperación de detalles de venta.
+-   **[FEAT] Frontend: Gestión de Clientes y Precios Dinámicos:**
+    -   Creadas páginas CRUD para `PriceTier` (niveles de descuento) y `Client`.
+    -   Implementado modal de venta interactivo con búsqueda en tiempo real (`AsyncSelect`), cálculo automático de descuentos y soporte multi-ítem.
+-   **[FEAT] Impresión Profesional de Recibos:**
+    -   Diseñado componente `PrintableReceipt` replicando fielmente el remito ZAP4 (estilo Canva).
+    -   Implementada página dedicada `/receipt/:id` para impresión limpia, eliminando interferencias de UI.
+-   **[FIX] Estabilidad y UX:**
+    -   Corregidos todos los tests de integración del backend (45/45 pass).
+    -   Refactorizada la página de "Venta / Rechazo" con vista de tarjetas optimizada para móviles.
+    -   Resueltos problemas de scroll y posicionamiento de modales en escritorio y móvil.
 
 ## 2026-01-19 (Fase 13.1: Inventario de Armadores - Progreso y Bugfix)
 -   **[FEAT] Backend: Implementación de Control de Inventario Externo para Armadores:**

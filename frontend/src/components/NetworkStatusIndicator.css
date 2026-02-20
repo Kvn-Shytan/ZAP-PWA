@@ -1,0 +1,94 @@
+/* frontend/src/components/NetworkStatusIndicator.css */
+
+.network-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spacing between dot and text */
+    padding: 4px 8px;
+    border-radius: 12px; /* Pill shape */
+    font-size: 0.85em;
+    font-weight: 600;
+    color: white; /* Default text color */
+    white-space: nowrap; /* Prevent text from wrapping */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.indicator-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Subtle border for visibility */
+    transition: background-color 0.3s ease;
+}
+
+/* --- Loading State --- */
+.network-status-indicator.loading {
+    background-color: #6c757d; /* Bootstrap secondary gray */
+    border: 1px solid #6c757d;
+}
+
+.indicator-dot.loading {
+    background-color: #adb5bd; /* Lighter gray for dot */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* --- Online State (Green) --- */
+.network-status-indicator.online {
+    background-color: #28a745; /* Bootstrap success green */
+    border: 1px solid #28a745;
+}
+
+.indicator-dot.online {
+    background-color: #20c997; /* Lighter green */
+}
+
+/* --- Pending Sync State (Yellow) --- */
+.network-status-indicator.pending-sync {
+    background-color: #ffc107; /* Bootstrap warning yellow */
+    border: 1px solid #ffc107;
+    color: #343a40; /* Darker text for contrast on yellow */
+}
+
+.indicator-dot.pending-sync {
+    background-color: #fd7e14; /* Orange-ish for dot */
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* --- Offline State (Gray) --- */
+.network-status-indicator.offline {
+    background-color: #6c757d; /* Bootstrap secondary gray */
+    border: 1px solid #6c757d;
+}
+
+.indicator-dot.offline {
+    background-color: #adb5bd; /* Lighter gray for dot */
+}
+
+/* Pulsing animation for loading and pending states */
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+}
+
+/* Responsive adjustments if needed for very small screens */
+@media (max-width: 576px) {
+    .network-status-indicator {
+        font-size: 0.75em;
+        padding: 3px 6px;
+        gap: 6px;
+    }
+    .indicator-dot {
+        width: 8px;
+        height: 8px;
+    }
+}
