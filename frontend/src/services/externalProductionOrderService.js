@@ -1,4 +1,5 @@
 import { apiFetch } from './api';
+import { db } from './db'; // Importar la instancia de Dexie
 
 export const externalProductionOrderService = {
   /**
@@ -6,12 +7,25 @@ export const externalProductionOrderService = {
    * @param {object} orderData - Los datos de la orden (assemblerId, productId, quantity, etc.)
    * @returns {Promise<object>} - La nueva orden creada.
    */
-  createOrder(orderData, mode = 'commit') {
+  async createOrder(orderData, mode = 'commit') {
     const query = mode === 'dry-run' ? '?mode=dry-run' : '';
-    return apiFetch(`/external-production-orders${query}`, {
+    const newOrder = await apiFetch(`/external-production-orders${query}`, {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
+
+    // Si la orden se creó con éxito y no es una simulación, la guardamos localmente
+    if (newOrder && mode === 'commit') {
+      try {
+        await db.externalProductionOrders.add(newOrder);
+        console.log('Nueva orden guardada en la base de datos local.');
+      } catch (error) {
+        console.error('Error al guardar la orden localmente:', error);
+        // No bloqueamos al usuario si falla el guardado local, ya se sincronizará luego
+      }
+    }
+
+    return newOrder;
   },
 
   /**

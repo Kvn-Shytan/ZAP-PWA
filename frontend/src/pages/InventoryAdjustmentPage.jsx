@@ -20,6 +20,20 @@ const InventoryAdjustmentPage = () => {
     search: '', 
   });
   
+  const [searchInput, setSearchInput] = useState(''); // Estado local para el input visual
+
+  // Implementación del Debounce para la búsqueda
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchInput }));
+      setCurrentPage(1); // Reiniciar a la primera página al buscar
+    }, 1000); // 1000ms de retraso (1 segundo)
+
+    return () => {
+      clearTimeout(handler); // Limpiar el timeout si el usuario sigue escribiendo
+    };
+  }, [searchInput]);
+
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   
   const pageSize = 15;
@@ -111,9 +125,9 @@ const InventoryAdjustmentPage = () => {
         <input 
           type="text" 
           name="search" 
-          value={filters.search} 
-          onChange={handleFilterChange} 
-          placeholder="Buscar producto..." 
+          value={searchInput} 
+          onChange={(e) => setSearchInput(e.target.value)} 
+          placeholder="Buscar producto, cliente..." 
           className="search-input"
         />
         <select name="type" value={filters.type} onChange={handleFilterChange}>

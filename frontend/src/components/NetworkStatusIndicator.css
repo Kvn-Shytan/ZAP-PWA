@@ -1,94 +1,79 @@
-/* frontend/src/components/NetworkStatusIndicator.css */
-
 .network-status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Spacing between dot and text */
-    padding: 4px 8px;
-    border-radius: 12px; /* Pill shape */
-    font-size: 0.85em;
-    font-weight: 600;
-    color: white; /* Default text color */
-    white-space: nowrap; /* Prevent text from wrapping */
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  background-color: transparent;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.network-status-indicator.interactive {
+  cursor: pointer;
+}
+
+.network-status-indicator.interactive:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .indicator-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.5); /* Subtle border for visibility */
-    transition: background-color 0.3s ease;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0; /* Prevents dot from shrinking */
 }
 
-/* --- Loading State --- */
+/* Loading State */
 .network-status-indicator.loading {
-    background-color: #6c757d; /* Bootstrap secondary gray */
-    border: 1px solid #6c757d;
+  background-color: #f0f0f0; /* Light gray background */
+  color: #666;
 }
-
 .indicator-dot.loading {
-    background-color: #adb5bd; /* Lighter gray for dot */
-    animation: pulse 1.5s infinite ease-in-out;
+  background-color: #999;
+  animation: pulse 1.5s infinite ease-in-out;
 }
 
-/* --- Online State (Green) --- */
+/* Online State */
 .network-status-indicator.online {
-    background-color: #28a745; /* Bootstrap success green */
-    border: 1px solid #28a745;
+  background-color: #e8f5e9; /* Light green */
+  color: #2e7d32; /* Dark green */
 }
-
 .indicator-dot.online {
-    background-color: #20c997; /* Lighter green */
+  background-color: #4caf50; /* Bright green */
 }
 
-/* --- Pending Sync State (Yellow) --- */
-.network-status-indicator.pending-sync {
-    background-color: #ffc107; /* Bootstrap warning yellow */
-    border: 1px solid #ffc107;
-    color: #343a40; /* Darker text for contrast on yellow */
-}
-
-.indicator-dot.pending-sync {
-    background-color: #fd7e14; /* Orange-ish for dot */
-    animation: pulse 1.5s infinite ease-in-out;
-}
-
-/* --- Offline State (Gray) --- */
+/* Offline State */
 .network-status-indicator.offline {
-    background-color: #6c757d; /* Bootstrap secondary gray */
-    border: 1px solid #6c757d;
+  background-color: #ffebee; /* Light red */
+  color: #c62828; /* Dark red */
 }
-
 .indicator-dot.offline {
-    background-color: #adb5bd; /* Lighter gray for dot */
+  background-color: #f44336; /* Bright red */
 }
 
-/* Pulsing animation for loading and pending states */
+/* Pending Sync State */
+.network-status-indicator.pending-sync {
+  background-color: #fff3e0; /* Light orange */
+  color: #e65100; /* Dark orange */
+}
+.indicator-dot.pending-sync {
+  background-color: #ffa726; /* Bright orange */
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
 @keyframes pulse {
-    0% {
-        transform: scale(0.8);
-        opacity: 0.7;
-    }
-    50% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0.8);
-        opacity: 0.7;
-    }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
-/* Responsive adjustments if needed for very small screens */
-@media (max-width: 576px) {
-    .network-status-indicator {
-        font-size: 0.75em;
-        padding: 3px 6px;
-        gap: 6px;
-    }
-    .indicator-dot {
-        width: 8px;
-        height: 8px;
-    }
-}

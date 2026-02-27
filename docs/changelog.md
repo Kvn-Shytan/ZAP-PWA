@@ -1,5 +1,22 @@
 # Changelog (Registro de Cambios)
 
+## 2026-02-26 (Arquitectura "Logística Inmortal" y Sincronización Proactiva)
+-   **[FEAT] Arquitectura Offline-First (Local-First):**
+    -   Integración de `dexie` y `dexie-react-hooks` para almacenamiento local (IndexedDB).
+    -   Refactorización del Panel de Logística (`LogisticsDashboardPage`) para leer datos directamente de la base local usando `useLiveQuery`, garantizando funcionamiento sin conexión y tiempos de carga instantáneos.
+    -   Creación de `SyncService` para manejar la descarga inicial (`initialSync`) tras el login y la sincronización incremental (`deltaSync`).
+-   **[FEAT] Sincronización Híbrida y Proactiva:**
+    -   Implementación de `triggerSync` en `SyncContext` para forzar la sincronización inmediata tras cada acción del usuario (asignar, entregar, recibir, cancelar, etc.), eliminando la sensación de "retraso".
+    -   La aplicación ahora detecta automáticamente cuando recupera la conexión a internet y ejecuta una sincronización de fondo.
+    -   Seguridad mejorada: Borrado automático de la base de datos local de Dexie al cerrar sesión (`logout`) para evitar brechas de seguridad en dispositivos compartidos.
+-   **[FEAT] Backend: Hidratación de Respuestas y Endpoints de Sincronización:**
+    -   Nuevos endpoints `/api/external-production-orders/active` y `GET /api/products?all=true` para optimizar la descarga masiva de datos iniciales.
+    -   Los endpoints de creación (`POST /`), asignación de retiro (`POST /:id/assign-pickup`) y recepción de mercadería (`POST /:id/receive`) de órdenes externas ahora devuelven el objeto completamente "hidratado" (con todas sus relaciones: `assembler`, `items`, `expectedOutputs`, usuarios). Esto elimina errores de UI (como los `.map()` fallidos en la recepción) al actualizar el estado local de forma optimista.
+-   **[FIX] Refinamientos de UI/UX y Rendimiento:**
+    -   Resolución del problema de los "N/A" temporales en el Panel de Logística (las relaciones de Armador y Usuario asignado ahora se resuelven cruzando IDs con los diccionarios locales en lugar de depender de la anidación del backend).
+    -   Implementación de **Debounce (1 segundo)** en el buscador de la página de "Venta / Rechazo" (`InventoryAdjustmentPage`) para evitar el parpadeo molesto de la pantalla y prevenir la sobrecarga de consultas a la API mientras el usuario escribe.
+    -   Corrección del endpoint `GET /api/inventory/movements` para que el filtro de búsqueda global (`search`) funcione correctamente sobre códigos de producto, descripciones, nombres de clientes y números de orden, lo que reactiva el buscador de la página de ajustes.
+
 ## 2026-01-28 (Integración Cloud, PWA y Corrección de Bugs Críticos)
 -   **[FEAT] Configuración de Infraestructura en Google Cloud:**
     -   Creación y configuración del proyecto `zap-pwa` en GCP.

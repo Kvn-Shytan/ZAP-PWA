@@ -35,7 +35,28 @@ router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), vali
 // Get all products with filters
 router.get('/', authenticateToken, async (req, res) => {
   const { user } = req;
-  const { search, categoryId, type, page = 1, pageSize = 25 } = req.query;
+  const { search, categoryId, type, page = 1, pageSize = 25, all } = req.query;
+
+  // Handle 'all=true' for full catalog synchronization
+  if (all === 'true') {
+    try {
+      const allProducts = await prisma.product.findMany({
+        select: {
+          id: true,
+          internalCode: true,
+          description: true,
+          unit: true,
+          type: true,
+          updatedAt: true,
+        },
+        orderBy: { description: 'asc' },
+      });
+      return res.json(allProducts);
+    } catch (error) {
+      console.error("Error fetching all products for sync:", error);
+      return res.status(500).json({ error: 'Failed to fetch full product catalog.' });
+    }
+  }
 
   const where = {};
 

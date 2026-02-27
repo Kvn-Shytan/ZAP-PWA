@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../generated/client');
 
 // Esta es la implementación recomendada para asegurar una única instancia de PrismaClient.
 // En desarrollo, la recarga en caliente puede crear múltiples instancias, agotando las conexiones.

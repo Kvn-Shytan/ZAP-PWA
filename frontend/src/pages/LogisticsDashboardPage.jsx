@@ -1,16 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useLiveQuery } from 'dexie-react-hooks'; // NEW import
+import { db } from '../services/db'; // NEW import
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 import { apiFetch } from '../services/api';
 import { assemblerService } from '../services/assemblerService';
-import { useAuth } from '../contexts/AuthContext'; // Import useAuth
+import { useAuth } from '../contexts/AuthContext';
 import './LogisticsDashboardPage.css';
 import Modal from '../components/Modal';
+import { useSyncStatus } from '../contexts/SyncContext'; // Importar hook de sincronización
 
 const LogisticsDashboardPage = () => {
-  const { user: currentUser } = useAuth(); // Get current user
-  const [orders, setOrders] = useState([]);
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, total: 0 });
+  const { user: currentUser } = useAuth();
+  const { triggerSync } = useSyncStatus(); // Obtener triggerSync
+
+  // Local filter states
   const [filters, setFilters] = useState({
     status: '',
     assemblerId: '',
@@ -18,7 +22,67 @@ const LogisticsDashboardPage = () => {
     dateTo: '',
     search: ''
   });
-  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25;
+
+  // ** LOCAL-FIRST DATA FETCHING **
+  // useLiveQuery makes this component automatically re-render when the local DB changes.
+  const { orders, totalCount, isLoading } = useLiveQuery(async () => {
+    let collection = db.externalProductionOrders.toCollection();
+
+    // Apply Filters Locally
+    if (filters.status) {
+      const statuses = filters.status.split(',');
+      collection = collection.filter(order => statuses.includes(order.status));
+    }
+    
+    if (filters.assemblerId) {
+      collection = collection.filter(order => order.assemblerId === filters.assemblerId);
+    }
+
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      collection = collection.filter(order => new Date(order.createdAt) >= fromDate);
+    }
+
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      collection = collection.filter(order => new Date(order.createdAt) <= toDate);
+    }
+
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      collection = collection.filter(order => 
+        order.orderNumber.toLowerCase().includes(searchLower) ||
+        order.assembler?.name?.toLowerCase().includes(searchLower) ||
+        order.expectedOutputs?.some(eo => 
+          eo.product?.description?.toLowerCase().includes(searchLower) ||
+          eo.product?.internalCode?.toLowerCase().includes(searchLower)
+        )
+      );
+    }
+
+    // Role-based filtering for Employees
+    if (currentUser?.role === 'EMPLOYEE') {
+      collection = collection.filter(order => 
+        Number(order.deliveryUserId) === Number(currentUser.id) || 
+        Number(order.pickupUserId) === Number(currentUser.id)
+      );
+    }
+
+    // Execution
+    const allMatching = await collection.reverse().sortBy('createdAt');
+    const total = allMatching.length;
+    
+    // Manual pagination on the sorted array
+    const start = (currentPage - 1) * pageSize;
+    const paginated = allMatching.slice(start, start + pageSize);
+
+    return { orders: paginated, totalCount: total, isLoading: false };
+  }, [filters, currentPage, currentUser], { orders: [], totalCount: 0, isLoading: true });
+
+  const totalPages = Math.ceil(totalCount / pageSize);
   const [error, setError] = useState(null);
   
   const [users, setUsers] = useState([]);
@@ -41,62 +105,30 @@ const LogisticsDashboardPage = () => {
   const [showOtherNotesInput, setShowOtherNotesInput] = useState(false);
   const [receptionChoice, setReceptionChoice] = useState('');
 
-
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const queryParams = { ...filters, page: pagination.currentPage, pageSize: 25 };
-      Object.keys(queryParams).forEach(key => {
-        if (queryParams[key] === '' || queryParams[key] === null) {
-          delete queryParams[key];
-        }
-      });
-
-      const data = await externalProductionOrderService.getOrders(queryParams);
-      setOrders(data.orders || []);
-      setPagination(data.pagination || { currentPage: 1, totalPages: 1, total: 0 });
-    } catch (err) {
-      setError(err.message);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, pagination.currentPage]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      fetchOrders();
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [fetchOrders]);
-
-  // Fetch static dropdown data once on mount
+  // Fetch static dropdown data from local DB or API fallback
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
+        // Try local DB first for assemblers
+        const localAssemblers = await db.assemblers.toArray();
+        if (localAssemblers.length > 0) {
+          setAssemblers(localAssemblers);
+        } else {
+          const allAssemblers = await assemblerService.getAssemblers();
+          setAssemblers(allAssemblers);
+        }
+
         if (currentUser && (currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN')) {
           const allUsers = await apiFetch('/users');
           const assignableUsers = allUsers.filter(u => u.role === 'EMPLOYEE' || u.role === 'SUPERVISOR' || u.role === 'ADMIN').map(u => ({ id: u.id, name: u.name || u.email }));
           setUsers(assignableUsers);
         }
-
-        const allAssemblers = await assemblerService.getAssemblers();
-        setAssemblers(allAssemblers);
       } catch (err) {
-        if (err instanceof TypeError && err.message === 'Failed to fetch') {
-          console.warn('Offline: No se pudieron cargar datos iniciales (usuarios/armadores). Se usará el caché si está disponible.');
-        } else {
-          console.error("Failed to fetch initial data:", err);
-          setError(err.message);
-        }
+        console.warn('Initial data fetch notice:', err.message);
       }
     };
     fetchInitialData();
-  }, [currentUser]); // Added currentUser to dependency array
+  }, [currentUser]);
 
   const handleModalClose = () => {
     setIsAssignModalOpen(false);
@@ -125,33 +157,53 @@ const LogisticsDashboardPage = () => {
     setIsAssignModalOpen(true);
   };
 
-  const handleConfirmAssignment = async () => {
-    if (!selectedOrder || !selectedUser) return;
-    try {
+    const handleConfirmAssignment = async () => {
+      if (!selectedOrder || !selectedUser) return;
       const userIdAsNumber = parseInt(selectedUser, 10);
-      if (assignModalConfig.type === 'delivery') {
-        await externalProductionOrderService.assignOrder(selectedOrder.id, userIdAsNumber);
-      } else if (assignModalConfig.type === 'pickup') {
-        await externalProductionOrderService.assignPickup(selectedOrder.id, userIdAsNumber);
+      const newStatus = assignModalConfig.type === 'delivery' ? 'OUT_FOR_DELIVERY' : selectedOrder.status; 
+      
+      try {
+        // 1. Optimistic local update
+        await db.externalProductionOrders.update(selectedOrder.id, {
+          ...(assignModalConfig.type === 'delivery' ? { deliveryUserId: userIdAsNumber } : { pickupUserId: userIdAsNumber }),
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        });
+  
+        // 2. Background trigger (handled by Workbox sync if offline)
+        if (assignModalConfig.type === 'delivery') {
+          await externalProductionOrderService.assignOrder(selectedOrder.id, userIdAsNumber);
+        } else if (assignModalConfig.type === 'pickup') {
+          await externalProductionOrderService.assignPickup(selectedOrder.id, userIdAsNumber);
+        }
+        handleModalClose();
+        triggerSync(); // PROACTIVE SYNC
+      } catch (err) {
+        if (err instanceof TypeError && err.message === 'Failed to fetch') {
+          handleModalClose(); // Silently handle if offline, sync will take care of it
+        } else {
+          alert(`Error al asignar: ${err.message}`);
+        }
       }
-      handleModalClose();
-      fetchOrders();
-    } catch (err) {
-      alert(`Error al asignar: ${err.message}`);
-    }
-  };
-
-  const handleUnassign = async () => {
-    if (!selectedOrder || assignModalConfig.type !== 'delivery') return;
-    try {
-      await externalProductionOrderService.assignOrder(selectedOrder.id, null);
-      handleModalClose();
-      fetchOrders();
-    } catch (err) {
-      alert(`Error al desasignar: ${err.message}`);
-    }
-  };
-
+    };
+  
+    const handleUnassign = async () => {
+      if (!selectedOrder || assignModalConfig.type !== 'delivery') return;
+      try {
+        // Optimistic local
+        await db.externalProductionOrders.update(selectedOrder.id, { deliveryUserId: null, status: 'PENDING_DELIVERY' });
+        
+        await externalProductionOrderService.assignOrder(selectedOrder.id, null);
+        handleModalClose();
+        triggerSync(); // PROACTIVE SYNC
+      } catch (err) {
+        if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+          alert(`Error al desasignar: ${err.message}`);
+        } else {
+          handleModalClose();
+        }
+      }
+    };
   const handleOpenIncidentModal = (order) => {
     setSelectedOrder(order);
     setIncidentNotes('');
@@ -165,22 +217,34 @@ const LogisticsDashboardPage = () => {
       return;
     }
     try {
+      // Optimistic local
+      await db.externalProductionOrders.update(selectedOrder.id, { status: 'DELIVERY_FAILED', updatedAt: new Date().toISOString() });
+      
       await externalProductionOrderService.reportFailure(selectedOrder.id, incidentNotes);
       handleModalClose();
-      fetchOrders();
     } catch (err) {
-      alert(`Error al reportar incidencia: ${err.message}`);
+      if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+        alert(`Error al reportar incidencia: ${err.message}`);
+      } else {
+        handleModalClose();
+      }
     }
   };
 
   const handleQuickIncident = async (note) => {
     if (!selectedOrder) return;
     try {
+      // Optimistic local
+      await db.externalProductionOrders.update(selectedOrder.id, { status: 'DELIVERY_FAILED', updatedAt: new Date().toISOString() });
+      
       await externalProductionOrderService.reportFailure(selectedOrder.id, note);
       handleModalClose();
-      fetchOrders();
     } catch (err) {
-      alert(`Error al reportar incidencia: ${err.message}`);
+      if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+        alert(`Error al reportar incidencia: ${err.message}`);
+      } else {
+        handleModalClose();
+      }
     }
   };
 
@@ -273,6 +337,11 @@ const LogisticsDashboardPage = () => {
       finalNotes = finalNotes || 'Entrega parcial.';
     }
 
+    let nextStatus = 'COMPLETED';
+    if (finalChoice === 'partial') nextStatus = 'PARTIALLY_RECEIVED';
+    if (finalChoice === 'returns') nextStatus = 'COMPLETED_WITH_NOTES';
+    if (finalChoice === 'other_notes') nextStatus = 'COMPLETED_WITH_DISCREPANCY';
+
     const payload = {
       receivedItems: receivedItems.map(item => ({
         productId: item.productId,
@@ -282,64 +351,91 @@ const LogisticsDashboardPage = () => {
       notes: finalNotes,
       isFinalDelivery: finalChoice === 'returns' || finalChoice === 'other_notes' || finalChoice === '',
     };
+    
     try {
-      await externalProductionOrderService.receiveOrder(selectedOrder.id, payload);
-      handleModalClose();
-      fetchOrders();
-    } catch (err) {
-      // If the error is a network error, assume it's been queued by the service worker
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        console.log('Offline: La solicitud ha sido encolada para sincronización.');
-        // Close the modal and let the user continue. The UI will sync when connection returns.
-        handleModalClose();
-      } else {
-        // For other errors (e.g., server errors, validation errors), show the message.
-        alert(`Error al recibir la orden: ${err.message}`);
-      }
-    }
-  };
-
-  const handleConfirmDelivery = async (orderId) => {
-    if (!window.confirm("¿Confirmar que los materiales fueron entregados al ensamblador?")) return;
-    try {
-      await externalProductionOrderService.confirmDelivery(orderId);
-      fetchOrders();
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    }
-  };
-
-  const handleConfirmPickup = async (orderId) => {
-    if (!window.confirm("¿Confirmar que ha recogido los productos del ensamblador?")) return;
-    try {
-      await externalProductionOrderService.confirmPickup(orderId);
-      fetchOrders();
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    }
-  };
-
-  const handleConfirmAssembly = async (orderId) => {
-    if (!window.confirm("¿Confirmar que el ensamblador ha finalizado la producción?")) return;
-    try {
-      await externalProductionOrderService.confirmAssembly(orderId);
-      fetchOrders();
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    }
-  };
-
-  const handleCancelOrder = async (orderId) => {
-    if (window.confirm('¿Está seguro de que desea cancelar esta orden? Esta acción no se puede deshacer.')) {
-        try {
-            await externalProductionOrderService.cancelOrder(orderId);
-            alert('Orden cancelada exitosamente.');
-            fetchOrders();
-        } catch (err) {
-            alert(`Error al cancelar la orden: ${err.message}`);
+      // Optimistic local update
+      const updatedOutputs = selectedOrder.expectedOutputs.map(eo => {
+        const received = payload.receivedItems.find(ri => ri.productId === eo.productId);
+        if (received) {
+          return { ...eo, quantityReceived: Number(eo.quantityReceived) + received.quantity };
         }
-    }
-  };
+        return eo;
+      });
+            await db.externalProductionOrders.update(selectedOrder.id, { 
+              status: nextStatus, 
+              expectedOutputs: updatedOutputs,
+              updatedAt: new Date().toISOString() 
+            });
+      
+            await externalProductionOrderService.receiveOrder(selectedOrder.id, payload);
+            handleModalClose();
+            triggerSync(); // PROACTIVE SYNC
+          } catch (err) {
+            if (err instanceof TypeError && err.message === 'Failed to fetch') {
+              handleModalClose();
+            } else {
+              alert(`Error al recibir la orden: ${err.message}`);
+            }
+          }
+        };
+      
+        const handleConfirmDelivery = async (orderId) => {
+          if (!window.confirm("¿Confirmar que los materiales fueron entregados al ensamblador?")) return;      
+          try {
+            // Optimistic local
+            await db.externalProductionOrders.update(orderId, { status: 'IN_ASSEMBLY', updatedAt: new Date().toISOString() });
+            await externalProductionOrderService.confirmDelivery(orderId);
+            triggerSync(); // PROACTIVE SYNC
+          } catch (err) {
+            if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+              alert(`Error: ${err.message}`);
+            }
+          }
+        };
+      
+        const handleConfirmPickup = async (orderId) => {
+          if (!window.confirm("¿Confirmar que ha recogido los productos del ensamblador?")) return;
+          try {
+            // Optimistic local
+            await db.externalProductionOrders.update(orderId, { status: 'RETURN_IN_TRANSIT', updatedAt: new Date().toISOString() });
+            await externalProductionOrderService.confirmPickup(orderId);
+            triggerSync(); // PROACTIVE SYNC
+          } catch (err) {
+            if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+              alert(`Error: ${err.message}`);
+            }
+          }
+        };
+      
+        const handleConfirmAssembly = async (orderId) => {
+          if (!window.confirm("¿Confirmar que el ensamblador ha finalizado la producción?")) return;
+          try {
+            // Optimistic local
+            await db.externalProductionOrders.update(orderId, { status: 'PENDING_PICKUP', updatedAt: new Date().toISOString() });
+            await externalProductionOrderService.confirmAssembly(orderId);
+            triggerSync(); // PROACTIVE SYNC
+          } catch (err) {
+            if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+              alert(`Error: ${err.message}`);
+            }
+          }
+        };
+      
+        const handleCancelOrder = async (orderId) => {
+          if (window.confirm('¿Está seguro de que desea cancelar esta orden? Esta acción no se puede deshacer.')) {
+              try {
+                  // Optimistic local
+                  await db.externalProductionOrders.update(orderId, { status: 'CANCELLED', updatedAt: new Date().toISOString() });
+                  await externalProductionOrderService.cancelOrder(orderId);
+                  alert('Orden cancelada exitosamente.');
+                  triggerSync(); // PROACTIVE SYNC
+              } catch (err) {
+                  if (!(err instanceof TypeError && err.message === 'Failed to fetch')) {
+                    alert(`Error al cancelar la orden: ${err.message}`);
+                  }
+              }
+          }
+        };
 
   const getAssignedUser = (order) => {
     const pickupStatuses = ['PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED', 'COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'];
@@ -350,7 +446,7 @@ const LogisticsDashboardPage = () => {
   };
 
   const renderOrderActions = (order) => {
-    if (!currentUser) return null; // Don't render if user context is not loaded yet
+    if (!currentUser) return null;
 
     const isPrivilegedUser = currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN';
     const isEmployee = currentUser.role === 'EMPLOYEE';
@@ -419,7 +515,6 @@ const LogisticsDashboardPage = () => {
 
       case 'RETURN_IN_TRANSIT':
       case 'PARTIALLY_RECEIVED':
-        // Privileged users (SUPERVISOR/ADMIN) can always see these actions
         if (isPrivilegedUser) {
           return (
             <>
@@ -428,7 +523,6 @@ const LogisticsDashboardPage = () => {
             </>
           );
         }
-        // Employees (pickupPerson) can only receive merchandise
         if (isEmployee && isPickupPerson) {
           return (
             <>
@@ -451,12 +545,12 @@ const LogisticsDashboardPage = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= pagination.totalPages) {
-      setPagination(prev => ({ ...prev, currentPage: newPage }));
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
     }
   };
 
@@ -468,7 +562,7 @@ const LogisticsDashboardPage = () => {
       dateTo: '',
       search: ''
     });
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setCurrentPage(1);
   };
 
   const renderStatus = (order) => {
@@ -484,7 +578,6 @@ const LogisticsDashboardPage = () => {
       <div className="logistics-dashboard-container">
         <h2>Panel de Logística - Órdenes de Producción Externas</h2>
   
-        {/* Filter Controls - Always rendered */}
         <div className="filters-container">
           <input
             type="text"
@@ -517,8 +610,7 @@ const LogisticsDashboardPage = () => {
           <button onClick={handleClearFilters} className="clear-filters-button">Limpiar Filtros</button>
         </div>
   
-        {/* Conditional rendering for results area */}
-        {loading && orders.length === 0 ? (
+        {isLoading && orders.length === 0 ? (
           <p>Cargando órdenes...</p>
         ) : error ? (
           <p style={{ color: 'red' }}>Error: {error}</p>
@@ -539,13 +631,21 @@ const LogisticsDashboardPage = () => {
               </thead>
               <tbody>
                 {orders.map(order => {
-                  const assignedUser = getAssignedUser(order);
+                  const assemblerName = order.assembler?.name || assemblers.find(a => a.id === order.assemblerId)?.name || 'N/A';
+                  
+                  let assignedUserName = 'N/A';
+                  if (['PENDING_DELIVERY', 'OUT_FOR_DELIVERY', 'DELIVERY_FAILED'].includes(order.status)) {
+                    assignedUserName = order.deliveryUser?.name || users.find(u => u.id === order.deliveryUserId)?.name || 'N/A';
+                  } else if (['PENDING_PICKUP', 'RETURN_IN_TRANSIT'].includes(order.status)) {
+                    assignedUserName = order.pickupUser?.name || users.find(u => u.id === order.pickupUserId)?.name || 'N/A';
+                  }
+
                   return (
                     <tr key={order.id}>
                       <td data-label="ID Orden"><Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link></td>
-                      <td data-label="Armador">{order.assembler.name}</td>
+                      <td data-label="Armador">{assemblerName}</td>
                       <td data-label="Estado">{renderStatus(order)}</td>
-                      <td data-label="Asignado a">{assignedUser ? assignedUser.name : 'N/A'}</td>
+                      <td data-label="Asignado a">{assignedUserName}</td>
                       <td data-label="Fecha Creación">{new Date(order.createdAt).toLocaleDateString()}</td>
                       <td data-label="Acciones">{renderOrderActions(order)}</td>
                     </tr>
@@ -556,17 +656,17 @@ const LogisticsDashboardPage = () => {
   
             <div className="pagination-container">
               <button
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                disabled={pagination.currentPage <= 1 || loading}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1 || isLoading}
               >
                 Anterior
               </button>
               <span>
-                Página {pagination.currentPage} de {pagination.totalPages} (Total: {pagination.total} órdenes)
+                Página {currentPage} de {totalPages} (Total: {totalCount} órdenes)
               </span>
               <button
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                disabled={pagination.currentPage >= pagination.totalPages || loading}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages || isLoading}
               >
                 Siguiente
               </button>
@@ -574,8 +674,6 @@ const LogisticsDashboardPage = () => {
           </>
         )}
   
-        {/* Modals are outside the conditional rendering */}
-        {/* Assignment Modal */}
         <Modal isOpen={isAssignModalOpen} onClose={handleModalClose} title={assignModalConfig.title}>
           <div className="modal-form-group">
               <label htmlFor="user-select">Asignar a:</label>
@@ -593,7 +691,6 @@ const LogisticsDashboardPage = () => {
           </div>
         </Modal>
   
-        {/* Incident Report Modal */}
         <Modal isOpen={isIncidentModalOpen} onClose={handleModalClose} title="Reportar incidencia en entrega">
           {incidentStep === 1 && (
             <div className="modal-form-group">
@@ -621,7 +718,6 @@ const LogisticsDashboardPage = () => {
           )}
         </Modal>
   
-        {/* Receive Order Modal */}
         <Modal isOpen={isReceiveModalOpen} onClose={handleModalClose} title="Recepción de mercadería">
           {receptionStep === 1 && (
             <div>
@@ -629,7 +725,7 @@ const LogisticsDashboardPage = () => {
               {receivedItems.map(item => (
                 <div key={item.productId} className="modal-item-row">
                   <label>
-                    {item.product.description}<br/>
+                    {item.product?.description || 'Producto'}<br/>
                     <small>Esperado: {Number(item.quantityExpected)} | Recibido: {Number(item.quantityReceived)} | <strong>Pendiente: {item.pending}</strong></small>
                   </label>
                   <input
@@ -645,46 +741,46 @@ const LogisticsDashboardPage = () => {
               <button onClick={handleContinueReception} className="action-button green-light">Continuar</button>
             </div>
           )}
-                          {receptionStep === 2 && (
-                            <div>
-                              <h4>Paso 2: Registrar Discrepancia</h4>
-                              <p>Se detectó una diferencia entre la cantidad pendiente y la recibida en esta entrega. ¿Cómo desea proceder?</p>
-                  
-                              {!showOtherNotesInput ? (
-                                <div className="modal-form-group modal-form-group-spaced">
-                                  <button onClick={() => handleConfirmReceptionChoice('partial')} className="modal-choice-button yellow">
-                                    Entrega Parcial (Quedan ítems pendientes)
-                                  </button>
-                                  <button onClick={() => handleConfirmReceptionChoice('returns')} className="modal-choice-button green">
-                                    Entrega con Devoluciones (Discrepancia Justificada)
-                                  </button>
-                                  <button onClick={() => setShowOtherNotesInput(true)} className="modal-choice-button red">
-                                    Otro Motivo (Discrepancia No Justificada)
-                                  </button>
-                                  <button onClick={handleModalClose} className="modal-choice-button gray" style={{ marginTop: '1rem' }}>Cancelar</button>
-                                </div>
-                              ) : (
-                                <div className="modal-form-group modal-form-group-spaced">
-                                  <label htmlFor="reception-notes">Especifique el motivo de la discrepancia:</label>
-                                  <textarea
-                                    id="reception-notes"
-                                    value={receptionNotes}
-                                    onChange={e => setReceptionNotes(e.target.value)}
-                                    rows={3}
-                                    placeholder="Ej: Producto dañado, error de conteo, etc."
-                                    className="modal-textarea"
-                                  />
-                                  <div className="modal-buttons-end">
-                                    <button onClick={() => handleConfirmReceptionChoice('other_notes')} disabled={!receptionNotes} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                                      Confirmar y Finalizar
-                                    </button>
-                                    <button onClick={() => setShowOtherNotesInput(false)} style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Volver</button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}        </Modal>
+          {receptionStep === 2 && (
+            <div>
+              <h4>Paso 2: Registrar Discrepancia</h4>
+              <p>Se detectó una diferencia entre la cantidad pendiente y la recibida en esta entrega. ¿Cómo desea proceder?</p>
   
+              {!showOtherNotesInput ? (
+                <div className="modal-form-group modal-form-group-spaced">
+                  <button onClick={() => handleConfirmReceptionChoice('partial')} className="modal-choice-button yellow">
+                    Entrega Parcial (Quedan ítems pendientes)
+                  </button>
+                  <button onClick={() => handleConfirmReceptionChoice('returns')} className="modal-choice-button green">
+                    Entrega con Devoluciones (Discrepancia Justificada)
+                  </button>
+                  <button onClick={() => setShowOtherNotesInput(true)} className="modal-choice-button red">
+                    Otro Motivo (Discrepancia No Justificada)
+                  </button>
+                  <button onClick={handleModalClose} className="modal-choice-button gray" style={{ marginTop: '1rem' }}>Cancelar</button>
+                </div>
+              ) : (
+                <div className="modal-form-group modal-form-group-spaced">
+                  <label htmlFor="reception-notes">Especifique el motivo de la discrepancia:</label>
+                  <textarea
+                    id="reception-notes"
+                    value={receptionNotes}
+                    onChange={e => setReceptionNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Ej: Producto dañado, error de conteo, etc."
+                    className="modal-textarea"
+                  />
+                  <div className="modal-buttons-end">
+                    <button onClick={() => handleConfirmReceptionChoice('other_notes')} disabled={!receptionNotes} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                      Confirmar y Finalizar
+                    </button>
+                    <button onClick={() => setShowOtherNotesInput(false)} style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Volver</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
       </div>
     );
   };

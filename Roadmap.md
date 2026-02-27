@@ -601,22 +601,27 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
 <br>
 
--   **Fase 14: Gestión de Rechazos y Control de Calidad (Re-priorizada, Siguiente)**
-    > **Objetivo:** Implementar un sistema robusto para gestionar material defectuoso, separando el proceso logístico del de calidad. **Esta será la primera funcionalidad en ser desarrollada con la arquitectura "Offline-First" (Fase 18).**
+-   **Fase 19: Arquitectura "Logística Inmortal" (Offline-First) (Completada)**
+    > **Objetivo:** Blindar el módulo de Logística para que sea 100% funcional offline, garantizando que los repartidores puedan gestionar sus tareas sin depender de la conectividad. Esto se logró migrando a una arquitectura "local-first" para el flujo de trabajo logístico.
 
-    *   **14.1: Control de Calidad en Recepción y Ajuste de Pago (Pendiente)**
-        *   `[ ]` **(DB):** Crear tabla `RejectedMaterialLog` para un historial auditable de rechazos.
-        *   `[ ]` **(API):** Refactorizar el endpoint de recepción del supervisor para aceptar `quantityAccepted` y `quantityRejected`.
-        *   `[ ]` **(API):** La lógica de recepción aumentará el stock con las unidades aceptadas, creará un movimiento de desecho (`WASTE_OUT`) con las rechazadas, y guardará el registro en `RejectedMaterialLog`.
-        *   `[ ]` **(API):** Modificar la API de cálculo de pagos para que reste el valor de las unidades marcadas con `deductFromAssemblerPayment: true`.
-        *   `[ ]` **(UI - Supervisor):** El modal de recepción del supervisor tendrá campos para "Cantidad Aceptada" y "Cantidad Rechazada", y un checkbox `[ ] ¿Descontar del pago?`.
+    *   **19.1: Implementación de la Base de Datos Local con Dexie.js (Completada)**
+        *   `[x]` **Acción (Frontend):** Instalar las dependencias `dexie` y `dexie-react-hooks`.        
+        *   `[x]` **Acción (Frontend):** Crear un nuevo archivo de servicio (`frontend/src/services/db.js`) definiendo el esquema `IndexedDB` con `dexie` (`externalProductionOrders`, `clients`, `assemblers`, `products`).
+        *   `[x]` **Acción (Frontend):** Configurar índices (`id`, `status`, `deliveryUserId`, etc.) para búsquedas locales.
 
-    *   **14.2: Herramienta de Ajuste General de Inventario por Rechazo (Pendiente)**
-        *   `[ ]` **(UI):** Crear una nueva página en "Inventario": "Gestión de Rechazos".
-        *   `[ ]` **(UI):** La página contendrá un formulario simple para seleccionar un producto, cantidad y una razón para el ajuste.
-        *   `[ ]` **(API):** Crear un endpoint `POST /api/inventory/reject-general` que cree el `InventoryMovement` de tipo `WASTE_OUT` y el registro correspondiente en `RejectedMaterialLog`.
+    *   **19.2: Implementación de Sincronización Inteligente Híbrida (Completada)**
+        *   `[x]` **Acción (Frontend):** Crear `SyncService` que orquesta el flujo de datos entre API y `dexie`.
+        *   `[x]` **Acción (Frontend):** Modificar `AuthContext` para invocar `initialSync` tras el login y `clearLocalData` al cerrar sesión (seguridad).
+        *   `[x]` **Acción (Frontend):** Implementar lógica proactiva en `SyncContext`: sincronización inmediata al recuperar conexión y función `triggerSync` manual.
+        *   `[x]` **Acción (Backend):** Crear endpoints de apoyo `/api/external-production-orders/active` y `all=true` para el catálogo de productos.
 
-        
+    *   **19.3: Refactorización del Panel de Logística a "Local-First" (Completada)**
+        *   `[x]` **Acción (Frontend):** Refactorizar `LogisticsDashboardPage.jsx` para usar `useLiveQuery` leyendo directamente de `IndexedDB`.
+        *   `[x]` **Acción (Frontend):** Asegurar que las acciones (Confirmar Entrega, etc.) actualicen primero la DB local (Optimistic UI) y luego disparen `triggerSync()` para una actualización instantánea en el servidor sin baches.
+        *   `[x]` **Acción (Backend):** Hidratar respuestas de los endpoints (Crear, Recibir, Asignar Recogida) para que devuelvan el objeto completo con relaciones (`items`, `assembler`, `expectedOutputs`), eliminando errores de renderizado en UI.
+
+    *   **19.4: Implementación de Poda Automática de Datos (Pendiente)**
+        *   `[ ]` **Acción (SyncService):** Implementar una rutina que elimine de la base local las órdenes en estado terminal (`COMPLETED`, `CANCELLED`) por más de 7 días.        
     ## 2. Changelog (Registro de Cambios)
 
 ## 2026-02-18 (Fase 11.5: Módulo de Ventas, Clientes y Recibos - Completado)

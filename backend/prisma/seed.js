@@ -1,4 +1,4 @@
-const { PrismaClient, Prisma, Role } = require('@prisma/client');
+const { PrismaClient, Prisma, Role } = require('../generated/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();

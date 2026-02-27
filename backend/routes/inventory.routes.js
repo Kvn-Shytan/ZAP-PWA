@@ -329,7 +329,7 @@ router.put('/low-stock-threshold', authorizeRole('ADMIN'), async (req, res) => {
 
 // Obtener historial de movimientos con filtros y paginación
 router.get('/movements', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { page = 1, pageSize = 20, productId, userId, type, startDate, endDate, isCorrection } = req.query;
+  const { page = 1, pageSize = 20, productId, userId, type, startDate, endDate, isCorrection, search } = req.query;
 
   const pageNum = parseInt(page);
   const pageSizeNum = parseInt(pageSize);
@@ -364,6 +364,45 @@ router.get('/movements', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
       { type: 'ADJUSTMENT_OUT' },
       { type: 'WASTAGE' },
     ];
+  }
+
+  // Implementación del filtro de búsqueda global
+  if (search) {
+    const searchConditions = [
+      {
+        product: {
+          description: { contains: search, mode: 'insensitive' }
+        }
+      },
+      {
+        product: {
+          internalCode: { contains: search, mode: 'insensitive' }
+        }
+      },
+      {
+        salesOrder: {
+          client: {
+            name: { contains: search, mode: 'insensitive' }
+          }
+        }
+      },
+      {
+        externalProductionOrder: {
+          orderNumber: { contains: search, mode: 'insensitive' }
+        }
+      }
+    ];
+
+    if (where.OR) {
+      // Si ya existía un OR (por isCorrection), los combinamos con un AND
+      where.AND = [
+        { OR: where.OR },
+        { OR: searchConditions }
+      ];
+      delete where.OR;
+    } else {
+      where.OR = searchConditions;
+    }
   }
 
   try {

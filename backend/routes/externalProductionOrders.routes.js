@@ -294,7 +294,17 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
         });
       }
 
-      return order;
+      // Final Hydration: Return the full order object with relations
+      return await tx.externalProductionOrder.findUnique({
+        where: { id: order.id },
+        include: {
+          assembler: true,
+          deliveryUser: { select: { id: true, name: true } },
+          pickupUser: { select: { id: true, name: true } },
+          items: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+          expectedOutputs: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+        }
+      });
     });
 
     res.status(201).json(result);
@@ -305,6 +315,94 @@ router.post('/', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   }
 });
 
+
+// GET /api/external-production-orders/active - List all active (non-terminal) orders for sync
+router.get('/active', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  try {
+    const { userId, role } = req.user;
+    
+    const activeStatuses = [
+      'PENDING_DELIVERY',
+      'OUT_FOR_DELIVERY',
+      'IN_ASSEMBLY',
+      'PENDING_PICKUP',
+      'RETURN_IN_TRANSIT',
+      'PARTIALLY_RECEIVED',
+      'DELIVERY_FAILED'
+    ];
+
+    const filterConditions = [{ status: { in: activeStatuses } }];
+
+    // Role-based filtering: Employees only see their assigned tasks
+    if (role === 'EMPLOYEE') {
+      filterConditions.push({
+        OR: [
+          { deliveryUserId: userId },
+          { pickupUserId: userId }
+        ]
+      });
+    }
+
+    const orders = await prisma.externalProductionOrder.findMany({
+      where: { AND: filterConditions },
+      include: {
+        assembler: true,
+        deliveryUser: { select: { id: true, name: true } },
+        pickupUser: { select: { id: true, name: true } },
+        items: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+        expectedOutputs: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+    
+    res.json(orders);
+  } catch (error) {
+    console.error("Error fetching active external production orders:", error.message);
+    res.status(500).json({ error: 'Failed to fetch active orders.' });
+  }
+});
+
+// GET /api/external-production-orders/changes - Delta sync endpoint
+router.get('/changes', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
+  const { since } = req.query;
+  
+  try {
+    const { userId, role } = req.user;
+    const filterConditions = [];
+
+    if (since) {
+      filterConditions.push({ updatedAt: { gt: new Date(since) } });
+    }
+
+    if (role === 'EMPLOYEE') {
+      filterConditions.push({
+        OR: [
+          { deliveryUserId: userId },
+          { pickupUserId: userId }
+        ]
+      });
+    }
+
+    const where = filterConditions.length > 0 ? { AND: filterConditions } : {};
+
+    const changedOrders = await prisma.externalProductionOrder.findMany({
+      where,
+      include: {
+        assembler: true,
+        deliveryUser: { select: { id: true, name: true } },
+        pickupUser: { select: { id: true, name: true } },
+        items: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+        expectedOutputs: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+      },
+      orderBy: { updatedAt: 'asc' },
+    });
+    
+    res.json(changedOrders);
+  } catch (error) {
+    console.error("Error fetching changed external production orders:", error.message);
+    res.status(500).json({ error: 'Failed to fetch changed orders.' });
+  }
+});
 
 // GET /api/external-production-orders - List all orders
 router.get('/', authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOYEE']), async (req, res) => {
@@ -650,6 +748,13 @@ router.post('/:id/assign-pickup', authorizeRole(['ADMIN', 'SUPERVISOR']), async 
       data: {
         pickupUserId: userId,
       },
+      include: {
+        assembler: true,
+        deliveryUser: { select: { id: true, name: true } },
+        pickupUser: { select: { id: true, name: true } },
+        items: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+        expectedOutputs: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+      },
     });
 
     res.json(updatedOrder);
@@ -801,6 +906,13 @@ router.post(
         const updatedOrder = await tx.externalProductionOrder.update({
           where: { id },
           data: { status: finalStatus },
+          include: {
+            assembler: true,
+            deliveryUser: { select: { id: true, name: true } },
+            pickupUser: { select: { id: true, name: true } },
+            items: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+            expectedOutputs: { include: { product: { select: { id: true, description: true, internalCode: true } } } },
+          },
         });
 
         return updatedOrder;

@@ -1,37 +1,32 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { apiFetch } from '../services/api'; // NEW import
+import { syncService } from '../services/syncService'; // NEW import
+// import { apiFetch } from '../services/api'; // No longer directly used for critical data fetching
 
 const AuthContext = createContext(null);
-const API_URL = import.meta.env.VITE_API_URL || ''; // Use env variable
+// const API_URL = import.meta.env.VITE_API_URL || ''; // No longer needed here
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const fetchCriticalData = useCallback(async () => {
+  // Renamed from fetchCriticalData to handleSync for clarity of purpose
+  const handleSync = useCallback(async (authToken) => {
+    if (!authToken) return;
     try {
-      // Proactively fetch dashboard data
-      await apiFetch('/dashboard');
-
+      await syncService.initialSync(authToken);
+      syncService.startContinuousSync(authToken); // Start continuous sync after initial
     } catch (error) {
-      console.error('Error proactively caching dashboard data:', error);
+      console.error('Error during initial sync or starting continuous sync:', error);
     }
-    try {
-      // Proactively fetch external production orders data (first page)
-      await apiFetch('/external-production-orders?page=1&pageSize=25');
-
-    } catch (error) {
-      console.error('Error proactively caching external production orders data:', error);
-    }
-    // Add other critical API calls here
   }, []);
-
 
   const logout = useCallback(() => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);
     setToken(null);
+    syncService.stopContinuousSync(); // Stop continuous sync on logout
+    syncService.clearLocalData(); // Clear local data on logout for security/privacy
   }, []);
 
   useEffect(() => {
@@ -51,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     if (token && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-        fetchCriticalData(); // NEW: Trigger proactive fetching after initial load if already logged in
+        handleSync(token); // Trigger sync after initial load if already logged in
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
         logout();
@@ -59,14 +54,14 @@ export const AuthProvider = ({ children }) => {
     } else {
       setUser(null);
     }
-  }, [token, logout, fetchCriticalData]); // Added fetchCriticalData to dependencies
+  }, [token, logout, handleSync]);
 
   const login = (userData, authToken) => {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', authToken);
     setUser(userData);
     setToken(authToken);
-    fetchCriticalData(); // NEW: Trigger proactive fetching after login
+    handleSync(authToken); // Trigger sync after login
   };
 
   const value = {

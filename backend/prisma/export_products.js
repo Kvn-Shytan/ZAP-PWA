@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../generated/client');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 
