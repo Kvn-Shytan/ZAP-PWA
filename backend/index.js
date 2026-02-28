@@ -23,7 +23,12 @@ const port = 3001;
 
 app.use(express.json());
 // Define allowed origins
-const allowedOrigins = ['http://localhost:4173', 'http://localhost:5173'];
+const allowedOrigins = ['http://localhost:4173', 'http://localhost:5173', 'http://localhost:8080'];
+
+// If a frontend URL is provided via environment variable (e.g., in production), allow it
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
 app.use(cors({
   origin: function (origin, callback) {

@@ -1,0 +1,33 @@
+# docker-compose.prod.yml
+# Este archivo simula el entorno de producción localmente usando las imágenes multi-etapa
+# que se desplegarán en Google Cloud Run.
+# Usar con: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/zappwa
+      # Simulación de JWT_SECRET en producción (en GCP vendrá de Secret Manager)
+      JWT_SECRET: "tu_secreto_super_seguro_para_produccion" 
+    ports:
+      - '3001:3001'
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # En producción local, la API estará en localhost:3001
+        VITE_API_URL: http://localhost:3001/api
+    ports:
+      # Exponemos el Nginx del contenedor en el puerto 8080 del host
+      - '8080:80'
+    depends_on:
+      - backend

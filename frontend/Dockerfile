@@ -1,20 +1,39 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-alpine
+# ---- Etapa 1: Builder ----
+# Construcción de la aplicación estática PWA
+FROM node:20-alpine AS builder
 
-# Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
+# Copiar configuración de dependencias
 COPY package*.json ./
 
-# Install any needed packages
+# Instalar dependencias
 RUN npm install
 
-# Copy the rest of the application code
+# Copiar el código fuente
 COPY . .
 
-# Make port 5173 available to the world outside this container
-EXPOSE 5173
+# Argumento para la URL de la API (útil para inyectar la URL de Cloud Run durante el build)
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
-# Run the app when the container launches
-CMD ["npm", "run", "dev"]
+# Construir la aplicación para producción (genera la carpeta /dist)
+RUN npm run build
+
+# ---- Etapa 2: Runner (Servidor Nginx) ----
+# Imagen ultra-ligera y segura para servir estáticos
+FROM nginx:alpine AS runner
+
+# Remover la configuración por defecto de Nginx
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
+# Copiar nuestra configuración personalizada para la SPA y caché
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiar los archivos compilados de la etapa builder
+COPY --from=builder /usr/src/app/dist /usr/share/nginx/html
+
+# Exponer el puerto 80 (Cloud Run mapea dinámicamente este puerto)
+EXPOSE 80
+
+# Nginx se ejecuta por defecto, no necesitamos un CMD específico
