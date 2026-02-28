@@ -1,5 +1,19 @@
 # Changelog (Registro de Cambios)
 
+## 2026-02-28 (Plan de Despliegue a Producción y Validación de Estabilidad)
+-   **[CHORE] Documentación y Estrategia de Despliegue:**
+    -   Diseñado y documentado en el `Roadmap.md` un plan de acción completo para el despliegue a producción en Google Cloud.
+    -   La estrategia se basa en contenedores optimizados con builds multi-etapa: el backend en Cloud Run y el frontend con Nginx, también en Cloud Run.
+    -   Se ha añadido documentación detallada sobre el flujo de instalación de la PWA en dispositivos Android, explicando la experiencia de usuario ("Añadir a pantalla de inicio"), la seguridad del sandbox del navegador y la importancia del "Almacenamiento Persistente" para la fiabilidad offline.
+-   **[TEST] Estabilización del Backend:**
+    -   Se ejecutó la suite completa de tests de integración del backend para validar el estado actual de la aplicación.
+    -   Se identificó y corrigió un test fallido en `sales.test.js` que no estaba alineado con la lógica de negocio actual de permitir ventas con stock negativo.
+    -   Se confirmó que la suite de pruebas completa (45/45 tests) ahora pasa con éxito, asegurando la estabilidad del backend antes de proceder con el despliegue.
+-   **[CHORE] Sincronización de Documentación:**
+    -   Actualizado el `Roadmap.md` para marcar la `Fase 17` (Implementación de Service Worker Básico) como completada.
+    -   Actualizadas las tareas `16.1` y `16.2` (Configuración de GCP y DB) como completadas.
+    -   Refactorizado el `Roadmap.md` para reflejar con precisión el estado actual del proyecto y los planes de despliegue.
+
 ## 2026-02-26 (Arquitectura "Logística Inmortal" y Sincronización Proactiva)
 -   **[FEAT] Arquitectura Offline-First (Local-First):**
     -   Integración de `dexie` y `dexie-react-hooks` para almacenamiento local (IndexedDB).

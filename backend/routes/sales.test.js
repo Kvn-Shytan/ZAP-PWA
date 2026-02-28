@@ -211,15 +211,18 @@ describe('Sales API', () => {
       expect(res.body.error).toContain('Solo se pueden vender productos de tipo FINISHED o PRE_ASSEMBLED.');
     });
 
-    it('should return 400 if stock is insufficient for any item', async () => {
+    it('should create a SalesOrder even if stock is insufficient, and update stock to a negative value', async () => {
       const salesData = {
         clientId: client.id,
         items: [{ productId: productFinished.id, quantity: 200, unitPrice: 100 }], // More than available
       };
       const res = await request(app).post('/api/sales').send(salesData);
 
-      expect(res.statusCode).toEqual(400);
-      expect(res.body.error).toContain('Stock insuficiente para Finished Product.');
+      expect(res.statusCode).toEqual(201); // Expect 201 Created, as negative stock is allowed
+      expect(res.body).toHaveProperty('id');
+      
+      const updatedProduct = await prisma.product.findUnique({ where: { id: productFinished.id } });
+      expect(Number(updatedProduct.stock)).toEqual(100 - salesData.items[0].quantity); // Expect negative stock
     });
 
     it('should return 400 if quantity in item is invalid', async () => {

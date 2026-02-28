@@ -160,55 +160,28 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
     
 
-    -   **Fase 6: Funcionalidad Offline y PWA**
+    -   **Fase 19: Arquitectura PWA y Funcionalidad Offline-First (En Progreso)**
+    > **Objetivo:** Garantizar que la aplicación sea instalable, funcione de manera confiable sin conexión a internet y sincronice los datos de forma inteligente. Esta fase consolida toda la estrategia PWA, reemplazando el enfoque inicial de caché de red por una arquitectura "local-first" más robusta basada en IndexedDB (Dexie).
 
-    
+    *   **19.1: Base de la Arquitectura e Instalabilidad (Completado)**
+        *   `[x]` **(Infraestructura PWA):** Configuración de `vite-plugin-pwa` para la generación del Service Worker y el Web App Manifest, haciendo la aplicación instalable (`Añadir a pantalla de inicio`).
+        *   `[x]` **(Base de Datos Local):** Implementación de `Dexie.js` para crear una base de datos IndexedDB en el navegador, que actúa como la fuente principal de verdad para la UI.
+        *   `[x]` **(Servicio de Sincronización):** Creación de un `SyncService` para orquestar la sincronización inicial y continua entre la base de datos local y el servidor.
+        *   **Documentación de Instalación y Uso Móvil:**
+            *   **Instalación Silenciosa:** Los usuarios Android acceden vía enlace web (Chrome). El navegador detecta el manifest y ofrece la opción "Instalar ZAP PWA", añadiendo un ícono a su pantalla de inicio. No requiere Google Play Store.
+            *   **Experiencia Nativa:** Al ejecutarse desde el ícono, la PWA funciona en modo `standalone` (pantalla completa, sin barra de URL) con su propio espacio en la multitarea de Android.
+            *   **Seguridad y Almacenamiento (Sandbox):** La PWA opera dentro del entorno seguro del navegador, sin acceso indiscriminado al sistema operativo.
+            *   **Almacenamiento Persistente:** Al ser instalada y usada frecuentemente, Chrome otorga automáticamente "Almacenamiento Persistente" a IndexedDB, garantizando que el sistema operativo no borre los datos locales (órdenes, catálogo) para liberar espacio, asegurando la fiabilidad offline.
 
-        -   `[x]` Configuración del entorno PWA: Integración de `vite-plugin-pwa` y generación de Service Worker/Manifest.
+    *   **19.2: Módulo de Logística 100% Offline (Completado)**
+        *   `[x]` **(UI Local-First):** Refactorización del Panel de Logística para leer y escribir directamente en la base de datos local de Dexie, logrando una experiencia de usuario instantánea y completamente funcional sin conexión.
+        *   `[x]` **(Sincronización Proactiva):** Implementación de un sistema de sincronización híbrido que actualiza los datos en segundo plano al recuperar la conexión o cuando el usuario realiza una acción.
 
-    
-
-        -   `[x]` Asegurar que la aplicación sea instalable en dispositivos móviles y de escritorio (App Shell precaching).
-
-    
-
-        -   `[x]` Implementación inicial de caché de APIs (estrategia `NetworkFirst`) para datos dinámicos.
-
-    
-
-        -   `[ ]` **Fase 6.1: Precaching Proactivo y Lectura Offline-First (En Curso)**
-
-    
-
-            -   `[ ]` Modificar `vite.config.js` para usar estrategia `StaleWhileRevalidate` en APIs críticas (dashboard, external production orders).
-
-    
-
-            -   `[ ]` Implementar llamadas proactivas a APIs críticas después del login para poblar caché.
-
-    
-
-        -   `[ ]` **Fase 6.2: Entrada y Sincronización de Datos Offline (Pendiente)**
-
-    
-
-            -   `[ ]` Implementar almacenamiento local de acciones pendientes (IndexedDB).
-
-    
-
-            -   `[ ]` Integrar Workbox Background Sync para sincronización de cambios al recuperar conexión.
-
-    
-
-            -   `[ ]` Diseñar backend para idempotencia de acciones.
-
-    
-
-            -   `[ ]` Implementar feedback visual de sincronización.
-
-    
-
-            -   `[ ]` Implementar feedback visual de sincronización.
+    *   **19.3: Tareas Pendientes y Futuras Mejoras**
+        *   `[ ]` **(Expansión Offline):** Extender el patrón de arquitectura "local-first" a otros módulos críticos de la aplicación (ej. Ventas, Inventario).
+        *   `[ ]` **(Gestión de Cambios Offline):** Implementar una cola de mutaciones (usando la API de Background Sync o una tabla en Dexie) para garantizar que las acciones del usuario (crear, editar, eliminar) realizadas sin conexión se envíen de forma segura al servidor una vez que se restablezca la conectividad.
+        *   `[ ]` **(Poda de Datos):** Implementar una rutina que elimine de la base de datos local las órdenes y otros datos que ya no son relevantes (ej. órdenes en estado `COMPLETED` o `CANCELLED` con más de 7 días de antigüedad) para optimizar el rendimiento y el uso de almacenamiento.
+        *   `[ ]` **(Feedback de Sincronización):** Implementar un indicador visual global en la UI que informe al usuario del estado de la sincronización (ej. "Sincronizado", "Sincronizando...", "Sin conexión").
 
     
 
@@ -546,43 +519,37 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 <br>
 
 -   **Fase 16 (Prioridad Alta): Infraestructura Cloud y Despliegue Inicial**
-    > **Objetivo:** Poner la aplicación en un entorno de producción mínimo y de bajo costo para empezar a trabajar en la funcionalidad PWA y validar el despliegue.
+    > **Objetivo:** Poner la aplicación en un entorno de producción mínimo y de bajo costo para validar el despliegue.
 
-    *   `[ ]` **16.1: Configuración de Google Cloud:**
+    *   `[x]` **16.1: Configuración de Google Cloud:**
         *   Crear proyecto en GCP, habilitar APIs (Cloud Run, Cloud SQL, Artifact Registry, Secret Manager).
-    *   `[ ]` **16.2: Despliegue de la Base de Datos:**
+    *   `[x]` **16.2: Despliegue de la Base de Datos:**
         *   Crear instancia de Cloud SQL (PostgreSQL) usando el tamaño más pequeño (`db-f1-micro`) para minimizar costos.
         *   Almacenar la contraseña en Secret Manager.
         *   Ejecutar las migraciones de Prisma en la base de datos de la nube.
-    *   `[ ]` **16.3: Despliegue del Backend:**
-        *   Optimizar `backend/Dockerfile` para producción.
+    *   `[ ]` **16.3: Despliegue del Backend (Cloud Run):**
+        *   **Estrategia:** Desplegar como contenedor serverless (escala a cero) para optimizar costos.
+        *   Optimizar `backend/Dockerfile` usando builds multi-etapa para producción (reduciendo tamaño e ignorando dependencias de desarrollo).
         *   Subir la imagen de Docker a Artifact Registry.
-        *   Desplegar el backend en Cloud Run, inyectando los secretos de la base de datos.
-    *   `[ ]` **16.4: Despliegue del Frontend:**
+        *   Desplegar el backend en Cloud Run, inyectando los secretos de la base de datos (Secret Manager).
+    *   `[ ]` **16.4: Despliegue del Frontend (Cloud Run con Nginx):**
+        *   **Estrategia:** Construir la PWA estática y servirla usando un contenedor Nginx ligero en Cloud Run, unificando el modelo de despliegue con el backend.
+        *   Optimizar `frontend/Dockerfile` usando builds multi-etapa (etapa de build de Vite + etapa de servidor Nginx).
         *   Configurar `VITE_API_URL` para que apunte al backend en Cloud Run.
-        *   Desplegar los archivos estáticos del frontend usando Firebase Hosting.
 
 <br>
 
--   **Fase 17 (Paralelo): Implementación de Service Worker Básico (PWA)**
-    > **Objetivo:** Hacer la aplicación instalable y cachear la "App Shell" para que la interfaz básica cargue instantáneamente y offline.
+-   **Fase 17: Implementación de Service Worker Básico (PWA) (Completada)**
+    > **Objetivo:** Hacer la aplicación instalable y cachear la "App Shell" para que la interfaz básica cargue instantáneamente y offline. Esta fase sentó las bases para la arquitectura Local-First (Fase 19).
 
-    *   `[ ]` **17.1: Crear el Web App Manifest (`manifest.json`):** Definir nombre, iconos, colores y `display: standalone`.
-    *   `[ ]` **17.2: Crear el Service Worker (`sw.js`):** Implementar el evento `install` para cachear los archivos estáticos principales (HTML, CSS, JS).
-    *   `[ ]` **17.3: Implementar Estrategia "Cache First":** En el evento `fetch` del Service Worker, servir los archivos estáticos desde el caché primero.
-    *   `[ ]` **17.4: Registrar el Service Worker:** Añadir el código de registro en `main.jsx`.
+    *   `[x]` **17.1: Crear el Web App Manifest (`manifest.json`):** Definir nombre, iconos, colores y `display: standalone`.
+    *   `[x]` **17.2: Crear el Service Worker (`sw.js`):** Implementar el evento `install` para cachear los archivos estáticos principales (HTML, CSS, JS).
+    *   `[x]` **17.3: Implementar Estrategia "Cache First" / `NetworkFirst`:** En el evento `fetch` del Service Worker, servir los archivos desde el caché o la red, según la estrategia.
+    *   `[x]` **17.4: Registrar el Service Worker:** Añadir el código de registro en `main.jsx`.
 
 <br>
 
--   **Fase 18 (Continua): Desarrollo "Offline-First"**
-    > **Objetivo:** Construir todas las nuevas funcionalidades aplicando un patrón offline.
 
-    *   `[ ]` **18.1: Definir la Estrategia de Datos Offline:**
-        *   Investigar e implementar una librería para gestionar `IndexedDB` (ej. `dexie.js`) para almacenar los datos de la aplicación en el navegador.
-    *   `[ ]` **18.2: Implementar Sincronización en Segundo Plano:**
-        *   Utilizar la API de "Background Sync" en el Service Worker para encolar las modificaciones (`POST`, `PUT`, `DELETE`) realizadas sin conexión y enviarlas a la API cuando se recupere la conectividad.
-    *   `[ ]` **18.3: Aplicar el Patrón a Nuevas Funcionalidades:**
-        *   Todas las nuevas funcionalidades se desarrollarán con la arquitectura "Offline-First": la UI interactúa principalmente con `IndexedDB` y la sincronización es un proceso de fondo.
 
 <br>
 
@@ -601,27 +568,28 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
 
 <br>
 
--   **Fase 19: Arquitectura "Logística Inmortal" (Offline-First) (Completada)**
-    > **Objetivo:** Blindar el módulo de Logística para que sea 100% funcional offline, garantizando que los repartidores puedan gestionar sus tareas sin depender de la conectividad. Esto se logró migrando a una arquitectura "local-first" para el flujo de trabajo logístico.
+-   **Fase 19: Arquitectura PWA y Funcionalidad Offline-First (En Progreso)**
+    > **Objetivo:** Garantizar que la aplicación sea instalable, funcione de manera confiable sin conexión a internet y sincronice los datos de forma inteligente. Esta fase consolida toda la estrategia PWA, reemplazando el enfoque inicial de caché de red por una arquitectura "local-first" más robusta basada en IndexedDB (Dexie).
 
-    *   **19.1: Implementación de la Base de Datos Local con Dexie.js (Completada)**
-        *   `[x]` **Acción (Frontend):** Instalar las dependencias `dexie` y `dexie-react-hooks`.        
-        *   `[x]` **Acción (Frontend):** Crear un nuevo archivo de servicio (`frontend/src/services/db.js`) definiendo el esquema `IndexedDB` con `dexie` (`externalProductionOrders`, `clients`, `assemblers`, `products`).
-        *   `[x]` **Acción (Frontend):** Configurar índices (`id`, `status`, `deliveryUserId`, etc.) para búsquedas locales.
+    *   **19.1: Base de la Arquitectura e Instalabilidad (Completado)**
+        *   `[x]` **(Infraestructura PWA):** Configuración de `vite-plugin-pwa` para la generación del Service Worker y el Web App Manifest, haciendo la aplicación instalable (`Añadir a pantalla de inicio`).
+        *   `[x]` **(Base de Datos Local):** Implementación de `Dexie.js` para crear una base de datos IndexedDB en el navegador, que actúa como la fuente principal de verdad para la UI.
+        *   `[x]` **(Servicio de Sincronización):** Creación de un `SyncService` para orquestar la sincronización inicial y continua entre la base de datos local y el servidor.
+        *   **Documentación de Instalación y Uso Móvil:**
+            *   **Instalación Silenciosa:** Los usuarios Android acceden vía enlace web (Chrome). El navegador detecta el manifest y ofrece la opción "Instalar ZAP PWA", añadiendo un ícono a su pantalla de inicio. No requiere Google Play Store.
+            *   **Experiencia Nativa:** Al ejecutarse desde el ícono, la PWA funciona en modo `standalone` (pantalla completa, sin barra de URL) con su propio espacio en la multitarea de Android.
+            *   **Seguridad y Almacenamiento (Sandbox):** La PWA opera dentro del entorno seguro del navegador, sin acceso indiscriminado al sistema operativo.
+            *   **Almacenamiento Persistente:** Al ser instalada y usada frecuentemente, Chrome otorga automáticamente "Almacenamiento Persistente" a IndexedDB, garantizando que el sistema operativo no borre los datos locales (órdenes, catálogo) para liberar espacio, asegurando la fiabilidad offline.
 
-    *   **19.2: Implementación de Sincronización Inteligente Híbrida (Completada)**
-        *   `[x]` **Acción (Frontend):** Crear `SyncService` que orquesta el flujo de datos entre API y `dexie`.
-        *   `[x]` **Acción (Frontend):** Modificar `AuthContext` para invocar `initialSync` tras el login y `clearLocalData` al cerrar sesión (seguridad).
-        *   `[x]` **Acción (Frontend):** Implementar lógica proactiva en `SyncContext`: sincronización inmediata al recuperar conexión y función `triggerSync` manual.
-        *   `[x]` **Acción (Backend):** Crear endpoints de apoyo `/api/external-production-orders/active` y `all=true` para el catálogo de productos.
+    *   **19.2: Módulo de Logística 100% Offline (Completado)**
+        *   `[x]` **(UI Local-First):** Refactorización del Panel de Logística para leer y escribir directamente en la base de datos local de Dexie, logrando una experiencia de usuario instantánea y completamente funcional sin conexión.
+        *   `[x]` **(Sincronización Proactiva):** Implementación de un sistema de sincronización híbrido que actualiza los datos en segundo plano al recuperar la conexión o cuando el usuario realiza una acción.
 
-    *   **19.3: Refactorización del Panel de Logística a "Local-First" (Completada)**
-        *   `[x]` **Acción (Frontend):** Refactorizar `LogisticsDashboardPage.jsx` para usar `useLiveQuery` leyendo directamente de `IndexedDB`.
-        *   `[x]` **Acción (Frontend):** Asegurar que las acciones (Confirmar Entrega, etc.) actualicen primero la DB local (Optimistic UI) y luego disparen `triggerSync()` para una actualización instantánea en el servidor sin baches.
-        *   `[x]` **Acción (Backend):** Hidratar respuestas de los endpoints (Crear, Recibir, Asignar Recogida) para que devuelvan el objeto completo con relaciones (`items`, `assembler`, `expectedOutputs`), eliminando errores de renderizado en UI.
-
-    *   **19.4: Implementación de Poda Automática de Datos (Pendiente)**
-        *   `[ ]` **Acción (SyncService):** Implementar una rutina que elimine de la base local las órdenes en estado terminal (`COMPLETED`, `CANCELLED`) por más de 7 días.        
+    *   **19.3: Tareas Pendientes y Futuras Mejoras**
+        *   `[ ]` **(Expansión Offline):** Extender el patrón de arquitectura "local-first" a otros módulos críticos de la aplicación (ej. Ventas, Inventario).
+        *   `[ ]` **(Gestión de Cambios Offline):** Implementar una cola de mutaciones (usando la API de Background Sync o una tabla en Dexie) para garantizar que las acciones del usuario (crear, editar, eliminar) realizadas sin conexión se envíen de forma segura al servidor una vez que se restablezca la conectividad.
+        *   `[ ]` **(Poda de Datos):** Implementar una rutina que elimine de la base de datos local las órdenes y otros datos que ya no son relevantes (ej. órdenes en estado `COMPLETED` o `CANCELLED` con más de 7 días de antigüedad) para optimizar el rendimiento y el uso de almacenamiento.
+        *   `[ ]` **(Feedback de Sincronización):** Implementar un indicador visual global en la UI que informe al usuario del estado de la sincronización (ej. "Sincronizado", "Sincronizando...", "Sin conexión").        
     ## 2. Changelog (Registro de Cambios)
 
 ## 2026-02-18 (Fase 11.5: Módulo de Ventas, Clientes y Recibos - Completado)
@@ -656,7 +624,7 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     -   Se corrigió un error `Identifier 'React' has already been declared` en `AssemblerManagementPage.jsx` eliminando una importación duplicada de React.
     -   Se corrigió un `ReferenceError: useNavigate is not defined` en `AssemblerManagementPage.jsx` eliminando la declaración `const navigate = useNavigate();` que ya no era necesaria tras el cambio de flujo.
     -   Se eliminó la página `AssemblerDetailsPage.jsx` y su ruta de `App.jsx` para simplificar el flujo de usuario.
-    -   **[BUG]** El modal de "Pendientes" aún no funciona correctamente o muestra errores en la carga de datos.
+
 
 ## 2026-01-18 (Finalización de Refactorización y Consolidación)
 -   **[FEAT] Refactorización Completa de Código e Identificadores:**
