@@ -19,7 +19,7 @@ const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 // Define allowed origins
@@ -27,7 +27,9 @@ const allowedOrigins = ['http://localhost:4173', 'http://localhost:5173', 'http:
 
 // If a frontend URL is provided via environment variable (e.g., in production), allow it
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+  // Eliminamos cualquier comilla doble o simple accidental que PowerShell haya inyectado
+  const cleanUrl = process.env.FRONTEND_URL.replace(/['"]/g, '');
+  allowedOrigins.push(cleanUrl);
 }
 
 app.use(cors({

@@ -527,15 +527,21 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   Crear instancia de Cloud SQL (PostgreSQL) usando el tamaño más pequeño (`db-f1-micro`) para minimizar costos.
         *   Almacenar la contraseña en Secret Manager.
         *   Ejecutar las migraciones de Prisma en la base de datos de la nube.
-    *   `[ ]` **16.3: Despliegue del Backend (Cloud Run):**
+    *   `[x]` **16.3: Despliegue del Backend (Cloud Run):**
         *   **Estrategia:** Desplegar como contenedor serverless (escala a cero) para optimizar costos.
-        *   Optimizar `backend/Dockerfile` usando builds multi-etapa para producción (reduciendo tamaño e ignorando dependencias de desarrollo).
-        *   Subir la imagen de Docker a Artifact Registry.
-        *   Desplegar el backend en Cloud Run, inyectando los secretos de la base de datos (Secret Manager).
-    *   `[ ]` **16.4: Despliegue del Frontend (Cloud Run con Nginx):**
+        *   `[x]` Optimizar `backend/Dockerfile` usando builds multi-etapa para producción (reduciendo tamaño e ignorando dependencias de desarrollo).
+        *   `[x]` Subir la imagen de Docker a Artifact Registry (`southamerica-east1`).
+        *   `[x]` Desplegar el backend en Cloud Run, inyectando la cadena de conexión de la base de datos y variables de entorno.
+    *   `[x]` **16.4: Despliegue del Frontend (Cloud Run con Nginx):**
         *   **Estrategia:** Construir la PWA estática y servirla usando un contenedor Nginx ligero en Cloud Run, unificando el modelo de despliegue con el backend.
-        *   Optimizar `frontend/Dockerfile` usando builds multi-etapa (etapa de build de Vite + etapa de servidor Nginx).
-        *   Configurar `VITE_API_URL` para que apunte al backend en Cloud Run.
+        *   `[x]` Optimizar `frontend/Dockerfile` usando builds multi-etapa (etapa de build de Vite + etapa de servidor Nginx).
+        *   `[x]` Crear configuración de `nginx.conf` para soportar SPA y caché.
+        *   `[x]` Crear `docker-compose.prod.yml` para validar el entorno de producción localmente.
+        *   `[x]` Verificar conectividad y funcionalidad completa en `http://localhost:8080`.
+        *   `[x]` Configurar `VITE_API_URL` para que apunte al backend en Cloud Run durante el build.
+        *   `[x]` Desplegar la imagen del frontend en Cloud Run (`southamerica-east1`).
+    *   `[ ]` **16.5: Resolución de Problemas Post-Despliegue:**
+        *   **[BUG]** Resolver el error de CORS que impide al Frontend en Cloud Run comunicarse con el Backend en Cloud Run. El backend bloquea las peticiones `preflight` a pesar de las actualizaciones en la variable `FRONTEND_URL`. (Prioridad máxima para la próxima sesión).
 
 <br>
 
