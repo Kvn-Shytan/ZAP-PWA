@@ -10,7 +10,7 @@ const clientSchema = z.object({
   name: z.string().min(1, { message: "El nombre del cliente es requerido." }),
   address: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
-  email: z.string().email({ message: "Formato de email inválido." }).optional().nullable(),
+  email: z.preprocess((val) => (val === "" ? null : val), z.string().email({ message: "Formato de email inválido." }).optional().nullable()),
   priceTierId: z.string().optional().nullable(),
 });
 

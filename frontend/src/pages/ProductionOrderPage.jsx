@@ -143,7 +143,13 @@ const ProductionOrderPage = () => {
                 </ul>
             </div>
         )}
-        <button type="submit" disabled={isLoading || !selectedProduct || !allComponentsAvailable}>Registrar Producción</button>
+        <button 
+          type="submit" 
+          disabled={isLoading || !selectedProduct || !allComponentsAvailable}
+          className={allComponentsAvailable ? 'btn-success' : ''}
+        >
+          Registrar Producción
+        </button>
       </form>
 
       <hr className="section-divider"/>

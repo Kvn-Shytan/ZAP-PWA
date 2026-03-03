@@ -1,5 +1,18 @@
 # Changelog (Registro de Cambios)
 
+## 2026-03-03 (Finalización de Despliegue y Estabilización Cloud)
+-   **[FIX] Backend: Resolución de Errores de Inicio y Conectividad:**
+    -   Corregido un error crítico en `index.js` que causaba el cierre del contenedor en entornos con Express 5 al utilizar rutas con asterisco (`*`).
+    -   Implementada carga garantizada de variables de entorno mediante `dotenv` al inicio del proceso, asegurando el acceso a `DATABASE_URL` en producción.
+    -   Establecida conexión robusta con Cloud SQL utilizando el proxy nativo de Google y Sockets Unix, eliminando problemas de red y firewall.
+-   **[FIX] CORS y Seguridad Dinámica:**
+    -   Refactorizada la configuración de CORS para que sea dinámica y configurable mediante la variable de entorno `CORS_ALLOWED_ORIGINS`, permitiendo una gestión segura de accesos sin cambios de código.
+-   **[FEAT] UX: Indicador de Disponibilidad en Producción:**
+    -   Mejorada la interfaz de "Orden de Producción Interna" con un botón de registro dinámico: ahora cambia a color verde (`btn-success`) solo cuando hay stock suficiente de todos los componentes, eliminando la ambigüedad visual.
+-   **[FIX] Estabilidad de Datos y Validación:**
+    -   Corregido error 400 en la creación de clientes al permitir que los campos opcionales como el email lleguen vacíos desde el frontend (pre-procesamiento de Zod).
+    -   Sincronizada la estructura de la base de datos de producción mediante el despliegue exitoso de todas las migraciones acumuladas.
+
 ## 2026-02-28 (Plan de Despliegue a Producción y Validación de Estabilidad)
 -   **[CHORE] Documentación y Estrategia de Despliegue:**
     -   Diseñado y documentado en el `Roadmap.md` un plan de acción completo para el despliegue a producción en Google Cloud.

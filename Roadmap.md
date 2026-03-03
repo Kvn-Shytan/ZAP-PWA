@@ -540,8 +540,13 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[x]` Verificar conectividad y funcionalidad completa en `http://localhost:8080`.
         *   `[x]` Configurar `VITE_API_URL` para que apunte al backend en Cloud Run durante el build.
         *   `[x]` Desplegar la imagen del frontend en Cloud Run (`southamerica-east1`).
-    *   `[ ]` **16.5: Resolución de Problemas Post-Despliegue:**
-        *   **[BUG]** Resolver el error de CORS que impide al Frontend en Cloud Run comunicarse con el Backend en Cloud Run. El backend bloquea las peticiones `preflight` a pesar de las actualizaciones en la variable `FRONTEND_URL`. (Prioridad máxima para la próxima sesión).
+    -   `[x]` **16.5: Resolución de Problemas de Despliegue (Completada):**
+        *   `[x]` Solucionado error de CORS implementando configuración dinámica mediante la variable `CORS_ALLOWED_ORIGINS`.
+        *   `[x]` Corregido crash del contenedor al iniciar debido a incompatibilidad de rutas en Express 5 (`app.options('*')`).
+        *   `[x]` Implementada carga robusta de variables de entorno con `dotenv` para entornos de producción.
+        *   `[x]` Configurada conexión segura a base de datos mediante Cloud SQL Auth Proxy (Sockets Unix) y optimización de `DATABASE_URL`.
+        *   `[x]` Actualizada base de datos de producción mediante `prisma migrate deploy`.
+        *   `[x]` Sincronización correcta de la PWA resolviendo problemas de caché del Service Worker.
 
 <br>
 

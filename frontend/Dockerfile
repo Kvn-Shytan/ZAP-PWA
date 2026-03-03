@@ -13,10 +13,6 @@ RUN npm install
 # Copiar el código fuente
 COPY . .
 
-# Argumento para la URL de la API (útil para inyectar la URL de Cloud Run durante el build)
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
 # Construir la aplicación para producción (genera la carpeta /dist)
 RUN npm run build
 

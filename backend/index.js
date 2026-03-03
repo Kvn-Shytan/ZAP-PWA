@@ -1,5 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+// Load environment variables as early as possible
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 const productRoutes = require('./routes/products.routes');
 const categoryRoutes = require('./routes/categories.routes');
 const supplierRoutes = require('./routes/suppliers.routes');
@@ -22,27 +26,42 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(express.json());
-// Define allowed origins
-const allowedOrigins = ['http://localhost:4173', 'http://localhost:5173', 'http://localhost:8080'];
 
-// If a frontend URL is provided via environment variable (e.g., in production), allow it
-if (process.env.FRONTEND_URL) {
-  // Eliminamos cualquier comilla doble o simple accidental que PowerShell haya inyectado
-  const cleanUrl = process.env.FRONTEND_URL.replace(/['"]/g, '');
-  allowedOrigins.push(cleanUrl);
+// Define allowed origins for CORS
+let allowedOrigins = [];
+
+if (process.env.CORS_ALLOWED_ORIGINS) {
+  // If the environment variable is set, use it to populate the allowed origins
+  allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+} else {
+  // Fallback for local development environments
+  console.log('CORS_ALLOWED_ORIGINS environment variable not set. Falling back to default development origins.');
+  allowedOrigins = ['http://localhost:4173', 'http://localhost:5173', 'http://localhost:8080'];
 }
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+console.log('Configured CORS allowed origins:', allowedOrigins);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, server-to-server, or curl requests)
+    if (!origin) {
+      return callback(null, true);
     }
-    return callback(null, true);
-  }
-}));
+    // If the origin is in our whitelist, allow it
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Otherwise, block it
+    const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+    return callback(new Error(msg), false);
+  },
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization',
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
 
 app.get('/api/', (req, res) => {
   res.send('¡El Backend de ZAP PWA está funcionando!');
