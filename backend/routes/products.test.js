@@ -29,6 +29,8 @@ describe('GET /api/products', () => {
     // Es crucial limpiar en el orden correcto para evitar problemas de FK
     await prisma.salesOrderItem.deleteMany({});
     await prisma.salesOrder.deleteMany({});
+    await prisma.alert.deleteMany({});
+    await prisma.wastageLog.deleteMany({});
     await prisma.inventoryMovement.deleteMany({});
     await prisma.expectedProduction.deleteMany({}); // Added
     await prisma.orderAssemblyStep.deleteMany({}); // Added

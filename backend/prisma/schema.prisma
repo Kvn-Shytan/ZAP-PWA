@@ -106,6 +106,7 @@ model Product {
   // Relación con los costos indirectos
   overheadCosts   ProductOverhead[]
   salesOrderItems SalesOrderItem[] // NEW inverse relation
+  wastageLogs     WastageLog[]
 }
 
 model ProductComponent {
@@ -209,6 +210,8 @@ model ExternalProductionOrder {
   orderSentComponents OrderSentComponent[] // NEW
 
   assemblerPayment   AssemblerPayment? @relation(fields: [assemblerPaymentId], references: [id])
+  alerts             Alert[]
+  wastageLogs        WastageLog[]
 }
 
 model ExternalProductionOrderItem {
@@ -301,6 +304,7 @@ model Assembler {
 
   externalProductionOrders ExternalProductionOrder[]
   assemblerPayments        AssemblerPayment[]
+  wastageLogs              WastageLog[]
 }
 
 model User {
@@ -316,6 +320,7 @@ model User {
   assignedDeliveries ExternalProductionOrder[] @relation("Deliveries")
   assignedPickups    ExternalProductionOrder[] @relation("Pickups")
   orderNotes         OrderNote[] // NEW
+  wastageLogs        WastageLog[]
 }
 
 model InventoryMovement {
@@ -403,4 +408,58 @@ enum OverheadType {
   SERVICE
   DESIGN
   OTHER
+}
+
+enum AlertType {
+  INACTIVITY
+  LOW_STOCK
+  QUALITY_ISSUE
+  OTHER
+}
+
+enum AlertStatus {
+  ACTIVE
+  DISMISSED
+  RESOLVED
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  type        AlertType   @default(INACTIVITY)
+  message     String
+  status      AlertStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relación con Orden de Producción Externa si aplica
+  externalProductionOrderId String?
+  externalProductionOrder   ExternalProductionOrder? @relation(fields: [externalProductionOrderId], references: [id], onDelete: Cascade)
+
+  @@index([externalProductionOrderId])
+  @@index([status])
+}
+
+model WastageLog {
+  id                        String   @id @default(cuid())
+  quantity                  Decimal
+  reason                    String
+  costDeducted              Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  productId                 String
+  product                   Product  @relation(fields: [productId], references: [id])
+
+  assemblerId               String?
+  assembler                 Assembler? @relation(fields: [assemblerId], references: [id])
+
+  externalProductionOrderId String?
+  externalProductionOrder   ExternalProductionOrder? @relation(fields: [externalProductionOrderId], references: [id])
+
+  userId                    Int
+  user                      User     @relation(fields: [userId], references: [id])
+
+  @@index([assemblerId])
+  @@index([externalProductionOrderId])
+  @@index([costDeducted])
 }

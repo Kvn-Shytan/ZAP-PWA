@@ -1,16 +1,50 @@
-// backend/routes/dashboard.routes.js
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../authMiddleware');
-const prisma = require('../prisma/client'); // Importar Prisma Client
+const prisma = require('../prisma/client');
 
-// Endpoint para el panel de control
-router.get('/', authenticateToken, async (req, res) => { // Convertir a async
-  const user = req.user; // req.user es establecido por authenticateToken
+// --- Funciones Auxiliares para Fechas ---
+const isBusinessDay = (date) => {
+  const day = date.getDay();
+  return day !== 0; // 0 es Domingo
+};
+
+const getThreeBusinessDaysAgo = () => {
+  let result = new Date();
+  let subtractedDays = 0;
+  while (subtractedDays < 3) {
+    result.setDate(result.getDate() - 1);
+    if (isBusinessDay(result)) subtractedDays++;
+  }
+  return result;
+};
+
+const get24HoursAgo = () => new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+const getNextFortnightEnd = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const date = now.getDate();
+  if (date <= 15) {
+    return new Date(year, month, 15, 23, 59, 59, 999);
+  } else {
+    return new Date(year, month + 1, 0, 23, 59, 59, 999); // Último día del mes
+  }
+};
+
+const getDaysUntil = (targetDate) => {
+  const diffTime = targetDate - new Date();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+router.get('/', authenticateToken, async (req, res) => {
+  const user = req.user;
 
   let dashboardData = {
+    criticalAlerts: [],
+    precautions: [],
     tasks: [],
-    alerts: [],
     kpis: {}
   };
 
@@ -19,303 +53,247 @@ router.get('/', authenticateToken, async (req, res) => { // Convertir a async
   }
 
   try {
-    // --- LÓGICA REAL PARA EL ROL EMPLOYEE ---
+    const now = new Date();
+    const threeBusinessDaysAgo = getThreeBusinessDaysAgo();
+    const twentyFourHoursAgo = get24HoursAgo();
+    const nextFortnightEnd = getNextFortnightEnd();
+    const daysToFortnight = getDaysUntil(nextFortnightEnd);
+    const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+
+    // --- LÓGICA COMPARTIDA DE MERMAS (ADMIN / SUPERVISOR) ---
+    let recentWastages = [];
+    if (user.role === 'ADMIN' || user.role === 'SUPERVISOR') {
+      recentWastages = await prisma.wastageLog.findMany({
+        where: {
+          createdAt: { gte: fifteenDaysAgo },
+          assemblerId: { not: null }
+        },
+        include: { assembler: true }
+      });
+    }
+
+    const processWastageAlerts = (cAlerts, precs) => {
+      const wastageByAssembler = {};
+      recentWastages.forEach(w => {
+        if (!wastageByAssembler[w.assemblerId]) {
+          wastageByAssembler[w.assemblerId] = { assembler: w.assembler, count: 0, pending: 0 };
+        }
+        wastageByAssembler[w.assemblerId].count++;
+        if (!w.costDeducted) wastageByAssembler[w.assemblerId].pending++;
+      });
+
+      Object.values(wastageByAssembler).forEach(info => {
+        if (info.count >= 3) {
+          cAlerts.push({
+            id: `crit-waste-${info.assembler.id}`, type: 'POOR_PERFORMANCE', severity: 'critical',
+            message: `Bajo rendimiento: El armador ${info.assembler.name} ha arruinado material ${info.count} veces en 15 días.`, link: `/wastage-management`
+          });
+        } else if (info.pending > 0) {
+          precs.push({
+            id: `prec-waste-${info.assembler.id}`, type: 'WASTAGE_WARNING', severity: 'warning',
+            message: `Precaución: Nueva merma registrada para ${info.assembler.name}. Recordar dar aviso.`, link: `/wastage-management`
+          });
+        }
+      });
+    };
+
+    // --- LÓGICA PARA EMPLOYEE ---
     if (user.role === 'EMPLOYEE') {
-      try {
-        const [deliveries, pickups] = await Promise.all([
-          // Tareas de Entrega
-          prisma.externalProductionOrder.findMany({
-            where: {
-              deliveryUserId: user.userId, // CORRECTED
-              status: 'OUT_FOR_DELIVERY',
-            },
-            include: { assembler: true },
-          }),
-          // Tareas de Recolección
-          prisma.externalProductionOrder.findMany({
-            where: {
-              pickupUserId: user.userId, // CORRECTED
-              status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
-            },
-            include: { assembler: true },
-          }),
-        ]);
+      const [deliveries, pickups] = await Promise.all([
+        prisma.externalProductionOrder.findMany({
+          where: { deliveryUserId: user.userId, status: 'OUT_FOR_DELIVERY' },
+          include: { assembler: true },
+        }),
+        prisma.externalProductionOrder.findMany({
+          where: { pickupUserId: user.userId, status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] } },
+          include: { assembler: true },
+        }),
+      ]);
 
-        const deliveryTasks = deliveries.map(order => ({
-          id: `delivery-${order.id}`,
-          text: `Entregar orden ${order.orderNumber} a ${order.assembler?.name || '[Armador no especificado]'}`,
-          link: `/logistics-dashboard`,
-        }));
+      const deliveryTasks = deliveries.map(order => ({
+        id: `delivery-${order.id}`,
+        text: `Entregar orden ${order.orderNumber} a ${order.assembler?.name || 'N/A'}`,
+        link: `/logistics-dashboard`,
+      }));
 
-        const pickupTasks = pickups.map(order => ({
-          id: `pickup-${order.id}`,
-          text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
-          link: `/logistics-dashboard`,
-        }));
+      const pickupTasks = pickups.map(order => ({
+        id: `pickup-${order.id}`,
+        text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || 'N/A'}`,
+        link: `/logistics-dashboard`,
+      }));
 
-        dashboardData.tasks = [...deliveryTasks, ...pickupTasks];
-
-      } catch (dbError) {
-        console.error("Error específico en la consulta del dashboard:", dbError);
-        return res.status(500).json({ 
-          message: "La consulta a la base de datos para el dashboard falló.", 
-          error: dbError.message 
-        });
-      }
+      dashboardData.tasks = [...deliveryTasks, ...pickupTasks];
     }
 
-    // --- LÓGICA REAL PARA EL ROL SUPERVISOR ---
+    // --- LÓGICA PARA SUPERVISOR ---
     if (user.role === 'SUPERVISOR') {
-      try {
-        const [
-          pendingAssignmentOrders,
-          failedDeliveryOrders,
-          pickupOrders, // <-- ADDED
-          productsWithThreshold,
-          ordersInProgressCount
-        ] = await Promise.all([
-          prisma.externalProductionOrder.findMany({
-            where: { status: 'PENDING_DELIVERY' },
-            include: { assembler: true },
-            orderBy: { createdAt: 'desc' },
-          }),
-          prisma.externalProductionOrder.findMany({
-            where: { status: 'DELIVERY_FAILED' },
-            include: { assembler: true },
-            orderBy: { updatedAt: 'desc' },
-          }),
-          // <-- ADDED: Query for supervisor's pickup tasks
-          prisma.externalProductionOrder.findMany({
-            where: {
-              pickupUserId: user.userId,
-              status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
-            },
-            include: { assembler: true },
-          }),
-          // Alerta: Productos con bajo stock (se filtran en memoria)
-          prisma.product.findMany({
-            where: { lowStockThreshold: { gt: 0 } },
-          }),
-          // KPI: Conteo de órdenes en proceso
-          prisma.externalProductionOrder.count({
-            where: {
-              status: { in: ['OUT_FOR_DELIVERY', 'IN_ASSEMBLY', 'PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'] }
-            }
-          }),
-        ]);
+      const [
+        orders,
+        productsWithThreshold,
+        pickupTasksData
+      ] = await Promise.all([
+        prisma.externalProductionOrder.findMany({
+          include: { assembler: true },
+        }),
+        prisma.product.findMany({
+          where: { lowStockThreshold: { gt: 0 } },
+        }),
+        prisma.externalProductionOrder.findMany({
+          where: { pickupUserId: user.userId, status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] } },
+          include: { assembler: true },
+        }),
+      ]);
 
-        // Mapear Tareas
-        const pendingTasks = pendingAssignmentOrders.map(order => ({
-          id: `task-pending-${order.id}`,
-          text: `Asignar reparto para orden ${order.orderNumber} (${order.assembler?.name || 'N/A'})`,
-          link: `/logistics-dashboard`, // Link al panel para que pueda usar las acciones
-        }));
+      let criticalAlerts = [];
+      let precautions = [];
+      let tasks = [];
+      let inProcessCount = 0;
 
-        const failedTasks = failedDeliveryOrders.map(order => ({
-          id: `task-failed-${order.id}`,
-          text: `Revisar entrega fallida para orden ${order.orderNumber} (${order.assembler?.name || 'N/A'})`,
-          link: `/logistics-dashboard`,
-        }));
-        
-        // <-- ADDED: Map pickup tasks
-        const pickupTasks = pickupOrders.map(order => ({
-          id: `pickup-${order.id}`,
-          text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
-          link: `/logistics-dashboard`,
-        }));
-
-        dashboardData.tasks = [...pendingTasks, ...failedTasks, ...pickupTasks];
-
-        // Mapear Alertas
-        const lowStockAlerts = productsWithThreshold
-          .filter(p => p.stock < p.lowStockThreshold)
-          .map(p => {
-            const link = p.type === 'RAW_MATERIAL'
-              ? `/purchase-order?productId=${p.id}`
-              : `/external-production-orders/new?productId=${p.id}`;
-
-            return {
-              id: `alert-stock-${p.id}`,
-              type: 'LOW_STOCK',
-              severity: 'high',
-              message: `Bajo stock para ${p.description} (${p.internalCode}). Stock actual: ${p.stock}, umbral: ${p.lowStockThreshold}.`,
-              link: link,
-              timestamp: new Date().toISOString(),
-            };
+      // Procesar Productos (Stock)
+      productsWithThreshold.forEach(p => {
+        const link = p.type === 'RAW_MATERIAL' ? `/purchase-order?productId=${p.id}` : `/external-production-orders/new?productId=${p.id}`;
+        if (Number(p.stock) <= 0) {
+          criticalAlerts.push({
+            id: `crit-stock-${p.id}`, type: 'STOCK_OUT', severity: 'critical',
+            message: `¡RUPTURA DE STOCK! ${p.description} (${p.internalCode}) se ha agotado.`, link
           });
+        } else if (Number(p.stock) <= Number(p.lowStockThreshold)) {
+          precautions.push({
+            id: `prec-stock-${p.id}`, type: 'LOW_STOCK', severity: 'warning',
+            message: `Bajo stock: ${p.description}. Actual: ${p.stock}, Umbral: ${p.lowStockThreshold}.`, link
+          });
+        }
+      });
+
+      // Procesar Órdenes
+      orders.forEach(order => {
+        const link = `/logistics-dashboard`;
         
-        dashboardData.alerts = lowStockAlerts;
+        // KPIs
+        if (['OUT_FOR_DELIVERY', 'IN_ASSEMBLY', 'PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'].includes(order.status)) {
+          inProcessCount++;
+        }
 
-        // Asignar KPIs
-        dashboardData.kpis = {
-          'Órdenes en Proceso': ordersInProgressCount,
-          'Tareas Pendientes': pendingTasks.length,
-          'Entregas Fallidas': failedTasks.length,
-        };
+        // Críticas
+        if (order.status === 'DELIVERY_FAILED') {
+          criticalAlerts.push({
+            id: `crit-fail-${order.id}`, type: 'DELIVERY_FAILED', severity: 'critical',
+            message: `Entrega fallida: Orden ${order.orderNumber} para ${order.assembler?.name}. Requiere acción.`, link
+          });
+        }
+        if (order.status === 'IN_ASSEMBLY' && new Date(order.updatedAt) < threeBusinessDaysAgo) {
+          criticalAlerts.push({
+            id: `crit-inact-${order.id}`, type: 'INACTIVITY', severity: 'critical',
+            message: `Inactividad: Orden ${order.orderNumber} en manos de ${order.assembler?.name} por más de 3 días hábiles.`, link
+          });
+        }
 
-      } catch (dbError) {
-        console.error("Error específico en la consulta del dashboard para SUPERVISOR:", dbError);
-        return res.status(500).json({ 
-          message: "La consulta a la base de datos para el dashboard falló.", 
-          error: dbError.message 
+        // Precauciones
+        if (['PENDING_DELIVERY', 'OUT_FOR_DELIVERY', 'PENDING_PICKUP'].includes(order.status) && new Date(order.updatedAt) < twentyFourHoursAgo) {
+          precautions.push({
+            id: `prec-delay-${order.id}`, type: 'DELAY', severity: 'warning',
+            message: `Retraso logístico: Orden ${order.orderNumber} estancada en ${order.status} por más de 24hs.`, link
+          });
+        }
+        if (order.status === 'COMPLETED_WITH_DISCREPANCY') {
+          precautions.push({
+            id: `prec-disc-${order.id}`, type: 'DISCREPANCY', severity: 'warning',
+            message: `Discrepancia: Orden ${order.orderNumber} cerrada con diferencias en cantidades.`, link: `/external-orders/${order.id}`
+          });
+        }
+
+        // Tareas (Solo asignación pendiente si no es un retraso severo)
+        if (order.status === 'PENDING_DELIVERY' && new Date(order.updatedAt) >= twentyFourHoursAgo) {
+          tasks.push({
+            id: `task-assign-${order.id}`, text: `Asignar reparto: Orden ${order.orderNumber}`, link
+          });
+        }
+      });
+
+      // Tareas propias del supervisor
+      pickupTasksData.forEach(order => {
+        tasks.push({
+          id: `pickup-${order.id}`, text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name}`, link: `/logistics-dashboard`
         });
-      }
+      });
+
+      processWastageAlerts(criticalAlerts, precautions);
+
+      dashboardData = { criticalAlerts, precautions, tasks, kpis: { 'Órdenes en Proceso': inProcessCount } };
     }
 
+    // --- LÓGICA PARA ADMIN ---
     if (user.role === 'ADMIN') {
-      try {
-        const [
-          // ADMIN: Personal tasks
-          adminDeliveries,
-          adminPickups,
-          // ADMIN: General tasks
-          pendingPaymentOrders,
-          // Supervisor data (re-using supervisor queries)
-          pendingAssignmentOrders,
-          failedDeliveryOrders,
-          productsWithThreshold,
-          ordersInProgressCount
-        ] = await Promise.all([
-          // ADMIN: Tareas de Entrega
-          prisma.externalProductionOrder.findMany({
-            where: {
-              deliveryUserId: user.userId,
-              status: 'OUT_FOR_DELIVERY',
-            },
-            include: { assembler: true },
-          }),
-          // ADMIN: Tareas de Recolección
-          prisma.externalProductionOrder.findMany({
-            where: {
-              pickupUserId: user.userId,
-              status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] },
-            },
-            include: { assembler: true },
-          }),
-          // ADMIN: Tareas - Pagos pendientes a armadores (se contará por armador)
-          prisma.externalProductionOrder.findMany({
-                        where: {
-                          status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] },
-                          assemblerPaymentId: null,
-                        },            distinct: ['assemblerId'], // Contar ensambladores distintos
-            select: {
-              assembler: { select: { id: true, name: true } },
-            },
-          }),
-          // SUPERVISOR: Tarea: Órdenes pendientes de asignación de reparto
-          prisma.externalProductionOrder.findMany({
-            where: { status: 'PENDING_DELIVERY' },
-            include: { assembler: true },
-            orderBy: { createdAt: 'desc' },
-          }),
-          // SUPERVISOR: Tarea: Órdenes con entrega fallida
-          prisma.externalProductionOrder.findMany({
-            where: { status: 'DELIVERY_FAILED' },
-            include: { assembler: true },
-            orderBy: { updatedAt: 'desc' },
-          }),
-          // SUPERVISOR: Alerta: Productos con bajo stock (se filtran en memoria)
-          prisma.product.findMany({
-            where: { lowStockThreshold: { gt: 0 } },
-          }),
-          // SUPERVISOR: KPI: Conteo de órdenes en proceso
-          prisma.externalProductionOrder.count({
-            where: {
-              status: { in: ['OUT_FOR_DELIVERY', 'IN_ASSEMBLY', 'PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'] }
-            }
-          }),
-        ]);
+      const [
+        orders,
+        productsWithThreshold,
+        unpaidOrders,
+        adminDeliveries,
+        adminPickups
+      ] = await Promise.all([
+        prisma.externalProductionOrder.findMany({ include: { assembler: true } }),
+        prisma.product.findMany({ where: { lowStockThreshold: { gt: 0 } } }),
+        prisma.externalProductionOrder.findMany({
+          where: { status: { in: ['COMPLETED', 'COMPLETED_WITH_NOTES', 'COMPLETED_WITH_DISCREPANCY'] }, assemblerPaymentId: null },
+          distinct: ['assemblerId'],
+          select: { assembler: { select: { id: true, name: true } } },
+        }),
+        prisma.externalProductionOrder.findMany({ where: { deliveryUserId: user.userId, status: 'OUT_FOR_DELIVERY' }, include: { assembler: true } }),
+        prisma.externalProductionOrder.findMany({ where: { pickupUserId: user.userId, status: { in: ['PENDING_PICKUP', 'RETURN_IN_TRANSIT'] } }, include: { assembler: true } }),
+      ]);
 
-        // ADMIN: Mapear Tareas Personales (entrega y recogida)
-        const adminDeliveryTasks = adminDeliveries.map(order => ({
-            id: `delivery-admin-${order.id}`,
-            text: `Entregar orden ${order.orderNumber} a ${order.assembler?.name || '[Armador no especificado]'}`,
-            link: `/logistics-dashboard`,
-        }));
-        const adminPickupTasks = adminPickups.map(order => ({
-            id: `pickup-admin-${order.id}`,
-            text: `Recoger orden ${order.orderNumber} de ${order.assembler?.name || '[Armador no especificado]'}`,
-            link: `/logistics-dashboard`,
-        }));
+      let criticalAlerts = [];
+      let precautions = [];
+      let tasks = [];
+      let inProcessCount = 0;
 
-
-        // ADMIN: Mapear Tareas (Pagos pendientes)
-        const adminPaymentTasks = pendingPaymentOrders
-          .filter(order => order.assembler) // Safely filter out orders with null assembler
-          .map(order => ({
-            id: `task-admin-payment-${order.assembler.id}`,
-            text: `Liquidar pagos pendientes para ${order.assembler.name}`,
-            link: `/assembler-payment-batch`,
-        }));
-        
-        // ADMIN: Mapear Alertas (Placeholder)
-        const adminAlerts = [
-          { id: 'alert-admin-general', type: 'INFO', severity: 'medium', message: 'Revisar informes financieros del último mes.', link: '/admin-tools/overhead-costs', timestamp: new Date().toISOString() },
-        ];
-
-        // ADMIN: KPIs
-        const adminKpis = {
-          'Armadores con Pagos Pendientes': adminPaymentTasks.length,
-          'Ingresos Totales Último Mes (Simulado)': 'USD 150,000.00', // Mock de KPI
-        };
-
-        dashboardData.adminData = {
-          tasks: [...adminDeliveryTasks, ...adminPickupTasks, ...adminPaymentTasks],
-          alerts: adminAlerts,
-          kpis: adminKpis,
-        };
-
-
-        // SUPERVISOR: Mapear Tareas (re-usando lógica del supervisor)
-        const supervisorPendingTasks = pendingAssignmentOrders.map(order => ({
-            id: `task-s-adminview-pending-${order.id}`,
-            text: `Asignar reparto para orden ${order.orderNumber} (${order.assembler?.name || 'N/A'})`,
-            link: `/logistics-dashboard`,
-        }));
-
-        const supervisorFailedTasks = failedDeliveryOrders.map(order => ({
-            id: `task-s-adminview-failed-${order.id}`,
-            text: `Revisar entrega fallida para orden ${order.orderNumber} (${order.assembler?.name || 'N/A'})`,
-            link: `/external-orders/${order.id}`,
-        }));
-        
-        const supervisorTasks = [...supervisorPendingTasks, ...supervisorFailedTasks];
-
-
-        // SUPERVISOR: Mapear Alertas (re-usando lógica del supervisor)
-        const supervisorLowStockAlerts = productsWithThreshold
-          .filter(p => p.stock < p.lowStockThreshold)
-          .map(p => {
-            const link = p.type === 'RAW_MATERIAL'
-              ? `/purchase-order?productId=${p.id}`
-              : `/external-production-orders/new?productId=${p.id}`;
-            return {
-              id: `alert-s-adminview-stock-${p.id}`,
-              type: 'LOW_STOCK',
-              severity: 'high',
-              message: `Bajo stock para ${p.description} (${p.internalCode}). Stock actual: ${p.stock}, umbral: ${p.lowStockThreshold}. (SUPERVISOR)`,
-              link: link,
-              timestamp: new Date().toISOString(),
-            };
-          });
-
-        dashboardData.supervisorData = {
-          tasks: supervisorTasks,
-          alerts: supervisorLowStockAlerts,
-          kpis: {
-            'Órdenes en Proceso': ordersInProgressCount,
-            'Tareas Pendientes': supervisorPendingTasks.length,
-            'Entregas Fallidas': supervisorFailedTasks.length,
-          },
-        };
-
-      } catch (dbError) {
-        console.error("Error específico en la consulta del dashboard para ADMIN:", dbError);
-        return res.status(500).json({ 
-          message: "La consulta a la base de datos para el dashboard de ADMIN falló.", 
-          error: dbError.message 
+      // Fechas de Pago
+      if (daysToFortnight <= 1) {
+        criticalAlerts.push({
+          id: `crit-pay`, type: 'PAYMENT_DUE', severity: 'critical',
+          message: `¡ALERTA DE PAGO! Cierre de quincena en menos de 24 horas.`, link: `/assembler-payment-batch`
+        });
+      } else if (daysToFortnight <= 5) {
+        precautions.push({
+          id: `prec-pay`, type: 'PAYMENT_UPCOMING', severity: 'warning',
+          message: `Precaución: Faltan ${daysToFortnight} días para el cierre de quincena.`, link: `/assembler-payment-batch`
         });
       }
+
+      // Tareas de Pago
+      unpaidOrders.filter(o => o.assembler).forEach(o => {
+        tasks.push({
+          id: `task-pay-${o.assembler.id}`, text: `Liquidar pagos para ${o.assembler.name}`, link: `/assembler-payment-batch`
+        });
+      });
+
+      // Misma lógica de Supervisor para el resto
+      productsWithThreshold.forEach(p => {
+        const link = p.type === 'RAW_MATERIAL' ? `/purchase-order?productId=${p.id}` : `/external-production-orders/new?productId=${p.id}`;
+        if (Number(p.stock) <= 0) {
+          criticalAlerts.push({ id: `crit-stock-${p.id}`, type: 'STOCK_OUT', severity: 'critical', message: `¡RUPTURA DE STOCK! ${p.description} se ha agotado.`, link });
+        } else if (Number(p.stock) <= Number(p.lowStockThreshold)) {
+          precautions.push({ id: `prec-stock-${p.id}`, type: 'LOW_STOCK', severity: 'warning', message: `Bajo stock: ${p.description}. Actual: ${p.stock}`, link });
+        }
+      });
+
+      orders.forEach(order => {
+        const link = `/logistics-dashboard`;
+        if (['OUT_FOR_DELIVERY', 'IN_ASSEMBLY', 'PENDING_PICKUP', 'RETURN_IN_TRANSIT', 'PARTIALLY_RECEIVED'].includes(order.status)) inProcessCount++;
+        if (order.status === 'DELIVERY_FAILED') criticalAlerts.push({ id: `crit-fail-${order.id}`, type: 'DELIVERY_FAILED', severity: 'critical', message: `Entrega fallida: Orden ${order.orderNumber}.`, link });
+        if (order.status === 'IN_ASSEMBLY' && new Date(order.updatedAt) < threeBusinessDaysAgo) criticalAlerts.push({ id: `crit-inact-${order.id}`, type: 'INACTIVITY', severity: 'critical', message: `Inactividad: Orden ${order.orderNumber} estancada por > 3 días.`, link });
+        if (['PENDING_DELIVERY', 'OUT_FOR_DELIVERY', 'PENDING_PICKUP'].includes(order.status) && new Date(order.updatedAt) < twentyFourHoursAgo) precautions.push({ id: `prec-delay-${order.id}`, type: 'DELAY', severity: 'warning', message: `Retraso logístico: Orden ${order.orderNumber} estancada por > 24hs.`, link });
+        if (order.status === 'COMPLETED_WITH_DISCREPANCY') precautions.push({ id: `prec-disc-${order.id}`, type: 'DISCREPANCY', severity: 'warning', message: `Discrepancia: Orden ${order.orderNumber} cerrada con diferencias.`, link: `/external-orders/${order.id}` });
+        if (order.status === 'PENDING_DELIVERY' && new Date(order.updatedAt) >= twentyFourHoursAgo) tasks.push({ id: `task-assign-${order.id}`, text: `Asignar reparto: Orden ${order.orderNumber}`, link });
+      });
+
+      adminDeliveries.forEach(order => tasks.push({ id: `delivery-admin-${order.id}`, text: `Entregar orden ${order.orderNumber}`, link: `/logistics-dashboard` }));
+      adminPickups.forEach(order => tasks.push({ id: `pickup-admin-${order.id}`, text: `Recoger orden ${order.orderNumber}`, link: `/logistics-dashboard` }));
+
+      processWastageAlerts(criticalAlerts, precautions);
+
+      dashboardData.adminData = { criticalAlerts, precautions, tasks, kpis: { 'Armadores con Pagos Pendientes': unpaidOrders.length } };
+      dashboardData.supervisorData = { criticalAlerts, precautions, tasks: tasks.filter(t => !t.id.includes('admin')), kpis: { 'Órdenes en Proceso': inProcessCount } };
     }
 
     res.json(dashboardData);

@@ -1,73 +1,96 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../services/api';
+import CriticalAlertCard from '../components/CriticalAlertCard';
+import PrecautionCard from '../components/PrecautionCard';
+import { Link } from 'react-router-dom';
+import './DashboardPage.css';
 
-// Componente auxiliar para renderizar Tareas
 const TaskList = ({ title, tasks }) => (
-  <div style={{ marginBottom: '1rem', border: '1px solid #eee', padding: '1rem', borderRadius: '4px' }}>
-    <h3>{title}</h3>
+  <div className="dashboard-card">
+    <h3 className="dashboard-card-title">{title}</h3>
     {tasks?.length > 0 ? (
-      <ul>
-        {tasks.map((task, index) => (
-          <li key={index}>
-            {task.text} {task.link && <a href={task.link}>(Ir)</a>}
+      <ul className="dashboard-task-list">
+        {tasks.map((task) => (
+          <li key={task.id} className="dashboard-task-item">
+            <span className="task-text">{task.text}</span>
+            {task.link && <Link to={task.link} className="btn btn-outline-primary btn-sm">Resolver</Link>}
           </li>
         ))}
       </ul>
     ) : (
-      <p>No hay tareas pendientes.</p>
+      <p className="dashboard-empty-text">No hay tareas pendientes. ¡Buen trabajo!</p>
     )}
   </div>
 );
 
-// Componente auxiliar para renderizar Alertas
-const AlertList = ({ alerts }) => (
-  <div style={{ marginTop: '2rem', border: '1px solid orange', padding: '1rem', borderRadius: '4px' }}>
-    <h3>Alertas Importantes</h3>
-    {alerts?.length > 0 ? (
-      <ul>
-        {alerts.map((alert, index) => (
-          <li key={index} style={{ color: alert.severity === 'high' ? 'red' : 'orange' }}>
-            {alert.message} {alert.link && <a href={alert.link}>(Resolver)</a>}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p>No hay alertas por el momento.</p>
-    )}
-  </div>
-);
-
-// Componente auxiliar para renderizar KPIs (ejemplo muy básico)
 const KpiDisplay = ({ kpis }) => (
-  <div style={{ marginBottom: '1rem', border: '1px solid #eee', padding: '1rem', borderRadius: '4px' }}>
-    <h3>Indicadores Clave</h3>
-    {kpis && Object.keys(kpis).length > 0 ? (
-      <ul>
-        {Object.entries(kpis).map(([key, value]) => (
-          <li key={key}><strong>{key}:</strong> {value}</li>
-        ))}
-      </ul>
-    ) : (
-      <p>No hay KPIs disponibles.</p>
-    )}
+  <div className="dashboard-kpi-grid">
+    {kpis && Object.entries(kpis).map(([key, value]) => (
+      <div key={key} className="dashboard-kpi-card">
+        <div className="kpi-value">{value}</div>
+        <div className="kpi-label">{key}</div>
+      </div>
+    ))}
   </div>
 );
 
+const DashboardContent = ({ data, title }) => {
+  return (
+    <div className="dashboard-content-wrapper">
+      {title && <h2 className="dashboard-section-title">{title}</h2>}
+      
+      {/* --- ZONA ROJA: Alertas Críticas --- */}
+      {data?.criticalAlerts?.length > 0 && (
+        <div className="dashboard-red-zone">
+          {data.criticalAlerts.map(alert => (
+            <CriticalAlertCard key={alert.id} alert={alert} />
+          ))}
+        </div>
+      )}
+
+      {/* --- ZONA KPI --- */}
+      {data?.kpis && Object.keys(data.kpis).length > 0 && (
+        <KpiDisplay kpis={data.kpis} />
+      )}
+
+      {/* --- ZONA CENTRAL: Tareas y Precauciones --- */}
+      <div className="dashboard-body-grid">
+        <div className="dashboard-main-col">
+          <TaskList title="Mis Tareas Activas" tasks={data?.tasks || []} />
+        </div>
+        
+        <div className="dashboard-side-col">
+          <div className="dashboard-card precaution-container">
+            <h3 className="dashboard-card-title">Precauciones</h3>
+            {data?.precautions?.length > 0 ? (
+              <div className="precaution-list">
+                {data.precautions.map(prec => (
+                  <PrecautionCard key={prec.id} precaution={prec} />
+                ))}
+              </div>
+            ) : (
+              <div className="empty-precautions">
+                <span className="empty-icon">✓</span>
+                <p>Todo en orden. No hay advertencias.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const DashboardPage = () => {
   const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showSupervisorView, setShowSupervisorView] = useState(false); // Estado para la vista de supervisor en ADMIN
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return;
       setLoading(true);
       setError(null);
       try {
@@ -83,62 +106,33 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, [user]);
 
-  if (loading) {
-    return <div style={{ padding: '2rem' }}>Cargando panel de control...</div>;
-  }
-
-  if (error) {
-    return <div style={{ padding: '2rem', color: 'red' }}>{error}</div>;
-  }
-
-  if (!dashboardData) {
-    return <div style={{ padding: '2rem' }}>No hay datos disponibles para el panel.</div>;
-  }
+  if (loading) return <div className="dashboard-loading">Cargando panel de control inteligente...</div>;
+  if (error) return <div className="dashboard-error">{error}</div>;
+  if (!dashboardData) return <div className="dashboard-empty">No hay datos disponibles.</div>;
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Bienvenido, {user?.name || user?.email}!</h2>
+    <div className="dashboard-page-container">
+      <div className="dashboard-header">
+        <h1 className="dashboard-greeting">¡Hola, {user?.name || user?.email}!</h1>
+        <p className="dashboard-subtitle">Este es tu resumen logístico al día de hoy.</p>
+      </div>
 
       {user?.role === 'EMPLOYEE' && (
-        <>
-          <TaskList title="Mis Tareas" tasks={dashboardData.tasks} />
-          <AlertList alerts={dashboardData.alerts} /> {/* Las alertas generales si las hay */}
-        </>
+        <DashboardContent data={dashboardData} />
       )}
 
       {user?.role === 'SUPERVISOR' && (
-        <>
-          <KpiDisplay kpis={dashboardData.kpis} />
-          <TaskList title="Tareas de Logística" tasks={dashboardData.tasks} />
-          <AlertList alerts={dashboardData.alerts} />
-        </>
+        <DashboardContent data={dashboardData} />
       )}
 
       {user?.role === 'ADMIN' && (
-        <>
-          <KpiDisplay kpis={dashboardData.adminData.kpis} />
-          <TaskList title="Tareas de Administración" tasks={dashboardData.adminData.tasks} />
-          <AlertList alerts={dashboardData.adminData.alerts || dashboardData.alerts} /> {/* ADMIN también ve alertas generales */}
-
-          <div style={{ border: '1px solid #ccc', padding: '1rem', marginTop: '1.5rem', borderRadius: '4px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h4>Panel de Supervisor (Vista Integrada)</h4>
-              <button
-                onClick={() => setShowSupervisorView(!showSupervisorView)}
-                style={{ padding: '8px 12px', border: 'none', backgroundColor: '#007bff', color: 'white', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                {showSupervisorView ? 'Ocultar' : 'Ver'}
-              </button>
-            </div>
-            {showSupervisorView && dashboardData.supervisorData && (
-              <div style={{ marginTop: '1rem' }}>
-                <KpiDisplay kpis={dashboardData.supervisorData.kpis} />
-                <TaskList title="Tareas de Logística (Supervisor)" tasks={dashboardData.supervisorData.tasks} />
-                <AlertList alerts={dashboardData.supervisorData.alerts} />
-              </div>
-            )}
+        <div className="admin-dashboards-wrapper">
+          <DashboardContent data={dashboardData.adminData} title="Panel Financiero y Administrativo" />
+          
+          <div className="supervisor-view-section">
+            <DashboardContent data={dashboardData.supervisorData} title="Panel Logístico (Vista Supervisor)" />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

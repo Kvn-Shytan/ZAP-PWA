@@ -1,0 +1,47 @@
+.precaution-card {
+  display: flex;
+  align-items: flex-start;
+  background-color: #fef3c7; /* light amber */
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b; /* bold amber */
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.precaution-icon {
+  flex-shrink: 0;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.precaution-icon .icon-svg {
+  width: 24px;
+  height: 24px;
+  color: #d97706; /* darker amber */
+}
+
+.precaution-content {
+  flex: 1;
+}
+
+.precaution-message {
+  margin: 0 0 4px 0;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.precaution-link {
+  display: inline-block;
+  color: #b45309;
+  font-weight: 500;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.precaution-link:hover {
+  text-decoration: underline;
+}

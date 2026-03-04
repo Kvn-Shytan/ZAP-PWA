@@ -144,16 +144,16 @@ router.post('/purchase', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res
 
 
 
-// Registrar una Disminución por Desecho (Wastage)
+// Registrar una Disminución por Desecho (Wastage) y su Log Oficial
 router.post('/wastage', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
-  const { productId, quantity, notes } = req.body;
+  const { productId, quantity, notes, assemblerId, externalProductionOrderId } = req.body;
   const userId = req.user.userId;
 
   if (!productId || !quantity || quantity <= 0) {
-    return res.status(400).json({ error: 'productId and a positive quantity are required.' });
+    return res.status(400).json({ error: 'productId y una cantidad positiva son requeridos.' });
   }
   if (!notes || notes.trim().length < 5) {
-    return res.status(400).json({ error: 'Notes (reason for wastage) are required and must be at least 5 characters long.' });
+    return res.status(400).json({ error: 'El motivo (notes) es requerido y debe tener al menos 5 caracteres.' });
   }
 
   try {
@@ -164,11 +164,13 @@ router.post('/wastage', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res)
       }
 
       // Verificar stock
-      if (product.stock < quantity) {
-        throw new Error(`Stock insuficiente para desecho. Disponible: ${product.stock}, Requerido: ${quantity}`);
+      if (Number(product.stock) < Number(quantity)) {
+        throw new Error(`Stock insuficiente para declarar merma. Disponible: ${product.stock}, Requerido: ${quantity}`);
       }
 
-      // Crear el movimiento de salida por desecho
+      const eventId = crypto.randomUUID();
+
+      // 1. Crear el movimiento de salida por desecho
       const wastageMovement = await tx.inventoryMovement.create({
         data: {
           productId: productId,
@@ -176,23 +178,59 @@ router.post('/wastage', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res)
           quantity: quantity,
           userId: userId,
           notes: notes,
+          eventId: eventId,
+          externalProductionOrderId: externalProductionOrderId || null,
         }
       });
 
-      // Actualizar el stock del producto
+      // 2. Actualizar el stock del producto
       await tx.product.update({
         where: { id: productId },
         data: { stock: { decrement: quantity } },
       });
 
-      return wastageMovement;
+      // 3. Crear el Registro Oficial de Merma (WastageLog)
+      const wastageLog = await tx.wastageLog.create({
+        data: {
+          productId: productId,
+          quantity: quantity,
+          reason: notes,
+          userId: userId,
+          assemblerId: assemblerId || null,
+          externalProductionOrderId: externalProductionOrderId || null,
+          costDeducted: false, // Por defecto no se ha descontado
+        }
+      });
+
+      return { wastageMovement, wastageLog };
     });
 
     res.status(201).json(result);
 
   } catch (error) {
-    console.error("Error en la transacción de desecho:", error.message);
+    console.error("Error en la transacción de registro de merma:", error.message);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Obtener historial de Mermas (Wastage Logs)
+router.get('/wastage', authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
+  try {
+    const wastageLogs = await prisma.wastageLog.findMany({
+      include: {
+        product: { select: { description: true, internalCode: true } },
+        assembler: { select: { name: true } },
+        externalProductionOrder: { select: { orderNumber: true } },
+        user: { select: { name: true } },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    res.json(wastageLogs);
+  } catch (error) {
+    console.error("Error al obtener el historial de mermas:", error.message);
+    res.status(500).json({ error: 'Failed to fetch wastage logs.' });
   }
 });
 

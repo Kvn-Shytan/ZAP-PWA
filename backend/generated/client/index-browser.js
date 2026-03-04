@@ -335,6 +335,29 @@ exports.Prisma.OrderSequenceScalarFieldEnum = {
   lastSequence: 'lastSequence'
 };
 
+exports.Prisma.AlertScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  externalProductionOrderId: 'externalProductionOrderId'
+};
+
+exports.Prisma.WastageLogScalarFieldEnum = {
+  id: 'id',
+  quantity: 'quantity',
+  reason: 'reason',
+  costDeducted: 'costDeducted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  productId: 'productId',
+  assemblerId: 'assemblerId',
+  externalProductionOrderId: 'externalProductionOrderId',
+  userId: 'userId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -407,6 +430,19 @@ exports.MovementType = exports.$Enums.MovementType = {
   ADJUSTMENT_OUT: 'ADJUSTMENT_OUT'
 };
 
+exports.AlertType = exports.$Enums.AlertType = {
+  INACTIVITY: 'INACTIVITY',
+  LOW_STOCK: 'LOW_STOCK',
+  QUALITY_ISSUE: 'QUALITY_ISSUE',
+  OTHER: 'OTHER'
+};
+
+exports.AlertStatus = exports.$Enums.AlertStatus = {
+  ACTIVE: 'ACTIVE',
+  DISMISSED: 'DISMISSED',
+  RESOLVED: 'RESOLVED'
+};
+
 exports.Prisma.ModelName = {
   PriceTier: 'PriceTier',
   Client: 'Client',
@@ -430,7 +466,9 @@ exports.Prisma.ModelName = {
   Assembler: 'Assembler',
   User: 'User',
   InventoryMovement: 'InventoryMovement',
-  OrderSequence: 'OrderSequence'
+  OrderSequence: 'OrderSequence',
+  Alert: 'Alert',
+  WastageLog: 'WastageLog'
 };
 
 /**

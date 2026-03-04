@@ -29,6 +29,8 @@ describe('PriceTiers API', () => {
     // Es crucial limpiar en el orden correcto para evitar problemas de FK
     await prisma.salesOrderItem.deleteMany({});
     await prisma.salesOrder.deleteMany({});
+    await prisma.alert.deleteMany({});
+    await prisma.wastageLog.deleteMany({});
     await prisma.inventoryMovement.deleteMany({});
     await prisma.client.deleteMany({});
     await prisma.priceTier.deleteMany({});

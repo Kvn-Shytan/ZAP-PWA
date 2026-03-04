@@ -19,9 +19,11 @@ const dashboardRoutes = require('./routes/dashboard.routes.js'); // NUEVO: Impor
 const clientsRoutes = require('./routes/clients.routes.js'); // NEW
 const priceTiersRoutes = require('./routes/priceTiers.routes.js'); // NEW
 const salesRoutes = require('./routes/sales.routes.js'); // NEW
+const alertRoutes = require('./routes/alerts.routes.js'); // NEW
 const errorHandler = require('./middleware/errorHandler.js');
 
 const prisma = require('./prisma/client');
+const alertService = require('./services/alertService'); // NEW
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -109,6 +111,9 @@ app.use('/api/price-tiers', priceTiersRoutes); // NEW
 // Use sales routes
 app.use('/api/sales', salesRoutes); // NEW
 
+// Use alerts routes
+app.use('/api/alerts', alertRoutes); // NEW
+
 // NUEVO: Usar dashboard routes
 app.use('/api/dashboard', dashboardRoutes);
 
@@ -123,4 +128,12 @@ app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Backend escuchando en http://localhost:${port}`);
+
+  // Inactivity Alerts Job (every 24 hours)
+  setInterval(() => {
+    alertService.checkInactivityAlerts();
+  }, 24 * 60 * 60 * 1000);
+
+  // Initial check on startup
+  alertService.checkInactivityAlerts();
 });

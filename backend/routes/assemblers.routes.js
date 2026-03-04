@@ -111,13 +111,45 @@ router.get('/payment-summary-batch', authenticateToken, authorizeRole(['ADMIN', 
         assemblerTotalPayment += orderTotal;
       }
 
+      // --- NUEVO: Calcular Mermas (Wastage) Pendientes ---
+      const pendingWastages = await prisma.wastageLog.findMany({
+        where: {
+          assemblerId: assembler.id,
+          costDeducted: false,
+        },
+        include: { product: true },
+      });
+
+      let deductions = 0;
+      const deductionDetails = [];
+
+      for (const waste of pendingWastages) {
+        // Asumimos que priceARS es el valor monetario a descontar por el material arruinado
+        const itemCost = Number(waste.product.priceARS || 0);
+        const totalCost = Number(waste.quantity) * itemCost;
+        
+        deductions += totalCost;
+        deductionDetails.push({
+          id: waste.id,
+          reason: waste.reason,
+          productDescription: waste.product.description,
+          quantity: Number(waste.quantity),
+          unitCost: itemCost,
+          totalCost: totalCost,
+          date: waste.createdAt,
+        });
+      }
+
       batchPaymentSummary.push({
         assemblerId: assembler.id,
         assemblerName: assembler.name,
         paymentTerms: assembler.paymentTerms,
-        pendingPayment: assemblerTotalPayment,
+        grossPayment: assemblerTotalPayment,
+        deductions: deductions,
+        pendingPayment: Math.max(0, assemblerTotalPayment - deductions), // Evitar pagos negativos
         totalJobs: assemblerPaymentDetails.length,
         paymentDetails: assemblerPaymentDetails,
+        deductionDetails: deductionDetails, // Retornamos el detalle para la UI
       });
     }
 
@@ -260,16 +292,33 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
           paidOrderIds.push(order.id);
         }
 
-        if (totalPaymentForAssembler > 0) {
+        // --- NUEVO: Procesar Mermas (Wastage) ---
+        const pendingWastages = await tx.wastageLog.findMany({
+          where: { assemblerId: assemblerId, costDeducted: false },
+          include: { product: true }
+        });
+
+        let deductions = 0;
+        const wastageIdsToUpdate = [];
+
+        for (const waste of pendingWastages) {
+          const itemCost = Number(waste.product.priceARS || 0);
+          deductions += Number(waste.quantity) * itemCost;
+          wastageIdsToUpdate.push(waste.id);
+        }
+
+        const finalPaymentAmount = Math.max(0, totalPaymentForAssembler - deductions);
+
+        if (totalPaymentForAssembler > 0 || deductions > 0) {
           const assembler = await tx.assembler.findUnique({ where: { id: assemblerId } });
           const newPayment = await tx.assemblerPayment.create({
             data: {
               assemblerId: assemblerId,
               datePaid: new Date(),
-              amount: totalPaymentForAssembler,
+              amount: finalPaymentAmount,
               periodStart: start,
               periodEnd: end,
-              notes: `Liquidación de quincena para ${assembler?.name} (${startDate} - ${endDate})`,
+              notes: `Liquidación: Bruto $${totalPaymentForAssembler} - Mermas $${deductions} (${startDate} - ${endDate})`,
             },
           });
 
@@ -278,10 +327,20 @@ router.post('/close-fortnight-batch', authenticateToken, authorizeRole(['ADMIN']
             data: { assemblerPaymentId: newPayment.id },
           });
 
+          // Marcar las mermas como ya descontadas
+          if (wastageIdsToUpdate.length > 0) {
+            await tx.wastageLog.updateMany({
+              where: { id: { in: wastageIdsToUpdate } },
+              data: { costDeducted: true },
+            });
+          }
+
           processedPayments.push({
             assemblerId: assemblerId,
             assemblerName: assembler?.name,
-            totalPayment: totalPaymentForAssembler,
+            totalPayment: finalPaymentAmount,
+            grossPayment: totalPaymentForAssembler,
+            deductions: deductions,
             paymentId: newPayment.id,
           });
         }

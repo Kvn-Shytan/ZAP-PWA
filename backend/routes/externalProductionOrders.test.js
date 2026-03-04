@@ -39,6 +39,8 @@ describe('External Production Orders API', () => {
         // Es crucial limpiar en el orden correcto para evitar problemas de FK
         await prisma.salesOrderItem.deleteMany({});
         await prisma.salesOrder.deleteMany({});
+        await prisma.alert.deleteMany({});
+        await prisma.wastageLog.deleteMany({});
         await prisma.orderSentComponent.deleteMany({});
         await prisma.expectedProduction.deleteMany({});
         await prisma.orderAssemblyStep.deleteMany({});
@@ -46,6 +48,7 @@ describe('External Production Orders API', () => {
         await prisma.orderNote.deleteMany({});
         await prisma.externalProductionOrder.deleteMany({});
         await prisma.product.deleteMany({});
+        await prisma.assemblerPayment.deleteMany({});
         await prisma.assembler.deleteMany({});
         await prisma.user.deleteMany({});
     });

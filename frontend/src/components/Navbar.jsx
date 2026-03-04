@@ -102,14 +102,15 @@ export default function Navbar() {
               <li><Link to="/inventory-history">Historial</Link></li>
             )}
 
-            {/* Admin Dropdown */}
-            {user.role === 'ADMIN' && (
+            {/* Administración Dropdown */}
+            {(user.role === 'ADMIN' || user.role === 'SUPERVISOR') && (
               <li className="nav-dropdown">
                 <button className="dropdown-toggle">Administración</button>
                 <ul className="dropdown-menu">
-                  <li><Link to="/users">Gestión de Usuarios</Link></li>
-                  {user.role === 'ADMIN' && <li><Link to="/inventory-adjustments">Venta/Rechazo</Link></li>}
-                  <li><Link to="/admin-tools">Otras Herramientas</Link></li>
+                  {user.role === 'ADMIN' && <li><Link to="/users">Gestión de Usuarios</Link></li>}
+                  <li><Link to="/inventory-adjustments">Ventas</Link></li>
+                  <li><Link to="/wastage-management">Rechazos</Link></li>
+                  {user.role === 'ADMIN' && <li><Link to="/admin-tools">Otras Herramientas</Link></li>}
                 </ul>
               </li>
             )}

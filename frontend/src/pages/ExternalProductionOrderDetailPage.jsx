@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
+import { translateOrderStatus } from '../utils/statusTranslator';
 
 const ExternalProductionOrderDetailPage = () => {
   const { id } = useParams();
@@ -107,7 +108,7 @@ const ExternalProductionOrderDetailPage = () => {
         <p><strong>Ensamblador:</strong> {order.assembler?.name}</p>
         {order.assembler?.address && <p><strong>Dirección:</strong> {order.assembler.address}</p>}
         {order.assembler?.phone && <p><strong>Teléfono:</strong> {order.assembler.phone}</p>}
-        <p><strong>Estado:</strong> {order.status}</p>
+        <p><strong>Estado:</strong> {translateOrderStatus(order.status)}</p>
         <p><strong>Fecha de Envío:</strong> {new Date(order.dateSent).toLocaleDateString()}</p>
         {order.expectedCompletionDate && <p><strong>Fecha de Finalización Esperada:</strong> {new Date(order.expectedCompletionDate).toLocaleDateString()}</p>}
         {order.deliveryUser && <p><strong>Asignado para Entrega:</strong> {order.deliveryUser.name}</p>}

@@ -128,6 +128,16 @@ export type InventoryMovement = $Result.DefaultSelection<Prisma.$InventoryMoveme
  * 
  */
 export type OrderSequence = $Result.DefaultSelection<Prisma.$OrderSequencePayload>
+/**
+ * Model Alert
+ * 
+ */
+export type Alert = $Result.DefaultSelection<Prisma.$AlertPayload>
+/**
+ * Model WastageLog
+ * 
+ */
+export type WastageLog = $Result.DefaultSelection<Prisma.$WastageLogPayload>
 
 /**
  * Enums
@@ -220,6 +230,25 @@ export const OverheadType: {
 
 export type OverheadType = (typeof OverheadType)[keyof typeof OverheadType]
 
+
+export const AlertType: {
+  INACTIVITY: 'INACTIVITY',
+  LOW_STOCK: 'LOW_STOCK',
+  QUALITY_ISSUE: 'QUALITY_ISSUE',
+  OTHER: 'OTHER'
+};
+
+export type AlertType = (typeof AlertType)[keyof typeof AlertType]
+
+
+export const AlertStatus: {
+  ACTIVE: 'ACTIVE',
+  DISMISSED: 'DISMISSED',
+  RESOLVED: 'RESOLVED'
+};
+
+export type AlertStatus = (typeof AlertStatus)[keyof typeof AlertStatus]
+
 }
 
 export type PaymentStatus = $Enums.PaymentStatus
@@ -253,6 +282,14 @@ export const QualityStatus: typeof $Enums.QualityStatus
 export type OverheadType = $Enums.OverheadType
 
 export const OverheadType: typeof $Enums.OverheadType
+
+export type AlertType = $Enums.AlertType
+
+export const AlertType: typeof $Enums.AlertType
+
+export type AlertStatus = $Enums.AlertStatus
+
+export const AlertStatus: typeof $Enums.AlertStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -601,6 +638,26 @@ export class PrismaClient<
     * ```
     */
   get orderSequence(): Prisma.OrderSequenceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.alert`: Exposes CRUD operations for the **Alert** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Alerts
+    * const alerts = await prisma.alert.findMany()
+    * ```
+    */
+  get alert(): Prisma.AlertDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.wastageLog`: Exposes CRUD operations for the **WastageLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WastageLogs
+    * const wastageLogs = await prisma.wastageLog.findMany()
+    * ```
+    */
+  get wastageLog(): Prisma.WastageLogDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1064,7 +1121,9 @@ export namespace Prisma {
     Assembler: 'Assembler',
     User: 'User',
     InventoryMovement: 'InventoryMovement',
-    OrderSequence: 'OrderSequence'
+    OrderSequence: 'OrderSequence',
+    Alert: 'Alert',
+    WastageLog: 'WastageLog'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1083,7 +1142,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "priceTier" | "client" | "salesOrder" | "salesOrderItem" | "product" | "productComponent" | "category" | "supplier" | "overheadCost" | "productOverhead" | "assemblyJob" | "productAssemblyJob" | "externalProductionOrder" | "externalProductionOrderItem" | "expectedProduction" | "orderAssemblyStep" | "orderSentComponent" | "orderNote" | "assemblerPayment" | "assembler" | "user" | "inventoryMovement" | "orderSequence"
+      modelProps: "priceTier" | "client" | "salesOrder" | "salesOrderItem" | "product" | "productComponent" | "category" | "supplier" | "overheadCost" | "productOverhead" | "assemblyJob" | "productAssemblyJob" | "externalProductionOrder" | "externalProductionOrderItem" | "expectedProduction" | "orderAssemblyStep" | "orderSentComponent" | "orderNote" | "assemblerPayment" | "assembler" | "user" | "inventoryMovement" | "orderSequence" | "alert" | "wastageLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2789,6 +2848,154 @@ export namespace Prisma {
           }
         }
       }
+      Alert: {
+        payload: Prisma.$AlertPayload<ExtArgs>
+        fields: Prisma.AlertFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AlertFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AlertFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          findFirst: {
+            args: Prisma.AlertFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AlertFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          findMany: {
+            args: Prisma.AlertFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>[]
+          }
+          create: {
+            args: Prisma.AlertCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          createMany: {
+            args: Prisma.AlertCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AlertCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>[]
+          }
+          delete: {
+            args: Prisma.AlertDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          update: {
+            args: Prisma.AlertUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          deleteMany: {
+            args: Prisma.AlertDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AlertUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AlertUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>[]
+          }
+          upsert: {
+            args: Prisma.AlertUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AlertPayload>
+          }
+          aggregate: {
+            args: Prisma.AlertAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAlert>
+          }
+          groupBy: {
+            args: Prisma.AlertGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AlertGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AlertCountArgs<ExtArgs>
+            result: $Utils.Optional<AlertCountAggregateOutputType> | number
+          }
+        }
+      }
+      WastageLog: {
+        payload: Prisma.$WastageLogPayload<ExtArgs>
+        fields: Prisma.WastageLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WastageLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WastageLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          findFirst: {
+            args: Prisma.WastageLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WastageLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          findMany: {
+            args: Prisma.WastageLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>[]
+          }
+          create: {
+            args: Prisma.WastageLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          createMany: {
+            args: Prisma.WastageLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WastageLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>[]
+          }
+          delete: {
+            args: Prisma.WastageLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          update: {
+            args: Prisma.WastageLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.WastageLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WastageLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WastageLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.WastageLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WastageLogPayload>
+          }
+          aggregate: {
+            args: Prisma.WastageLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWastageLog>
+          }
+          groupBy: {
+            args: Prisma.WastageLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WastageLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WastageLogCountArgs<ExtArgs>
+            result: $Utils.Optional<WastageLogCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2908,6 +3115,8 @@ export namespace Prisma {
     user?: UserOmit
     inventoryMovement?: InventoryMovementOmit
     orderSequence?: OrderSequenceOmit
+    alert?: AlertOmit
+    wastageLog?: WastageLogOmit
   }
 
   /* Types for Logging */
@@ -3090,6 +3299,7 @@ export namespace Prisma {
     assemblyJobs: number
     overheadCosts: number
     salesOrderItems: number
+    wastageLogs: number
   }
 
   export type ProductCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3102,6 +3312,7 @@ export namespace Prisma {
     assemblyJobs?: boolean | ProductCountOutputTypeCountAssemblyJobsArgs
     overheadCosts?: boolean | ProductCountOutputTypeCountOverheadCostsArgs
     salesOrderItems?: boolean | ProductCountOutputTypeCountSalesOrderItemsArgs
+    wastageLogs?: boolean | ProductCountOutputTypeCountWastageLogsArgs
   }
 
   // Custom InputTypes
@@ -3176,6 +3387,13 @@ export namespace Prisma {
    */
   export type ProductCountOutputTypeCountSalesOrderItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SalesOrderItemWhereInput
+  }
+
+  /**
+   * ProductCountOutputType without action
+   */
+  export type ProductCountOutputTypeCountWastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WastageLogWhereInput
   }
 
 
@@ -3323,6 +3541,8 @@ export namespace Prisma {
     inventoryMovements: number
     orderNotes: number
     orderSentComponents: number
+    alerts: number
+    wastageLogs: number
   }
 
   export type ExternalProductionOrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3332,6 +3552,8 @@ export namespace Prisma {
     inventoryMovements?: boolean | ExternalProductionOrderCountOutputTypeCountInventoryMovementsArgs
     orderNotes?: boolean | ExternalProductionOrderCountOutputTypeCountOrderNotesArgs
     orderSentComponents?: boolean | ExternalProductionOrderCountOutputTypeCountOrderSentComponentsArgs
+    alerts?: boolean | ExternalProductionOrderCountOutputTypeCountAlertsArgs
+    wastageLogs?: boolean | ExternalProductionOrderCountOutputTypeCountWastageLogsArgs
   }
 
   // Custom InputTypes
@@ -3387,6 +3609,20 @@ export namespace Prisma {
     where?: OrderSentComponentWhereInput
   }
 
+  /**
+   * ExternalProductionOrderCountOutputType without action
+   */
+  export type ExternalProductionOrderCountOutputTypeCountAlertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AlertWhereInput
+  }
+
+  /**
+   * ExternalProductionOrderCountOutputType without action
+   */
+  export type ExternalProductionOrderCountOutputTypeCountWastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WastageLogWhereInput
+  }
+
 
   /**
    * Count Type AssemblerPaymentCountOutputType
@@ -3426,11 +3662,13 @@ export namespace Prisma {
   export type AssemblerCountOutputType = {
     externalProductionOrders: number
     assemblerPayments: number
+    wastageLogs: number
   }
 
   export type AssemblerCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     externalProductionOrders?: boolean | AssemblerCountOutputTypeCountExternalProductionOrdersArgs
     assemblerPayments?: boolean | AssemblerCountOutputTypeCountAssemblerPaymentsArgs
+    wastageLogs?: boolean | AssemblerCountOutputTypeCountWastageLogsArgs
   }
 
   // Custom InputTypes
@@ -3458,6 +3696,13 @@ export namespace Prisma {
     where?: AssemblerPaymentWhereInput
   }
 
+  /**
+   * AssemblerCountOutputType without action
+   */
+  export type AssemblerCountOutputTypeCountWastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WastageLogWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -3468,6 +3713,7 @@ export namespace Prisma {
     assignedDeliveries: number
     assignedPickups: number
     orderNotes: number
+    wastageLogs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3475,6 +3721,7 @@ export namespace Prisma {
     assignedDeliveries?: boolean | UserCountOutputTypeCountAssignedDeliveriesArgs
     assignedPickups?: boolean | UserCountOutputTypeCountAssignedPickupsArgs
     orderNotes?: boolean | UserCountOutputTypeCountOrderNotesArgs
+    wastageLogs?: boolean | UserCountOutputTypeCountWastageLogsArgs
   }
 
   // Custom InputTypes
@@ -3514,6 +3761,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountOrderNotesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OrderNoteWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountWastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WastageLogWhereInput
   }
 
 
@@ -8442,6 +8696,7 @@ export namespace Prisma {
     assemblyJobs?: boolean | Product$assemblyJobsArgs<ExtArgs>
     overheadCosts?: boolean | Product$overheadCostsArgs<ExtArgs>
     salesOrderItems?: boolean | Product$salesOrderItemsArgs<ExtArgs>
+    wastageLogs?: boolean | Product$wastageLogsArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -8513,6 +8768,7 @@ export namespace Prisma {
     assemblyJobs?: boolean | Product$assemblyJobsArgs<ExtArgs>
     overheadCosts?: boolean | Product$overheadCostsArgs<ExtArgs>
     salesOrderItems?: boolean | Product$salesOrderItemsArgs<ExtArgs>
+    wastageLogs?: boolean | Product$wastageLogsArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8538,6 +8794,7 @@ export namespace Prisma {
       assemblyJobs: Prisma.$ProductAssemblyJobPayload<ExtArgs>[]
       overheadCosts: Prisma.$ProductOverheadPayload<ExtArgs>[]
       salesOrderItems: Prisma.$SalesOrderItemPayload<ExtArgs>[]
+      wastageLogs: Prisma.$WastageLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8959,6 +9216,7 @@ export namespace Prisma {
     assemblyJobs<T extends Product$assemblyJobsArgs<ExtArgs> = {}>(args?: Subset<T, Product$assemblyJobsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductAssemblyJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     overheadCosts<T extends Product$overheadCostsArgs<ExtArgs> = {}>(args?: Subset<T, Product$overheadCostsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductOverheadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     salesOrderItems<T extends Product$salesOrderItemsArgs<ExtArgs> = {}>(args?: Subset<T, Product$salesOrderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalesOrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    wastageLogs<T extends Product$wastageLogsArgs<ExtArgs> = {}>(args?: Subset<T, Product$wastageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9649,6 +9907,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SalesOrderItemScalarFieldEnum | SalesOrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * Product.wastageLogs
+   */
+  export type Product$wastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    where?: WastageLogWhereInput
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    cursor?: WastageLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
   }
 
   /**
@@ -17544,6 +17826,8 @@ export namespace Prisma {
     orderNotes?: boolean | ExternalProductionOrder$orderNotesArgs<ExtArgs>
     orderSentComponents?: boolean | ExternalProductionOrder$orderSentComponentsArgs<ExtArgs>
     assemblerPayment?: boolean | ExternalProductionOrder$assemblerPaymentArgs<ExtArgs>
+    alerts?: boolean | ExternalProductionOrder$alertsArgs<ExtArgs>
+    wastageLogs?: boolean | ExternalProductionOrder$wastageLogsArgs<ExtArgs>
     _count?: boolean | ExternalProductionOrderCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["externalProductionOrder"]>
 
@@ -17612,6 +17896,8 @@ export namespace Prisma {
     orderNotes?: boolean | ExternalProductionOrder$orderNotesArgs<ExtArgs>
     orderSentComponents?: boolean | ExternalProductionOrder$orderSentComponentsArgs<ExtArgs>
     assemblerPayment?: boolean | ExternalProductionOrder$assemblerPaymentArgs<ExtArgs>
+    alerts?: boolean | ExternalProductionOrder$alertsArgs<ExtArgs>
+    wastageLogs?: boolean | ExternalProductionOrder$wastageLogsArgs<ExtArgs>
     _count?: boolean | ExternalProductionOrderCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ExternalProductionOrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17640,6 +17926,8 @@ export namespace Prisma {
       orderNotes: Prisma.$OrderNotePayload<ExtArgs>[]
       orderSentComponents: Prisma.$OrderSentComponentPayload<ExtArgs>[]
       assemblerPayment: Prisma.$AssemblerPaymentPayload<ExtArgs> | null
+      alerts: Prisma.$AlertPayload<ExtArgs>[]
+      wastageLogs: Prisma.$WastageLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -18058,6 +18346,8 @@ export namespace Prisma {
     orderNotes<T extends ExternalProductionOrder$orderNotesArgs<ExtArgs> = {}>(args?: Subset<T, ExternalProductionOrder$orderNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     orderSentComponents<T extends ExternalProductionOrder$orderSentComponentsArgs<ExtArgs> = {}>(args?: Subset<T, ExternalProductionOrder$orderSentComponentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderSentComponentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assemblerPayment<T extends ExternalProductionOrder$assemblerPaymentArgs<ExtArgs> = {}>(args?: Subset<T, ExternalProductionOrder$assemblerPaymentArgs<ExtArgs>>): Prisma__AssemblerPaymentClient<$Result.GetResult<Prisma.$AssemblerPaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    alerts<T extends ExternalProductionOrder$alertsArgs<ExtArgs> = {}>(args?: Subset<T, ExternalProductionOrder$alertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    wastageLogs<T extends ExternalProductionOrder$wastageLogsArgs<ExtArgs> = {}>(args?: Subset<T, ExternalProductionOrder$wastageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18693,6 +18983,54 @@ export namespace Prisma {
      */
     include?: AssemblerPaymentInclude<ExtArgs> | null
     where?: AssemblerPaymentWhereInput
+  }
+
+  /**
+   * ExternalProductionOrder.alerts
+   */
+  export type ExternalProductionOrder$alertsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    where?: AlertWhereInput
+    orderBy?: AlertOrderByWithRelationInput | AlertOrderByWithRelationInput[]
+    cursor?: AlertWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AlertScalarFieldEnum | AlertScalarFieldEnum[]
+  }
+
+  /**
+   * ExternalProductionOrder.wastageLogs
+   */
+  export type ExternalProductionOrder$wastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    where?: WastageLogWhereInput
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    cursor?: WastageLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
   }
 
   /**
@@ -25568,6 +25906,7 @@ export namespace Prisma {
     updatedAt?: boolean
     externalProductionOrders?: boolean | Assembler$externalProductionOrdersArgs<ExtArgs>
     assemblerPayments?: boolean | Assembler$assemblerPaymentsArgs<ExtArgs>
+    wastageLogs?: boolean | Assembler$wastageLogsArgs<ExtArgs>
     _count?: boolean | AssemblerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["assembler"]>
 
@@ -25611,6 +25950,7 @@ export namespace Prisma {
   export type AssemblerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     externalProductionOrders?: boolean | Assembler$externalProductionOrdersArgs<ExtArgs>
     assemblerPayments?: boolean | Assembler$assemblerPaymentsArgs<ExtArgs>
+    wastageLogs?: boolean | Assembler$wastageLogsArgs<ExtArgs>
     _count?: boolean | AssemblerCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AssemblerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -25621,6 +25961,7 @@ export namespace Prisma {
     objects: {
       externalProductionOrders: Prisma.$ExternalProductionOrderPayload<ExtArgs>[]
       assemblerPayments: Prisma.$AssemblerPaymentPayload<ExtArgs>[]
+      wastageLogs: Prisma.$WastageLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -26028,6 +26369,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     externalProductionOrders<T extends Assembler$externalProductionOrdersArgs<ExtArgs> = {}>(args?: Subset<T, Assembler$externalProductionOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExternalProductionOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assemblerPayments<T extends Assembler$assemblerPaymentsArgs<ExtArgs> = {}>(args?: Subset<T, Assembler$assemblerPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssemblerPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    wastageLogs<T extends Assembler$wastageLogsArgs<ExtArgs> = {}>(args?: Subset<T, Assembler$wastageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -26502,6 +26844,30 @@ export namespace Prisma {
   }
 
   /**
+   * Assembler.wastageLogs
+   */
+  export type Assembler$wastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    where?: WastageLogWhereInput
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    cursor?: WastageLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
+  }
+
+  /**
    * Assembler without action
    */
   export type AssemblerDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26738,6 +27104,7 @@ export namespace Prisma {
     assignedDeliveries?: boolean | User$assignedDeliveriesArgs<ExtArgs>
     assignedPickups?: boolean | User$assignedPickupsArgs<ExtArgs>
     orderNotes?: boolean | User$orderNotesArgs<ExtArgs>
+    wastageLogs?: boolean | User$wastageLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -26777,6 +27144,7 @@ export namespace Prisma {
     assignedDeliveries?: boolean | User$assignedDeliveriesArgs<ExtArgs>
     assignedPickups?: boolean | User$assignedPickupsArgs<ExtArgs>
     orderNotes?: boolean | User$orderNotesArgs<ExtArgs>
+    wastageLogs?: boolean | User$wastageLogsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -26789,6 +27157,7 @@ export namespace Prisma {
       assignedDeliveries: Prisma.$ExternalProductionOrderPayload<ExtArgs>[]
       assignedPickups: Prisma.$ExternalProductionOrderPayload<ExtArgs>[]
       orderNotes: Prisma.$OrderNotePayload<ExtArgs>[]
+      wastageLogs: Prisma.$WastageLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -27196,6 +27565,7 @@ export namespace Prisma {
     assignedDeliveries<T extends User$assignedDeliveriesArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExternalProductionOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     assignedPickups<T extends User$assignedPickupsArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedPickupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ExternalProductionOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     orderNotes<T extends User$orderNotesArgs<ExtArgs> = {}>(args?: Subset<T, User$orderNotesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderNotePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    wastageLogs<T extends User$wastageLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$wastageLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -27713,6 +28083,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: OrderNoteScalarFieldEnum | OrderNoteScalarFieldEnum[]
+  }
+
+  /**
+   * User.wastageLogs
+   */
+  export type User$wastageLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    where?: WastageLogWhereInput
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    cursor?: WastageLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
   }
 
   /**
@@ -29952,6 +30346,2332 @@ export namespace Prisma {
 
 
   /**
+   * Model Alert
+   */
+
+  export type AggregateAlert = {
+    _count: AlertCountAggregateOutputType | null
+    _min: AlertMinAggregateOutputType | null
+    _max: AlertMaxAggregateOutputType | null
+  }
+
+  export type AlertMinAggregateOutputType = {
+    id: string | null
+    type: $Enums.AlertType | null
+    message: string | null
+    status: $Enums.AlertStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    externalProductionOrderId: string | null
+  }
+
+  export type AlertMaxAggregateOutputType = {
+    id: string | null
+    type: $Enums.AlertType | null
+    message: string | null
+    status: $Enums.AlertStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    externalProductionOrderId: string | null
+  }
+
+  export type AlertCountAggregateOutputType = {
+    id: number
+    type: number
+    message: number
+    status: number
+    createdAt: number
+    updatedAt: number
+    externalProductionOrderId: number
+    _all: number
+  }
+
+
+  export type AlertMinAggregateInputType = {
+    id?: true
+    type?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+    externalProductionOrderId?: true
+  }
+
+  export type AlertMaxAggregateInputType = {
+    id?: true
+    type?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+    externalProductionOrderId?: true
+  }
+
+  export type AlertCountAggregateInputType = {
+    id?: true
+    type?: true
+    message?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+    externalProductionOrderId?: true
+    _all?: true
+  }
+
+  export type AlertAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Alert to aggregate.
+     */
+    where?: AlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Alerts to fetch.
+     */
+    orderBy?: AlertOrderByWithRelationInput | AlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Alerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Alerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Alerts
+    **/
+    _count?: true | AlertCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AlertMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AlertMaxAggregateInputType
+  }
+
+  export type GetAlertAggregateType<T extends AlertAggregateArgs> = {
+        [P in keyof T & keyof AggregateAlert]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAlert[P]>
+      : GetScalarType<T[P], AggregateAlert[P]>
+  }
+
+
+
+
+  export type AlertGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AlertWhereInput
+    orderBy?: AlertOrderByWithAggregationInput | AlertOrderByWithAggregationInput[]
+    by: AlertScalarFieldEnum[] | AlertScalarFieldEnum
+    having?: AlertScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AlertCountAggregateInputType | true
+    _min?: AlertMinAggregateInputType
+    _max?: AlertMaxAggregateInputType
+  }
+
+  export type AlertGroupByOutputType = {
+    id: string
+    type: $Enums.AlertType
+    message: string
+    status: $Enums.AlertStatus
+    createdAt: Date
+    updatedAt: Date
+    externalProductionOrderId: string | null
+    _count: AlertCountAggregateOutputType | null
+    _min: AlertMinAggregateOutputType | null
+    _max: AlertMaxAggregateOutputType | null
+  }
+
+  type GetAlertGroupByPayload<T extends AlertGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AlertGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AlertGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AlertGroupByOutputType[P]>
+            : GetScalarType<T[P], AlertGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AlertSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    externalProductionOrderId?: boolean
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }, ExtArgs["result"]["alert"]>
+
+  export type AlertSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    externalProductionOrderId?: boolean
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }, ExtArgs["result"]["alert"]>
+
+  export type AlertSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    externalProductionOrderId?: boolean
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }, ExtArgs["result"]["alert"]>
+
+  export type AlertSelectScalar = {
+    id?: boolean
+    type?: boolean
+    message?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    externalProductionOrderId?: boolean
+  }
+
+  export type AlertOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "message" | "status" | "createdAt" | "updatedAt" | "externalProductionOrderId", ExtArgs["result"]["alert"]>
+  export type AlertInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }
+  export type AlertIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }
+  export type AlertIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    externalProductionOrder?: boolean | Alert$externalProductionOrderArgs<ExtArgs>
+  }
+
+  export type $AlertPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Alert"
+    objects: {
+      externalProductionOrder: Prisma.$ExternalProductionOrderPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      type: $Enums.AlertType
+      message: string
+      status: $Enums.AlertStatus
+      createdAt: Date
+      updatedAt: Date
+      externalProductionOrderId: string | null
+    }, ExtArgs["result"]["alert"]>
+    composites: {}
+  }
+
+  type AlertGetPayload<S extends boolean | null | undefined | AlertDefaultArgs> = $Result.GetResult<Prisma.$AlertPayload, S>
+
+  type AlertCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AlertFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AlertCountAggregateInputType | true
+    }
+
+  export interface AlertDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Alert'], meta: { name: 'Alert' } }
+    /**
+     * Find zero or one Alert that matches the filter.
+     * @param {AlertFindUniqueArgs} args - Arguments to find a Alert
+     * @example
+     * // Get one Alert
+     * const alert = await prisma.alert.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AlertFindUniqueArgs>(args: SelectSubset<T, AlertFindUniqueArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Alert that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AlertFindUniqueOrThrowArgs} args - Arguments to find a Alert
+     * @example
+     * // Get one Alert
+     * const alert = await prisma.alert.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AlertFindUniqueOrThrowArgs>(args: SelectSubset<T, AlertFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Alert that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertFindFirstArgs} args - Arguments to find a Alert
+     * @example
+     * // Get one Alert
+     * const alert = await prisma.alert.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AlertFindFirstArgs>(args?: SelectSubset<T, AlertFindFirstArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Alert that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertFindFirstOrThrowArgs} args - Arguments to find a Alert
+     * @example
+     * // Get one Alert
+     * const alert = await prisma.alert.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AlertFindFirstOrThrowArgs>(args?: SelectSubset<T, AlertFindFirstOrThrowArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Alerts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Alerts
+     * const alerts = await prisma.alert.findMany()
+     * 
+     * // Get first 10 Alerts
+     * const alerts = await prisma.alert.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const alertWithIdOnly = await prisma.alert.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AlertFindManyArgs>(args?: SelectSubset<T, AlertFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Alert.
+     * @param {AlertCreateArgs} args - Arguments to create a Alert.
+     * @example
+     * // Create one Alert
+     * const Alert = await prisma.alert.create({
+     *   data: {
+     *     // ... data to create a Alert
+     *   }
+     * })
+     * 
+     */
+    create<T extends AlertCreateArgs>(args: SelectSubset<T, AlertCreateArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Alerts.
+     * @param {AlertCreateManyArgs} args - Arguments to create many Alerts.
+     * @example
+     * // Create many Alerts
+     * const alert = await prisma.alert.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AlertCreateManyArgs>(args?: SelectSubset<T, AlertCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Alerts and returns the data saved in the database.
+     * @param {AlertCreateManyAndReturnArgs} args - Arguments to create many Alerts.
+     * @example
+     * // Create many Alerts
+     * const alert = await prisma.alert.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Alerts and only return the `id`
+     * const alertWithIdOnly = await prisma.alert.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AlertCreateManyAndReturnArgs>(args?: SelectSubset<T, AlertCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Alert.
+     * @param {AlertDeleteArgs} args - Arguments to delete one Alert.
+     * @example
+     * // Delete one Alert
+     * const Alert = await prisma.alert.delete({
+     *   where: {
+     *     // ... filter to delete one Alert
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AlertDeleteArgs>(args: SelectSubset<T, AlertDeleteArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Alert.
+     * @param {AlertUpdateArgs} args - Arguments to update one Alert.
+     * @example
+     * // Update one Alert
+     * const alert = await prisma.alert.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AlertUpdateArgs>(args: SelectSubset<T, AlertUpdateArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Alerts.
+     * @param {AlertDeleteManyArgs} args - Arguments to filter Alerts to delete.
+     * @example
+     * // Delete a few Alerts
+     * const { count } = await prisma.alert.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AlertDeleteManyArgs>(args?: SelectSubset<T, AlertDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Alerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Alerts
+     * const alert = await prisma.alert.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AlertUpdateManyArgs>(args: SelectSubset<T, AlertUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Alerts and returns the data updated in the database.
+     * @param {AlertUpdateManyAndReturnArgs} args - Arguments to update many Alerts.
+     * @example
+     * // Update many Alerts
+     * const alert = await prisma.alert.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Alerts and only return the `id`
+     * const alertWithIdOnly = await prisma.alert.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AlertUpdateManyAndReturnArgs>(args: SelectSubset<T, AlertUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Alert.
+     * @param {AlertUpsertArgs} args - Arguments to update or create a Alert.
+     * @example
+     * // Update or create a Alert
+     * const alert = await prisma.alert.upsert({
+     *   create: {
+     *     // ... data to create a Alert
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Alert we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AlertUpsertArgs>(args: SelectSubset<T, AlertUpsertArgs<ExtArgs>>): Prisma__AlertClient<$Result.GetResult<Prisma.$AlertPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Alerts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertCountArgs} args - Arguments to filter Alerts to count.
+     * @example
+     * // Count the number of Alerts
+     * const count = await prisma.alert.count({
+     *   where: {
+     *     // ... the filter for the Alerts we want to count
+     *   }
+     * })
+    **/
+    count<T extends AlertCountArgs>(
+      args?: Subset<T, AlertCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AlertCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Alert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AlertAggregateArgs>(args: Subset<T, AlertAggregateArgs>): Prisma.PrismaPromise<GetAlertAggregateType<T>>
+
+    /**
+     * Group by Alert.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AlertGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AlertGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AlertGroupByArgs['orderBy'] }
+        : { orderBy?: AlertGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AlertGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAlertGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Alert model
+   */
+  readonly fields: AlertFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Alert.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AlertClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    externalProductionOrder<T extends Alert$externalProductionOrderArgs<ExtArgs> = {}>(args?: Subset<T, Alert$externalProductionOrderArgs<ExtArgs>>): Prisma__ExternalProductionOrderClient<$Result.GetResult<Prisma.$ExternalProductionOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Alert model
+   */
+  interface AlertFieldRefs {
+    readonly id: FieldRef<"Alert", 'String'>
+    readonly type: FieldRef<"Alert", 'AlertType'>
+    readonly message: FieldRef<"Alert", 'String'>
+    readonly status: FieldRef<"Alert", 'AlertStatus'>
+    readonly createdAt: FieldRef<"Alert", 'DateTime'>
+    readonly updatedAt: FieldRef<"Alert", 'DateTime'>
+    readonly externalProductionOrderId: FieldRef<"Alert", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Alert findUnique
+   */
+  export type AlertFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter, which Alert to fetch.
+     */
+    where: AlertWhereUniqueInput
+  }
+
+  /**
+   * Alert findUniqueOrThrow
+   */
+  export type AlertFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter, which Alert to fetch.
+     */
+    where: AlertWhereUniqueInput
+  }
+
+  /**
+   * Alert findFirst
+   */
+  export type AlertFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter, which Alert to fetch.
+     */
+    where?: AlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Alerts to fetch.
+     */
+    orderBy?: AlertOrderByWithRelationInput | AlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Alerts.
+     */
+    cursor?: AlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Alerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Alerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Alerts.
+     */
+    distinct?: AlertScalarFieldEnum | AlertScalarFieldEnum[]
+  }
+
+  /**
+   * Alert findFirstOrThrow
+   */
+  export type AlertFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter, which Alert to fetch.
+     */
+    where?: AlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Alerts to fetch.
+     */
+    orderBy?: AlertOrderByWithRelationInput | AlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Alerts.
+     */
+    cursor?: AlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Alerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Alerts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Alerts.
+     */
+    distinct?: AlertScalarFieldEnum | AlertScalarFieldEnum[]
+  }
+
+  /**
+   * Alert findMany
+   */
+  export type AlertFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter, which Alerts to fetch.
+     */
+    where?: AlertWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Alerts to fetch.
+     */
+    orderBy?: AlertOrderByWithRelationInput | AlertOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Alerts.
+     */
+    cursor?: AlertWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Alerts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Alerts.
+     */
+    skip?: number
+    distinct?: AlertScalarFieldEnum | AlertScalarFieldEnum[]
+  }
+
+  /**
+   * Alert create
+   */
+  export type AlertCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Alert.
+     */
+    data: XOR<AlertCreateInput, AlertUncheckedCreateInput>
+  }
+
+  /**
+   * Alert createMany
+   */
+  export type AlertCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Alerts.
+     */
+    data: AlertCreateManyInput | AlertCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Alert createManyAndReturn
+   */
+  export type AlertCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * The data used to create many Alerts.
+     */
+    data: AlertCreateManyInput | AlertCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Alert update
+   */
+  export type AlertUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Alert.
+     */
+    data: XOR<AlertUpdateInput, AlertUncheckedUpdateInput>
+    /**
+     * Choose, which Alert to update.
+     */
+    where: AlertWhereUniqueInput
+  }
+
+  /**
+   * Alert updateMany
+   */
+  export type AlertUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Alerts.
+     */
+    data: XOR<AlertUpdateManyMutationInput, AlertUncheckedUpdateManyInput>
+    /**
+     * Filter which Alerts to update
+     */
+    where?: AlertWhereInput
+    /**
+     * Limit how many Alerts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Alert updateManyAndReturn
+   */
+  export type AlertUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * The data used to update Alerts.
+     */
+    data: XOR<AlertUpdateManyMutationInput, AlertUncheckedUpdateManyInput>
+    /**
+     * Filter which Alerts to update
+     */
+    where?: AlertWhereInput
+    /**
+     * Limit how many Alerts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Alert upsert
+   */
+  export type AlertUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Alert to update in case it exists.
+     */
+    where: AlertWhereUniqueInput
+    /**
+     * In case the Alert found by the `where` argument doesn't exist, create a new Alert with this data.
+     */
+    create: XOR<AlertCreateInput, AlertUncheckedCreateInput>
+    /**
+     * In case the Alert was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AlertUpdateInput, AlertUncheckedUpdateInput>
+  }
+
+  /**
+   * Alert delete
+   */
+  export type AlertDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+    /**
+     * Filter which Alert to delete.
+     */
+    where: AlertWhereUniqueInput
+  }
+
+  /**
+   * Alert deleteMany
+   */
+  export type AlertDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Alerts to delete
+     */
+    where?: AlertWhereInput
+    /**
+     * Limit how many Alerts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Alert.externalProductionOrder
+   */
+  export type Alert$externalProductionOrderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExternalProductionOrder
+     */
+    select?: ExternalProductionOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExternalProductionOrder
+     */
+    omit?: ExternalProductionOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExternalProductionOrderInclude<ExtArgs> | null
+    where?: ExternalProductionOrderWhereInput
+  }
+
+  /**
+   * Alert without action
+   */
+  export type AlertDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Alert
+     */
+    select?: AlertSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Alert
+     */
+    omit?: AlertOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AlertInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WastageLog
+   */
+
+  export type AggregateWastageLog = {
+    _count: WastageLogCountAggregateOutputType | null
+    _avg: WastageLogAvgAggregateOutputType | null
+    _sum: WastageLogSumAggregateOutputType | null
+    _min: WastageLogMinAggregateOutputType | null
+    _max: WastageLogMaxAggregateOutputType | null
+  }
+
+  export type WastageLogAvgAggregateOutputType = {
+    quantity: Decimal | null
+    userId: number | null
+  }
+
+  export type WastageLogSumAggregateOutputType = {
+    quantity: Decimal | null
+    userId: number | null
+  }
+
+  export type WastageLogMinAggregateOutputType = {
+    id: string | null
+    quantity: Decimal | null
+    reason: string | null
+    costDeducted: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    productId: string | null
+    assemblerId: string | null
+    externalProductionOrderId: string | null
+    userId: number | null
+  }
+
+  export type WastageLogMaxAggregateOutputType = {
+    id: string | null
+    quantity: Decimal | null
+    reason: string | null
+    costDeducted: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    productId: string | null
+    assemblerId: string | null
+    externalProductionOrderId: string | null
+    userId: number | null
+  }
+
+  export type WastageLogCountAggregateOutputType = {
+    id: number
+    quantity: number
+    reason: number
+    costDeducted: number
+    createdAt: number
+    updatedAt: number
+    productId: number
+    assemblerId: number
+    externalProductionOrderId: number
+    userId: number
+    _all: number
+  }
+
+
+  export type WastageLogAvgAggregateInputType = {
+    quantity?: true
+    userId?: true
+  }
+
+  export type WastageLogSumAggregateInputType = {
+    quantity?: true
+    userId?: true
+  }
+
+  export type WastageLogMinAggregateInputType = {
+    id?: true
+    quantity?: true
+    reason?: true
+    costDeducted?: true
+    createdAt?: true
+    updatedAt?: true
+    productId?: true
+    assemblerId?: true
+    externalProductionOrderId?: true
+    userId?: true
+  }
+
+  export type WastageLogMaxAggregateInputType = {
+    id?: true
+    quantity?: true
+    reason?: true
+    costDeducted?: true
+    createdAt?: true
+    updatedAt?: true
+    productId?: true
+    assemblerId?: true
+    externalProductionOrderId?: true
+    userId?: true
+  }
+
+  export type WastageLogCountAggregateInputType = {
+    id?: true
+    quantity?: true
+    reason?: true
+    costDeducted?: true
+    createdAt?: true
+    updatedAt?: true
+    productId?: true
+    assemblerId?: true
+    externalProductionOrderId?: true
+    userId?: true
+    _all?: true
+  }
+
+  export type WastageLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WastageLog to aggregate.
+     */
+    where?: WastageLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WastageLogs to fetch.
+     */
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WastageLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WastageLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WastageLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WastageLogs
+    **/
+    _count?: true | WastageLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WastageLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WastageLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WastageLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WastageLogMaxAggregateInputType
+  }
+
+  export type GetWastageLogAggregateType<T extends WastageLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateWastageLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWastageLog[P]>
+      : GetScalarType<T[P], AggregateWastageLog[P]>
+  }
+
+
+
+
+  export type WastageLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WastageLogWhereInput
+    orderBy?: WastageLogOrderByWithAggregationInput | WastageLogOrderByWithAggregationInput[]
+    by: WastageLogScalarFieldEnum[] | WastageLogScalarFieldEnum
+    having?: WastageLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WastageLogCountAggregateInputType | true
+    _avg?: WastageLogAvgAggregateInputType
+    _sum?: WastageLogSumAggregateInputType
+    _min?: WastageLogMinAggregateInputType
+    _max?: WastageLogMaxAggregateInputType
+  }
+
+  export type WastageLogGroupByOutputType = {
+    id: string
+    quantity: Decimal
+    reason: string
+    costDeducted: boolean
+    createdAt: Date
+    updatedAt: Date
+    productId: string
+    assemblerId: string | null
+    externalProductionOrderId: string | null
+    userId: number
+    _count: WastageLogCountAggregateOutputType | null
+    _avg: WastageLogAvgAggregateOutputType | null
+    _sum: WastageLogSumAggregateOutputType | null
+    _min: WastageLogMinAggregateOutputType | null
+    _max: WastageLogMaxAggregateOutputType | null
+  }
+
+  type GetWastageLogGroupByPayload<T extends WastageLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WastageLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WastageLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WastageLogGroupByOutputType[P]>
+            : GetScalarType<T[P], WastageLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WastageLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    quantity?: boolean
+    reason?: boolean
+    costDeducted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    productId?: boolean
+    assemblerId?: boolean
+    externalProductionOrderId?: boolean
+    userId?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wastageLog"]>
+
+  export type WastageLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    quantity?: boolean
+    reason?: boolean
+    costDeducted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    productId?: boolean
+    assemblerId?: boolean
+    externalProductionOrderId?: boolean
+    userId?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wastageLog"]>
+
+  export type WastageLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    quantity?: boolean
+    reason?: boolean
+    costDeducted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    productId?: boolean
+    assemblerId?: boolean
+    externalProductionOrderId?: boolean
+    userId?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["wastageLog"]>
+
+  export type WastageLogSelectScalar = {
+    id?: boolean
+    quantity?: boolean
+    reason?: boolean
+    costDeducted?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    productId?: boolean
+    assemblerId?: boolean
+    externalProductionOrderId?: boolean
+    userId?: boolean
+  }
+
+  export type WastageLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "quantity" | "reason" | "costDeducted" | "createdAt" | "updatedAt" | "productId" | "assemblerId" | "externalProductionOrderId" | "userId", ExtArgs["result"]["wastageLog"]>
+  export type WastageLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type WastageLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type WastageLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+    assembler?: boolean | WastageLog$assemblerArgs<ExtArgs>
+    externalProductionOrder?: boolean | WastageLog$externalProductionOrderArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $WastageLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WastageLog"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+      assembler: Prisma.$AssemblerPayload<ExtArgs> | null
+      externalProductionOrder: Prisma.$ExternalProductionOrderPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      quantity: Prisma.Decimal
+      reason: string
+      costDeducted: boolean
+      createdAt: Date
+      updatedAt: Date
+      productId: string
+      assemblerId: string | null
+      externalProductionOrderId: string | null
+      userId: number
+    }, ExtArgs["result"]["wastageLog"]>
+    composites: {}
+  }
+
+  type WastageLogGetPayload<S extends boolean | null | undefined | WastageLogDefaultArgs> = $Result.GetResult<Prisma.$WastageLogPayload, S>
+
+  type WastageLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WastageLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WastageLogCountAggregateInputType | true
+    }
+
+  export interface WastageLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WastageLog'], meta: { name: 'WastageLog' } }
+    /**
+     * Find zero or one WastageLog that matches the filter.
+     * @param {WastageLogFindUniqueArgs} args - Arguments to find a WastageLog
+     * @example
+     * // Get one WastageLog
+     * const wastageLog = await prisma.wastageLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WastageLogFindUniqueArgs>(args: SelectSubset<T, WastageLogFindUniqueArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WastageLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WastageLogFindUniqueOrThrowArgs} args - Arguments to find a WastageLog
+     * @example
+     * // Get one WastageLog
+     * const wastageLog = await prisma.wastageLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WastageLogFindUniqueOrThrowArgs>(args: SelectSubset<T, WastageLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WastageLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogFindFirstArgs} args - Arguments to find a WastageLog
+     * @example
+     * // Get one WastageLog
+     * const wastageLog = await prisma.wastageLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WastageLogFindFirstArgs>(args?: SelectSubset<T, WastageLogFindFirstArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WastageLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogFindFirstOrThrowArgs} args - Arguments to find a WastageLog
+     * @example
+     * // Get one WastageLog
+     * const wastageLog = await prisma.wastageLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WastageLogFindFirstOrThrowArgs>(args?: SelectSubset<T, WastageLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WastageLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WastageLogs
+     * const wastageLogs = await prisma.wastageLog.findMany()
+     * 
+     * // Get first 10 WastageLogs
+     * const wastageLogs = await prisma.wastageLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const wastageLogWithIdOnly = await prisma.wastageLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WastageLogFindManyArgs>(args?: SelectSubset<T, WastageLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WastageLog.
+     * @param {WastageLogCreateArgs} args - Arguments to create a WastageLog.
+     * @example
+     * // Create one WastageLog
+     * const WastageLog = await prisma.wastageLog.create({
+     *   data: {
+     *     // ... data to create a WastageLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends WastageLogCreateArgs>(args: SelectSubset<T, WastageLogCreateArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WastageLogs.
+     * @param {WastageLogCreateManyArgs} args - Arguments to create many WastageLogs.
+     * @example
+     * // Create many WastageLogs
+     * const wastageLog = await prisma.wastageLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WastageLogCreateManyArgs>(args?: SelectSubset<T, WastageLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WastageLogs and returns the data saved in the database.
+     * @param {WastageLogCreateManyAndReturnArgs} args - Arguments to create many WastageLogs.
+     * @example
+     * // Create many WastageLogs
+     * const wastageLog = await prisma.wastageLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WastageLogs and only return the `id`
+     * const wastageLogWithIdOnly = await prisma.wastageLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WastageLogCreateManyAndReturnArgs>(args?: SelectSubset<T, WastageLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WastageLog.
+     * @param {WastageLogDeleteArgs} args - Arguments to delete one WastageLog.
+     * @example
+     * // Delete one WastageLog
+     * const WastageLog = await prisma.wastageLog.delete({
+     *   where: {
+     *     // ... filter to delete one WastageLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WastageLogDeleteArgs>(args: SelectSubset<T, WastageLogDeleteArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WastageLog.
+     * @param {WastageLogUpdateArgs} args - Arguments to update one WastageLog.
+     * @example
+     * // Update one WastageLog
+     * const wastageLog = await prisma.wastageLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WastageLogUpdateArgs>(args: SelectSubset<T, WastageLogUpdateArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WastageLogs.
+     * @param {WastageLogDeleteManyArgs} args - Arguments to filter WastageLogs to delete.
+     * @example
+     * // Delete a few WastageLogs
+     * const { count } = await prisma.wastageLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WastageLogDeleteManyArgs>(args?: SelectSubset<T, WastageLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WastageLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WastageLogs
+     * const wastageLog = await prisma.wastageLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WastageLogUpdateManyArgs>(args: SelectSubset<T, WastageLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WastageLogs and returns the data updated in the database.
+     * @param {WastageLogUpdateManyAndReturnArgs} args - Arguments to update many WastageLogs.
+     * @example
+     * // Update many WastageLogs
+     * const wastageLog = await prisma.wastageLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WastageLogs and only return the `id`
+     * const wastageLogWithIdOnly = await prisma.wastageLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WastageLogUpdateManyAndReturnArgs>(args: SelectSubset<T, WastageLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WastageLog.
+     * @param {WastageLogUpsertArgs} args - Arguments to update or create a WastageLog.
+     * @example
+     * // Update or create a WastageLog
+     * const wastageLog = await prisma.wastageLog.upsert({
+     *   create: {
+     *     // ... data to create a WastageLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WastageLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WastageLogUpsertArgs>(args: SelectSubset<T, WastageLogUpsertArgs<ExtArgs>>): Prisma__WastageLogClient<$Result.GetResult<Prisma.$WastageLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WastageLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogCountArgs} args - Arguments to filter WastageLogs to count.
+     * @example
+     * // Count the number of WastageLogs
+     * const count = await prisma.wastageLog.count({
+     *   where: {
+     *     // ... the filter for the WastageLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends WastageLogCountArgs>(
+      args?: Subset<T, WastageLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WastageLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WastageLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WastageLogAggregateArgs>(args: Subset<T, WastageLogAggregateArgs>): Prisma.PrismaPromise<GetWastageLogAggregateType<T>>
+
+    /**
+     * Group by WastageLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WastageLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WastageLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WastageLogGroupByArgs['orderBy'] }
+        : { orderBy?: WastageLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WastageLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWastageLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WastageLog model
+   */
+  readonly fields: WastageLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WastageLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WastageLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    assembler<T extends WastageLog$assemblerArgs<ExtArgs> = {}>(args?: Subset<T, WastageLog$assemblerArgs<ExtArgs>>): Prisma__AssemblerClient<$Result.GetResult<Prisma.$AssemblerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    externalProductionOrder<T extends WastageLog$externalProductionOrderArgs<ExtArgs> = {}>(args?: Subset<T, WastageLog$externalProductionOrderArgs<ExtArgs>>): Prisma__ExternalProductionOrderClient<$Result.GetResult<Prisma.$ExternalProductionOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WastageLog model
+   */
+  interface WastageLogFieldRefs {
+    readonly id: FieldRef<"WastageLog", 'String'>
+    readonly quantity: FieldRef<"WastageLog", 'Decimal'>
+    readonly reason: FieldRef<"WastageLog", 'String'>
+    readonly costDeducted: FieldRef<"WastageLog", 'Boolean'>
+    readonly createdAt: FieldRef<"WastageLog", 'DateTime'>
+    readonly updatedAt: FieldRef<"WastageLog", 'DateTime'>
+    readonly productId: FieldRef<"WastageLog", 'String'>
+    readonly assemblerId: FieldRef<"WastageLog", 'String'>
+    readonly externalProductionOrderId: FieldRef<"WastageLog", 'String'>
+    readonly userId: FieldRef<"WastageLog", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WastageLog findUnique
+   */
+  export type WastageLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter, which WastageLog to fetch.
+     */
+    where: WastageLogWhereUniqueInput
+  }
+
+  /**
+   * WastageLog findUniqueOrThrow
+   */
+  export type WastageLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter, which WastageLog to fetch.
+     */
+    where: WastageLogWhereUniqueInput
+  }
+
+  /**
+   * WastageLog findFirst
+   */
+  export type WastageLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter, which WastageLog to fetch.
+     */
+    where?: WastageLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WastageLogs to fetch.
+     */
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WastageLogs.
+     */
+    cursor?: WastageLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WastageLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WastageLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WastageLogs.
+     */
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
+  }
+
+  /**
+   * WastageLog findFirstOrThrow
+   */
+  export type WastageLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter, which WastageLog to fetch.
+     */
+    where?: WastageLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WastageLogs to fetch.
+     */
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WastageLogs.
+     */
+    cursor?: WastageLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WastageLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WastageLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WastageLogs.
+     */
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
+  }
+
+  /**
+   * WastageLog findMany
+   */
+  export type WastageLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter, which WastageLogs to fetch.
+     */
+    where?: WastageLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WastageLogs to fetch.
+     */
+    orderBy?: WastageLogOrderByWithRelationInput | WastageLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WastageLogs.
+     */
+    cursor?: WastageLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WastageLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WastageLogs.
+     */
+    skip?: number
+    distinct?: WastageLogScalarFieldEnum | WastageLogScalarFieldEnum[]
+  }
+
+  /**
+   * WastageLog create
+   */
+  export type WastageLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WastageLog.
+     */
+    data: XOR<WastageLogCreateInput, WastageLogUncheckedCreateInput>
+  }
+
+  /**
+   * WastageLog createMany
+   */
+  export type WastageLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WastageLogs.
+     */
+    data: WastageLogCreateManyInput | WastageLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WastageLog createManyAndReturn
+   */
+  export type WastageLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many WastageLogs.
+     */
+    data: WastageLogCreateManyInput | WastageLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WastageLog update
+   */
+  export type WastageLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WastageLog.
+     */
+    data: XOR<WastageLogUpdateInput, WastageLogUncheckedUpdateInput>
+    /**
+     * Choose, which WastageLog to update.
+     */
+    where: WastageLogWhereUniqueInput
+  }
+
+  /**
+   * WastageLog updateMany
+   */
+  export type WastageLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WastageLogs.
+     */
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyInput>
+    /**
+     * Filter which WastageLogs to update
+     */
+    where?: WastageLogWhereInput
+    /**
+     * Limit how many WastageLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WastageLog updateManyAndReturn
+   */
+  export type WastageLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * The data used to update WastageLogs.
+     */
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyInput>
+    /**
+     * Filter which WastageLogs to update
+     */
+    where?: WastageLogWhereInput
+    /**
+     * Limit how many WastageLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WastageLog upsert
+   */
+  export type WastageLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WastageLog to update in case it exists.
+     */
+    where: WastageLogWhereUniqueInput
+    /**
+     * In case the WastageLog found by the `where` argument doesn't exist, create a new WastageLog with this data.
+     */
+    create: XOR<WastageLogCreateInput, WastageLogUncheckedCreateInput>
+    /**
+     * In case the WastageLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WastageLogUpdateInput, WastageLogUncheckedUpdateInput>
+  }
+
+  /**
+   * WastageLog delete
+   */
+  export type WastageLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+    /**
+     * Filter which WastageLog to delete.
+     */
+    where: WastageLogWhereUniqueInput
+  }
+
+  /**
+   * WastageLog deleteMany
+   */
+  export type WastageLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WastageLogs to delete
+     */
+    where?: WastageLogWhereInput
+    /**
+     * Limit how many WastageLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WastageLog.assembler
+   */
+  export type WastageLog$assemblerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Assembler
+     */
+    select?: AssemblerSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Assembler
+     */
+    omit?: AssemblerOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssemblerInclude<ExtArgs> | null
+    where?: AssemblerWhereInput
+  }
+
+  /**
+   * WastageLog.externalProductionOrder
+   */
+  export type WastageLog$externalProductionOrderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ExternalProductionOrder
+     */
+    select?: ExternalProductionOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ExternalProductionOrder
+     */
+    omit?: ExternalProductionOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ExternalProductionOrderInclude<ExtArgs> | null
+    where?: ExternalProductionOrderWhereInput
+  }
+
+  /**
+   * WastageLog without action
+   */
+  export type WastageLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WastageLog
+     */
+    select?: WastageLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WastageLog
+     */
+    omit?: WastageLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WastageLogInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -30248,6 +32968,35 @@ export namespace Prisma {
   export type OrderSequenceScalarFieldEnum = (typeof OrderSequenceScalarFieldEnum)[keyof typeof OrderSequenceScalarFieldEnum]
 
 
+  export const AlertScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    message: 'message',
+    status: 'status',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    externalProductionOrderId: 'externalProductionOrderId'
+  };
+
+  export type AlertScalarFieldEnum = (typeof AlertScalarFieldEnum)[keyof typeof AlertScalarFieldEnum]
+
+
+  export const WastageLogScalarFieldEnum: {
+    id: 'id',
+    quantity: 'quantity',
+    reason: 'reason',
+    costDeducted: 'costDeducted',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    productId: 'productId',
+    assemblerId: 'assemblerId',
+    externalProductionOrderId: 'externalProductionOrderId',
+    userId: 'userId'
+  };
+
+  export type WastageLogScalarFieldEnum = (typeof WastageLogScalarFieldEnum)[keyof typeof WastageLogScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -30435,6 +33184,34 @@ export namespace Prisma {
    * Reference to a field of type 'MovementType[]'
    */
   export type ListEnumMovementTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MovementType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AlertType'
+   */
+  export type EnumAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlertType'>
+    
+
+
+  /**
+   * Reference to a field of type 'AlertType[]'
+   */
+  export type ListEnumAlertTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlertType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AlertStatus'
+   */
+  export type EnumAlertStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlertStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'AlertStatus[]'
+   */
+  export type ListEnumAlertStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AlertStatus[]'>
     
 
 
@@ -30782,6 +33559,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobListRelationFilter
     overheadCosts?: ProductOverheadListRelationFilter
     salesOrderItems?: SalesOrderItemListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -30810,6 +33588,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobOrderByRelationAggregateInput
     overheadCosts?: ProductOverheadOrderByRelationAggregateInput
     salesOrderItems?: SalesOrderItemOrderByRelationAggregateInput
+    wastageLogs?: WastageLogOrderByRelationAggregateInput
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -30841,6 +33620,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobListRelationFilter
     overheadCosts?: ProductOverheadListRelationFilter
     salesOrderItems?: SalesOrderItemListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }, "id" | "internalCode">
 
   export type ProductOrderByWithAggregationInput = {
@@ -31283,6 +34063,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteListRelationFilter
     orderSentComponents?: OrderSentComponentListRelationFilter
     assemblerPayment?: XOR<AssemblerPaymentNullableScalarRelationFilter, AssemblerPaymentWhereInput> | null
+    alerts?: AlertListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }
 
   export type ExternalProductionOrderOrderByWithRelationInput = {
@@ -31308,6 +34090,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteOrderByRelationAggregateInput
     orderSentComponents?: OrderSentComponentOrderByRelationAggregateInput
     assemblerPayment?: AssemblerPaymentOrderByWithRelationInput
+    alerts?: AlertOrderByRelationAggregateInput
+    wastageLogs?: WastageLogOrderByRelationAggregateInput
   }
 
   export type ExternalProductionOrderWhereUniqueInput = Prisma.AtLeast<{
@@ -31336,6 +34120,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteListRelationFilter
     orderSentComponents?: OrderSentComponentListRelationFilter
     assemblerPayment?: XOR<AssemblerPaymentNullableScalarRelationFilter, AssemblerPaymentWhereInput> | null
+    alerts?: AlertListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }, "id" | "orderNumber">
 
   export type ExternalProductionOrderOrderByWithAggregationInput = {
@@ -31764,6 +34550,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Assembler"> | Date | string
     externalProductionOrders?: ExternalProductionOrderListRelationFilter
     assemblerPayments?: AssemblerPaymentListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }
 
   export type AssemblerOrderByWithRelationInput = {
@@ -31778,6 +34565,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     externalProductionOrders?: ExternalProductionOrderOrderByRelationAggregateInput
     assemblerPayments?: AssemblerPaymentOrderByRelationAggregateInput
+    wastageLogs?: WastageLogOrderByRelationAggregateInput
   }
 
   export type AssemblerWhereUniqueInput = Prisma.AtLeast<{
@@ -31795,6 +34583,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Assembler"> | Date | string
     externalProductionOrders?: ExternalProductionOrderListRelationFilter
     assemblerPayments?: AssemblerPaymentListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }, "id" | "name">
 
   export type AssemblerOrderByWithAggregationInput = {
@@ -31842,6 +34631,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderListRelationFilter
     assignedPickups?: ExternalProductionOrderListRelationFilter
     orderNotes?: OrderNoteListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -31856,6 +34646,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderOrderByRelationAggregateInput
     assignedPickups?: ExternalProductionOrderOrderByRelationAggregateInput
     orderNotes?: OrderNoteOrderByRelationAggregateInput
+    wastageLogs?: WastageLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -31873,6 +34664,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderListRelationFilter
     assignedPickups?: ExternalProductionOrderListRelationFilter
     orderNotes?: OrderNoteListRelationFilter
+    wastageLogs?: WastageLogListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -32031,6 +34823,162 @@ export namespace Prisma {
     NOT?: OrderSequenceScalarWhereWithAggregatesInput | OrderSequenceScalarWhereWithAggregatesInput[]
     date?: StringWithAggregatesFilter<"OrderSequence"> | string
     lastSequence?: IntWithAggregatesFilter<"OrderSequence"> | number
+  }
+
+  export type AlertWhereInput = {
+    AND?: AlertWhereInput | AlertWhereInput[]
+    OR?: AlertWhereInput[]
+    NOT?: AlertWhereInput | AlertWhereInput[]
+    id?: StringFilter<"Alert"> | string
+    type?: EnumAlertTypeFilter<"Alert"> | $Enums.AlertType
+    message?: StringFilter<"Alert"> | string
+    status?: EnumAlertStatusFilter<"Alert"> | $Enums.AlertStatus
+    createdAt?: DateTimeFilter<"Alert"> | Date | string
+    updatedAt?: DateTimeFilter<"Alert"> | Date | string
+    externalProductionOrderId?: StringNullableFilter<"Alert"> | string | null
+    externalProductionOrder?: XOR<ExternalProductionOrderNullableScalarRelationFilter, ExternalProductionOrderWhereInput> | null
+  }
+
+  export type AlertOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    externalProductionOrderId?: SortOrderInput | SortOrder
+    externalProductionOrder?: ExternalProductionOrderOrderByWithRelationInput
+  }
+
+  export type AlertWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AlertWhereInput | AlertWhereInput[]
+    OR?: AlertWhereInput[]
+    NOT?: AlertWhereInput | AlertWhereInput[]
+    type?: EnumAlertTypeFilter<"Alert"> | $Enums.AlertType
+    message?: StringFilter<"Alert"> | string
+    status?: EnumAlertStatusFilter<"Alert"> | $Enums.AlertStatus
+    createdAt?: DateTimeFilter<"Alert"> | Date | string
+    updatedAt?: DateTimeFilter<"Alert"> | Date | string
+    externalProductionOrderId?: StringNullableFilter<"Alert"> | string | null
+    externalProductionOrder?: XOR<ExternalProductionOrderNullableScalarRelationFilter, ExternalProductionOrderWhereInput> | null
+  }, "id">
+
+  export type AlertOrderByWithAggregationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    externalProductionOrderId?: SortOrderInput | SortOrder
+    _count?: AlertCountOrderByAggregateInput
+    _max?: AlertMaxOrderByAggregateInput
+    _min?: AlertMinOrderByAggregateInput
+  }
+
+  export type AlertScalarWhereWithAggregatesInput = {
+    AND?: AlertScalarWhereWithAggregatesInput | AlertScalarWhereWithAggregatesInput[]
+    OR?: AlertScalarWhereWithAggregatesInput[]
+    NOT?: AlertScalarWhereWithAggregatesInput | AlertScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Alert"> | string
+    type?: EnumAlertTypeWithAggregatesFilter<"Alert"> | $Enums.AlertType
+    message?: StringWithAggregatesFilter<"Alert"> | string
+    status?: EnumAlertStatusWithAggregatesFilter<"Alert"> | $Enums.AlertStatus
+    createdAt?: DateTimeWithAggregatesFilter<"Alert"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Alert"> | Date | string
+    externalProductionOrderId?: StringNullableWithAggregatesFilter<"Alert"> | string | null
+  }
+
+  export type WastageLogWhereInput = {
+    AND?: WastageLogWhereInput | WastageLogWhereInput[]
+    OR?: WastageLogWhereInput[]
+    NOT?: WastageLogWhereInput | WastageLogWhereInput[]
+    id?: StringFilter<"WastageLog"> | string
+    quantity?: DecimalFilter<"WastageLog"> | Decimal | DecimalJsLike | number | string
+    reason?: StringFilter<"WastageLog"> | string
+    costDeducted?: BoolFilter<"WastageLog"> | boolean
+    createdAt?: DateTimeFilter<"WastageLog"> | Date | string
+    updatedAt?: DateTimeFilter<"WastageLog"> | Date | string
+    productId?: StringFilter<"WastageLog"> | string
+    assemblerId?: StringNullableFilter<"WastageLog"> | string | null
+    externalProductionOrderId?: StringNullableFilter<"WastageLog"> | string | null
+    userId?: IntFilter<"WastageLog"> | number
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+    assembler?: XOR<AssemblerNullableScalarRelationFilter, AssemblerWhereInput> | null
+    externalProductionOrder?: XOR<ExternalProductionOrderNullableScalarRelationFilter, ExternalProductionOrderWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type WastageLogOrderByWithRelationInput = {
+    id?: SortOrder
+    quantity?: SortOrder
+    reason?: SortOrder
+    costDeducted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    productId?: SortOrder
+    assemblerId?: SortOrderInput | SortOrder
+    externalProductionOrderId?: SortOrderInput | SortOrder
+    userId?: SortOrder
+    product?: ProductOrderByWithRelationInput
+    assembler?: AssemblerOrderByWithRelationInput
+    externalProductionOrder?: ExternalProductionOrderOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type WastageLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: WastageLogWhereInput | WastageLogWhereInput[]
+    OR?: WastageLogWhereInput[]
+    NOT?: WastageLogWhereInput | WastageLogWhereInput[]
+    quantity?: DecimalFilter<"WastageLog"> | Decimal | DecimalJsLike | number | string
+    reason?: StringFilter<"WastageLog"> | string
+    costDeducted?: BoolFilter<"WastageLog"> | boolean
+    createdAt?: DateTimeFilter<"WastageLog"> | Date | string
+    updatedAt?: DateTimeFilter<"WastageLog"> | Date | string
+    productId?: StringFilter<"WastageLog"> | string
+    assemblerId?: StringNullableFilter<"WastageLog"> | string | null
+    externalProductionOrderId?: StringNullableFilter<"WastageLog"> | string | null
+    userId?: IntFilter<"WastageLog"> | number
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+    assembler?: XOR<AssemblerNullableScalarRelationFilter, AssemblerWhereInput> | null
+    externalProductionOrder?: XOR<ExternalProductionOrderNullableScalarRelationFilter, ExternalProductionOrderWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type WastageLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    quantity?: SortOrder
+    reason?: SortOrder
+    costDeducted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    productId?: SortOrder
+    assemblerId?: SortOrderInput | SortOrder
+    externalProductionOrderId?: SortOrderInput | SortOrder
+    userId?: SortOrder
+    _count?: WastageLogCountOrderByAggregateInput
+    _avg?: WastageLogAvgOrderByAggregateInput
+    _max?: WastageLogMaxOrderByAggregateInput
+    _min?: WastageLogMinOrderByAggregateInput
+    _sum?: WastageLogSumOrderByAggregateInput
+  }
+
+  export type WastageLogScalarWhereWithAggregatesInput = {
+    AND?: WastageLogScalarWhereWithAggregatesInput | WastageLogScalarWhereWithAggregatesInput[]
+    OR?: WastageLogScalarWhereWithAggregatesInput[]
+    NOT?: WastageLogScalarWhereWithAggregatesInput | WastageLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WastageLog"> | string
+    quantity?: DecimalWithAggregatesFilter<"WastageLog"> | Decimal | DecimalJsLike | number | string
+    reason?: StringWithAggregatesFilter<"WastageLog"> | string
+    costDeducted?: BoolWithAggregatesFilter<"WastageLog"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"WastageLog"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"WastageLog"> | Date | string
+    productId?: StringWithAggregatesFilter<"WastageLog"> | string
+    assemblerId?: StringNullableWithAggregatesFilter<"WastageLog"> | string | null
+    externalProductionOrderId?: StringNullableWithAggregatesFilter<"WastageLog"> | string | null
+    userId?: IntWithAggregatesFilter<"WastageLog"> | number
   }
 
   export type PriceTierCreateInput = {
@@ -32377,6 +35325,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateInput = {
@@ -32403,6 +35352,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductUpdateInput = {
@@ -32429,6 +35379,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -32455,6 +35406,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductCreateManyInput = {
@@ -32870,6 +35822,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateInput = {
@@ -32891,6 +35845,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUpdateInput = {
@@ -32912,6 +35868,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateInput = {
@@ -32933,6 +35891,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderCreateManyInput = {
@@ -33331,6 +36291,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
     assemblerPayments?: AssemblerPaymentCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerUncheckedCreateInput = {
@@ -33345,6 +36306,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
     assemblerPayments?: AssemblerPaymentUncheckedCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerUpdateInput = {
@@ -33359,6 +36321,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
     assemblerPayments?: AssemblerPaymentUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutAssemblerNestedInput
   }
 
   export type AssemblerUncheckedUpdateInput = {
@@ -33373,6 +36336,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
     assemblerPayments?: AssemblerPaymentUncheckedUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutAssemblerNestedInput
   }
 
   export type AssemblerCreateManyInput = {
@@ -33422,6 +36386,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -33436,6 +36401,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUncheckedCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderUncheckedCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -33449,6 +36415,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -33463,6 +36430,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -33611,6 +36579,162 @@ export namespace Prisma {
   export type OrderSequenceUncheckedUpdateManyInput = {
     date?: StringFieldUpdateOperationsInput | string
     lastSequence?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type AlertCreateInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    externalProductionOrder?: ExternalProductionOrderCreateNestedOneWithoutAlertsInput
+  }
+
+  export type AlertUncheckedCreateInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    externalProductionOrderId?: string | null
+  }
+
+  export type AlertUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalProductionOrder?: ExternalProductionOrderUpdateOneWithoutAlertsNestedInput
+  }
+
+  export type AlertUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type AlertCreateManyInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    externalProductionOrderId?: string | null
+  }
+
+  export type AlertUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WastageLogCreateInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutWastageLogsInput
+    assembler?: AssemblerCreateNestedOneWithoutWastageLogsInput
+    externalProductionOrder?: ExternalProductionOrderCreateNestedOneWithoutWastageLogsInput
+    user: UserCreateNestedOneWithoutWastageLogsInput
+  }
+
+  export type WastageLogUncheckedCreateInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
+  export type WastageLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutWastageLogsNestedInput
+    assembler?: AssemblerUpdateOneWithoutWastageLogsNestedInput
+    externalProductionOrder?: ExternalProductionOrderUpdateOneWithoutWastageLogsNestedInput
+    user?: UserUpdateOneRequiredWithoutWastageLogsNestedInput
+  }
+
+  export type WastageLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type WastageLogCreateManyInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
+  export type WastageLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WastageLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -34054,6 +37178,12 @@ export namespace Prisma {
     none?: ProductOverheadWhereInput
   }
 
+  export type WastageLogListRelationFilter = {
+    every?: WastageLogWhereInput
+    some?: WastageLogWhereInput
+    none?: WastageLogWhereInput
+  }
+
   export type InventoryMovementOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -34079,6 +37209,10 @@ export namespace Prisma {
   }
 
   export type ProductOverheadOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WastageLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -34521,7 +37655,17 @@ export namespace Prisma {
     isNot?: AssemblerPaymentWhereInput | null
   }
 
+  export type AlertListRelationFilter = {
+    every?: AlertWhereInput
+    some?: AlertWhereInput
+    none?: AlertWhereInput
+  }
+
   export type OrderNoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AlertOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -35060,6 +38204,124 @@ export namespace Prisma {
     lastSequence?: SortOrder
   }
 
+  export type EnumAlertTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertType | EnumAlertTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertTypeFilter<$PrismaModel> | $Enums.AlertType
+  }
+
+  export type EnumAlertStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertStatus | EnumAlertStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertStatusFilter<$PrismaModel> | $Enums.AlertStatus
+  }
+
+  export type AlertCountOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    externalProductionOrderId?: SortOrder
+  }
+
+  export type AlertMaxOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    externalProductionOrderId?: SortOrder
+  }
+
+  export type AlertMinOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    message?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    externalProductionOrderId?: SortOrder
+  }
+
+  export type EnumAlertTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertType | EnumAlertTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertTypeWithAggregatesFilter<$PrismaModel> | $Enums.AlertType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAlertTypeFilter<$PrismaModel>
+    _max?: NestedEnumAlertTypeFilter<$PrismaModel>
+  }
+
+  export type EnumAlertStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertStatus | EnumAlertStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertStatusWithAggregatesFilter<$PrismaModel> | $Enums.AlertStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAlertStatusFilter<$PrismaModel>
+    _max?: NestedEnumAlertStatusFilter<$PrismaModel>
+  }
+
+  export type AssemblerNullableScalarRelationFilter = {
+    is?: AssemblerWhereInput | null
+    isNot?: AssemblerWhereInput | null
+  }
+
+  export type WastageLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    quantity?: SortOrder
+    reason?: SortOrder
+    costDeducted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    productId?: SortOrder
+    assemblerId?: SortOrder
+    externalProductionOrderId?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type WastageLogAvgOrderByAggregateInput = {
+    quantity?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type WastageLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    quantity?: SortOrder
+    reason?: SortOrder
+    costDeducted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    productId?: SortOrder
+    assemblerId?: SortOrder
+    externalProductionOrderId?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type WastageLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    quantity?: SortOrder
+    reason?: SortOrder
+    costDeducted?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    productId?: SortOrder
+    assemblerId?: SortOrder
+    externalProductionOrderId?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type WastageLogSumOrderByAggregateInput = {
+    quantity?: SortOrder
+    userId?: SortOrder
+  }
+
   export type ClientCreateNestedManyWithoutPriceTierInput = {
     create?: XOR<ClientCreateWithoutPriceTierInput, ClientUncheckedCreateWithoutPriceTierInput> | ClientCreateWithoutPriceTierInput[] | ClientUncheckedCreateWithoutPriceTierInput[]
     connectOrCreate?: ClientCreateOrConnectWithoutPriceTierInput | ClientCreateOrConnectWithoutPriceTierInput[]
@@ -35375,6 +38637,13 @@ export namespace Prisma {
     connect?: SalesOrderItemWhereUniqueInput | SalesOrderItemWhereUniqueInput[]
   }
 
+  export type WastageLogCreateNestedManyWithoutProductInput = {
+    create?: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput> | WastageLogCreateWithoutProductInput[] | WastageLogUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutProductInput | WastageLogCreateOrConnectWithoutProductInput[]
+    createMany?: WastageLogCreateManyProductInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+  }
+
   export type InventoryMovementUncheckedCreateNestedManyWithoutProductInput = {
     create?: XOR<InventoryMovementCreateWithoutProductInput, InventoryMovementUncheckedCreateWithoutProductInput> | InventoryMovementCreateWithoutProductInput[] | InventoryMovementUncheckedCreateWithoutProductInput[]
     connectOrCreate?: InventoryMovementCreateOrConnectWithoutProductInput | InventoryMovementCreateOrConnectWithoutProductInput[]
@@ -35436,6 +38705,13 @@ export namespace Prisma {
     connectOrCreate?: SalesOrderItemCreateOrConnectWithoutProductInput | SalesOrderItemCreateOrConnectWithoutProductInput[]
     createMany?: SalesOrderItemCreateManyProductInputEnvelope
     connect?: SalesOrderItemWhereUniqueInput | SalesOrderItemWhereUniqueInput[]
+  }
+
+  export type WastageLogUncheckedCreateNestedManyWithoutProductInput = {
+    create?: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput> | WastageLogCreateWithoutProductInput[] | WastageLogUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutProductInput | WastageLogCreateOrConnectWithoutProductInput[]
+    createMany?: WastageLogCreateManyProductInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
   }
 
   export type NullableDecimalFieldUpdateOperationsInput = {
@@ -35600,6 +38876,20 @@ export namespace Prisma {
     deleteMany?: SalesOrderItemScalarWhereInput | SalesOrderItemScalarWhereInput[]
   }
 
+  export type WastageLogUpdateManyWithoutProductNestedInput = {
+    create?: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput> | WastageLogCreateWithoutProductInput[] | WastageLogUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutProductInput | WastageLogCreateOrConnectWithoutProductInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutProductInput | WastageLogUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: WastageLogCreateManyProductInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutProductInput | WastageLogUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutProductInput | WastageLogUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -35732,6 +39022,20 @@ export namespace Prisma {
     update?: SalesOrderItemUpdateWithWhereUniqueWithoutProductInput | SalesOrderItemUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: SalesOrderItemUpdateManyWithWhereWithoutProductInput | SalesOrderItemUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: SalesOrderItemScalarWhereInput | SalesOrderItemScalarWhereInput[]
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutProductNestedInput = {
+    create?: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput> | WastageLogCreateWithoutProductInput[] | WastageLogUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutProductInput | WastageLogCreateOrConnectWithoutProductInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutProductInput | WastageLogUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: WastageLogCreateManyProductInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutProductInput | WastageLogUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutProductInput | WastageLogUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
   }
 
   export type ProductCreateNestedOneWithoutComponentsInput = {
@@ -36106,6 +39410,20 @@ export namespace Prisma {
     connect?: AssemblerPaymentWhereUniqueInput
   }
 
+  export type AlertCreateNestedManyWithoutExternalProductionOrderInput = {
+    create?: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput> | AlertCreateWithoutExternalProductionOrderInput[] | AlertUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: AlertCreateOrConnectWithoutExternalProductionOrderInput | AlertCreateOrConnectWithoutExternalProductionOrderInput[]
+    createMany?: AlertCreateManyExternalProductionOrderInputEnvelope
+    connect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+  }
+
+  export type WastageLogCreateNestedManyWithoutExternalProductionOrderInput = {
+    create?: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput> | WastageLogCreateWithoutExternalProductionOrderInput[] | WastageLogUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutExternalProductionOrderInput | WastageLogCreateOrConnectWithoutExternalProductionOrderInput[]
+    createMany?: WastageLogCreateManyExternalProductionOrderInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+  }
+
   export type ExternalProductionOrderItemUncheckedCreateNestedManyWithoutOrderInput = {
     create?: XOR<ExternalProductionOrderItemCreateWithoutOrderInput, ExternalProductionOrderItemUncheckedCreateWithoutOrderInput> | ExternalProductionOrderItemCreateWithoutOrderInput[] | ExternalProductionOrderItemUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: ExternalProductionOrderItemCreateOrConnectWithoutOrderInput | ExternalProductionOrderItemCreateOrConnectWithoutOrderInput[]
@@ -36146,6 +39464,20 @@ export namespace Prisma {
     connectOrCreate?: OrderSentComponentCreateOrConnectWithoutExternalProductionOrderInput | OrderSentComponentCreateOrConnectWithoutExternalProductionOrderInput[]
     createMany?: OrderSentComponentCreateManyExternalProductionOrderInputEnvelope
     connect?: OrderSentComponentWhereUniqueInput | OrderSentComponentWhereUniqueInput[]
+  }
+
+  export type AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput = {
+    create?: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput> | AlertCreateWithoutExternalProductionOrderInput[] | AlertUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: AlertCreateOrConnectWithoutExternalProductionOrderInput | AlertCreateOrConnectWithoutExternalProductionOrderInput[]
+    createMany?: AlertCreateManyExternalProductionOrderInputEnvelope
+    connect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+  }
+
+  export type WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput = {
+    create?: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput> | WastageLogCreateWithoutExternalProductionOrderInput[] | WastageLogUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutExternalProductionOrderInput | WastageLogCreateOrConnectWithoutExternalProductionOrderInput[]
+    createMany?: WastageLogCreateManyExternalProductionOrderInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -36278,6 +39610,34 @@ export namespace Prisma {
     update?: XOR<XOR<AssemblerPaymentUpdateToOneWithWhereWithoutOrdersInput, AssemblerPaymentUpdateWithoutOrdersInput>, AssemblerPaymentUncheckedUpdateWithoutOrdersInput>
   }
 
+  export type AlertUpdateManyWithoutExternalProductionOrderNestedInput = {
+    create?: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput> | AlertCreateWithoutExternalProductionOrderInput[] | AlertUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: AlertCreateOrConnectWithoutExternalProductionOrderInput | AlertCreateOrConnectWithoutExternalProductionOrderInput[]
+    upsert?: AlertUpsertWithWhereUniqueWithoutExternalProductionOrderInput | AlertUpsertWithWhereUniqueWithoutExternalProductionOrderInput[]
+    createMany?: AlertCreateManyExternalProductionOrderInputEnvelope
+    set?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    disconnect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    delete?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    connect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    update?: AlertUpdateWithWhereUniqueWithoutExternalProductionOrderInput | AlertUpdateWithWhereUniqueWithoutExternalProductionOrderInput[]
+    updateMany?: AlertUpdateManyWithWhereWithoutExternalProductionOrderInput | AlertUpdateManyWithWhereWithoutExternalProductionOrderInput[]
+    deleteMany?: AlertScalarWhereInput | AlertScalarWhereInput[]
+  }
+
+  export type WastageLogUpdateManyWithoutExternalProductionOrderNestedInput = {
+    create?: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput> | WastageLogCreateWithoutExternalProductionOrderInput[] | WastageLogUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutExternalProductionOrderInput | WastageLogCreateOrConnectWithoutExternalProductionOrderInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutExternalProductionOrderInput | WastageLogUpsertWithWhereUniqueWithoutExternalProductionOrderInput[]
+    createMany?: WastageLogCreateManyExternalProductionOrderInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutExternalProductionOrderInput | WastageLogUpdateWithWhereUniqueWithoutExternalProductionOrderInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutExternalProductionOrderInput | WastageLogUpdateManyWithWhereWithoutExternalProductionOrderInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+  }
+
   export type ExternalProductionOrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
     create?: XOR<ExternalProductionOrderItemCreateWithoutOrderInput, ExternalProductionOrderItemUncheckedCreateWithoutOrderInput> | ExternalProductionOrderItemCreateWithoutOrderInput[] | ExternalProductionOrderItemUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: ExternalProductionOrderItemCreateOrConnectWithoutOrderInput | ExternalProductionOrderItemCreateOrConnectWithoutOrderInput[]
@@ -36360,6 +39720,34 @@ export namespace Prisma {
     update?: OrderSentComponentUpdateWithWhereUniqueWithoutExternalProductionOrderInput | OrderSentComponentUpdateWithWhereUniqueWithoutExternalProductionOrderInput[]
     updateMany?: OrderSentComponentUpdateManyWithWhereWithoutExternalProductionOrderInput | OrderSentComponentUpdateManyWithWhereWithoutExternalProductionOrderInput[]
     deleteMany?: OrderSentComponentScalarWhereInput | OrderSentComponentScalarWhereInput[]
+  }
+
+  export type AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput = {
+    create?: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput> | AlertCreateWithoutExternalProductionOrderInput[] | AlertUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: AlertCreateOrConnectWithoutExternalProductionOrderInput | AlertCreateOrConnectWithoutExternalProductionOrderInput[]
+    upsert?: AlertUpsertWithWhereUniqueWithoutExternalProductionOrderInput | AlertUpsertWithWhereUniqueWithoutExternalProductionOrderInput[]
+    createMany?: AlertCreateManyExternalProductionOrderInputEnvelope
+    set?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    disconnect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    delete?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    connect?: AlertWhereUniqueInput | AlertWhereUniqueInput[]
+    update?: AlertUpdateWithWhereUniqueWithoutExternalProductionOrderInput | AlertUpdateWithWhereUniqueWithoutExternalProductionOrderInput[]
+    updateMany?: AlertUpdateManyWithWhereWithoutExternalProductionOrderInput | AlertUpdateManyWithWhereWithoutExternalProductionOrderInput[]
+    deleteMany?: AlertScalarWhereInput | AlertScalarWhereInput[]
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput = {
+    create?: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput> | WastageLogCreateWithoutExternalProductionOrderInput[] | WastageLogUncheckedCreateWithoutExternalProductionOrderInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutExternalProductionOrderInput | WastageLogCreateOrConnectWithoutExternalProductionOrderInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutExternalProductionOrderInput | WastageLogUpsertWithWhereUniqueWithoutExternalProductionOrderInput[]
+    createMany?: WastageLogCreateManyExternalProductionOrderInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutExternalProductionOrderInput | WastageLogUpdateWithWhereUniqueWithoutExternalProductionOrderInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutExternalProductionOrderInput | WastageLogUpdateManyWithWhereWithoutExternalProductionOrderInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
   }
 
   export type ExternalProductionOrderCreateNestedOneWithoutItemsInput = {
@@ -36572,6 +39960,13 @@ export namespace Prisma {
     connect?: AssemblerPaymentWhereUniqueInput | AssemblerPaymentWhereUniqueInput[]
   }
 
+  export type WastageLogCreateNestedManyWithoutAssemblerInput = {
+    create?: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput> | WastageLogCreateWithoutAssemblerInput[] | WastageLogUncheckedCreateWithoutAssemblerInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutAssemblerInput | WastageLogCreateOrConnectWithoutAssemblerInput[]
+    createMany?: WastageLogCreateManyAssemblerInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+  }
+
   export type ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput = {
     create?: XOR<ExternalProductionOrderCreateWithoutAssemblerInput, ExternalProductionOrderUncheckedCreateWithoutAssemblerInput> | ExternalProductionOrderCreateWithoutAssemblerInput[] | ExternalProductionOrderUncheckedCreateWithoutAssemblerInput[]
     connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutAssemblerInput | ExternalProductionOrderCreateOrConnectWithoutAssemblerInput[]
@@ -36584,6 +39979,13 @@ export namespace Prisma {
     connectOrCreate?: AssemblerPaymentCreateOrConnectWithoutAssemblerInput | AssemblerPaymentCreateOrConnectWithoutAssemblerInput[]
     createMany?: AssemblerPaymentCreateManyAssemblerInputEnvelope
     connect?: AssemblerPaymentWhereUniqueInput | AssemblerPaymentWhereUniqueInput[]
+  }
+
+  export type WastageLogUncheckedCreateNestedManyWithoutAssemblerInput = {
+    create?: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput> | WastageLogCreateWithoutAssemblerInput[] | WastageLogUncheckedCreateWithoutAssemblerInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutAssemblerInput | WastageLogCreateOrConnectWithoutAssemblerInput[]
+    createMany?: WastageLogCreateManyAssemblerInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
   }
 
   export type EnumPaymentTermsFieldUpdateOperationsInput = {
@@ -36618,6 +40020,20 @@ export namespace Prisma {
     deleteMany?: AssemblerPaymentScalarWhereInput | AssemblerPaymentScalarWhereInput[]
   }
 
+  export type WastageLogUpdateManyWithoutAssemblerNestedInput = {
+    create?: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput> | WastageLogCreateWithoutAssemblerInput[] | WastageLogUncheckedCreateWithoutAssemblerInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutAssemblerInput | WastageLogCreateOrConnectWithoutAssemblerInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutAssemblerInput | WastageLogUpsertWithWhereUniqueWithoutAssemblerInput[]
+    createMany?: WastageLogCreateManyAssemblerInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutAssemblerInput | WastageLogUpdateWithWhereUniqueWithoutAssemblerInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutAssemblerInput | WastageLogUpdateManyWithWhereWithoutAssemblerInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+  }
+
   export type ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput = {
     create?: XOR<ExternalProductionOrderCreateWithoutAssemblerInput, ExternalProductionOrderUncheckedCreateWithoutAssemblerInput> | ExternalProductionOrderCreateWithoutAssemblerInput[] | ExternalProductionOrderUncheckedCreateWithoutAssemblerInput[]
     connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutAssemblerInput | ExternalProductionOrderCreateOrConnectWithoutAssemblerInput[]
@@ -36644,6 +40060,20 @@ export namespace Prisma {
     update?: AssemblerPaymentUpdateWithWhereUniqueWithoutAssemblerInput | AssemblerPaymentUpdateWithWhereUniqueWithoutAssemblerInput[]
     updateMany?: AssemblerPaymentUpdateManyWithWhereWithoutAssemblerInput | AssemblerPaymentUpdateManyWithWhereWithoutAssemblerInput[]
     deleteMany?: AssemblerPaymentScalarWhereInput | AssemblerPaymentScalarWhereInput[]
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutAssemblerNestedInput = {
+    create?: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput> | WastageLogCreateWithoutAssemblerInput[] | WastageLogUncheckedCreateWithoutAssemblerInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutAssemblerInput | WastageLogCreateOrConnectWithoutAssemblerInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutAssemblerInput | WastageLogUpsertWithWhereUniqueWithoutAssemblerInput[]
+    createMany?: WastageLogCreateManyAssemblerInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutAssemblerInput | WastageLogUpdateWithWhereUniqueWithoutAssemblerInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutAssemblerInput | WastageLogUpdateManyWithWhereWithoutAssemblerInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
   }
 
   export type InventoryMovementCreateNestedManyWithoutUserInput = {
@@ -36674,6 +40104,13 @@ export namespace Prisma {
     connect?: OrderNoteWhereUniqueInput | OrderNoteWhereUniqueInput[]
   }
 
+  export type WastageLogCreateNestedManyWithoutUserInput = {
+    create?: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput> | WastageLogCreateWithoutUserInput[] | WastageLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutUserInput | WastageLogCreateOrConnectWithoutUserInput[]
+    createMany?: WastageLogCreateManyUserInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+  }
+
   export type InventoryMovementUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<InventoryMovementCreateWithoutUserInput, InventoryMovementUncheckedCreateWithoutUserInput> | InventoryMovementCreateWithoutUserInput[] | InventoryMovementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: InventoryMovementCreateOrConnectWithoutUserInput | InventoryMovementCreateOrConnectWithoutUserInput[]
@@ -36700,6 +40137,13 @@ export namespace Prisma {
     connectOrCreate?: OrderNoteCreateOrConnectWithoutAuthorInput | OrderNoteCreateOrConnectWithoutAuthorInput[]
     createMany?: OrderNoteCreateManyAuthorInputEnvelope
     connect?: OrderNoteWhereUniqueInput | OrderNoteWhereUniqueInput[]
+  }
+
+  export type WastageLogUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput> | WastageLogCreateWithoutUserInput[] | WastageLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutUserInput | WastageLogCreateOrConnectWithoutUserInput[]
+    createMany?: WastageLogCreateManyUserInputEnvelope
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
   }
 
   export type EnumRoleFieldUpdateOperationsInput = {
@@ -36762,6 +40206,20 @@ export namespace Prisma {
     deleteMany?: OrderNoteScalarWhereInput | OrderNoteScalarWhereInput[]
   }
 
+  export type WastageLogUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput> | WastageLogCreateWithoutUserInput[] | WastageLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutUserInput | WastageLogCreateOrConnectWithoutUserInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutUserInput | WastageLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WastageLogCreateManyUserInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutUserInput | WastageLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutUserInput | WastageLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+  }
+
   export type InventoryMovementUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<InventoryMovementCreateWithoutUserInput, InventoryMovementUncheckedCreateWithoutUserInput> | InventoryMovementCreateWithoutUserInput[] | InventoryMovementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: InventoryMovementCreateOrConnectWithoutUserInput | InventoryMovementCreateOrConnectWithoutUserInput[]
@@ -36816,6 +40274,20 @@ export namespace Prisma {
     update?: OrderNoteUpdateWithWhereUniqueWithoutAuthorInput | OrderNoteUpdateWithWhereUniqueWithoutAuthorInput[]
     updateMany?: OrderNoteUpdateManyWithWhereWithoutAuthorInput | OrderNoteUpdateManyWithWhereWithoutAuthorInput[]
     deleteMany?: OrderNoteScalarWhereInput | OrderNoteScalarWhereInput[]
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput> | WastageLogCreateWithoutUserInput[] | WastageLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WastageLogCreateOrConnectWithoutUserInput | WastageLogCreateOrConnectWithoutUserInput[]
+    upsert?: WastageLogUpsertWithWhereUniqueWithoutUserInput | WastageLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WastageLogCreateManyUserInputEnvelope
+    set?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    disconnect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    delete?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    connect?: WastageLogWhereUniqueInput | WastageLogWhereUniqueInput[]
+    update?: WastageLogUpdateWithWhereUniqueWithoutUserInput | WastageLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WastageLogUpdateManyWithWhereWithoutUserInput | WastageLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
   }
 
   export type ProductCreateNestedOneWithoutMovementsInput = {
@@ -36880,6 +40352,90 @@ export namespace Prisma {
     delete?: SalesOrderWhereInput | boolean
     connect?: SalesOrderWhereUniqueInput
     update?: XOR<XOR<SalesOrderUpdateToOneWithWhereWithoutInventoryMovementInput, SalesOrderUpdateWithoutInventoryMovementInput>, SalesOrderUncheckedUpdateWithoutInventoryMovementInput>
+  }
+
+  export type ExternalProductionOrderCreateNestedOneWithoutAlertsInput = {
+    create?: XOR<ExternalProductionOrderCreateWithoutAlertsInput, ExternalProductionOrderUncheckedCreateWithoutAlertsInput>
+    connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutAlertsInput
+    connect?: ExternalProductionOrderWhereUniqueInput
+  }
+
+  export type EnumAlertTypeFieldUpdateOperationsInput = {
+    set?: $Enums.AlertType
+  }
+
+  export type EnumAlertStatusFieldUpdateOperationsInput = {
+    set?: $Enums.AlertStatus
+  }
+
+  export type ExternalProductionOrderUpdateOneWithoutAlertsNestedInput = {
+    create?: XOR<ExternalProductionOrderCreateWithoutAlertsInput, ExternalProductionOrderUncheckedCreateWithoutAlertsInput>
+    connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutAlertsInput
+    upsert?: ExternalProductionOrderUpsertWithoutAlertsInput
+    disconnect?: ExternalProductionOrderWhereInput | boolean
+    delete?: ExternalProductionOrderWhereInput | boolean
+    connect?: ExternalProductionOrderWhereUniqueInput
+    update?: XOR<XOR<ExternalProductionOrderUpdateToOneWithWhereWithoutAlertsInput, ExternalProductionOrderUpdateWithoutAlertsInput>, ExternalProductionOrderUncheckedUpdateWithoutAlertsInput>
+  }
+
+  export type ProductCreateNestedOneWithoutWastageLogsInput = {
+    create?: XOR<ProductCreateWithoutWastageLogsInput, ProductUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutWastageLogsInput
+    connect?: ProductWhereUniqueInput
+  }
+
+  export type AssemblerCreateNestedOneWithoutWastageLogsInput = {
+    create?: XOR<AssemblerCreateWithoutWastageLogsInput, AssemblerUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: AssemblerCreateOrConnectWithoutWastageLogsInput
+    connect?: AssemblerWhereUniqueInput
+  }
+
+  export type ExternalProductionOrderCreateNestedOneWithoutWastageLogsInput = {
+    create?: XOR<ExternalProductionOrderCreateWithoutWastageLogsInput, ExternalProductionOrderUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutWastageLogsInput
+    connect?: ExternalProductionOrderWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutWastageLogsInput = {
+    create?: XOR<UserCreateWithoutWastageLogsInput, UserUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWastageLogsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ProductUpdateOneRequiredWithoutWastageLogsNestedInput = {
+    create?: XOR<ProductCreateWithoutWastageLogsInput, ProductUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutWastageLogsInput
+    upsert?: ProductUpsertWithoutWastageLogsInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutWastageLogsInput, ProductUpdateWithoutWastageLogsInput>, ProductUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type AssemblerUpdateOneWithoutWastageLogsNestedInput = {
+    create?: XOR<AssemblerCreateWithoutWastageLogsInput, AssemblerUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: AssemblerCreateOrConnectWithoutWastageLogsInput
+    upsert?: AssemblerUpsertWithoutWastageLogsInput
+    disconnect?: AssemblerWhereInput | boolean
+    delete?: AssemblerWhereInput | boolean
+    connect?: AssemblerWhereUniqueInput
+    update?: XOR<XOR<AssemblerUpdateToOneWithWhereWithoutWastageLogsInput, AssemblerUpdateWithoutWastageLogsInput>, AssemblerUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type ExternalProductionOrderUpdateOneWithoutWastageLogsNestedInput = {
+    create?: XOR<ExternalProductionOrderCreateWithoutWastageLogsInput, ExternalProductionOrderUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: ExternalProductionOrderCreateOrConnectWithoutWastageLogsInput
+    upsert?: ExternalProductionOrderUpsertWithoutWastageLogsInput
+    disconnect?: ExternalProductionOrderWhereInput | boolean
+    delete?: ExternalProductionOrderWhereInput | boolean
+    connect?: ExternalProductionOrderWhereUniqueInput
+    update?: XOR<XOR<ExternalProductionOrderUpdateToOneWithWhereWithoutWastageLogsInput, ExternalProductionOrderUpdateWithoutWastageLogsInput>, ExternalProductionOrderUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutWastageLogsNestedInput = {
+    create?: XOR<UserCreateWithoutWastageLogsInput, UserUncheckedCreateWithoutWastageLogsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWastageLogsInput
+    upsert?: UserUpsertWithoutWastageLogsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWastageLogsInput, UserUpdateWithoutWastageLogsInput>, UserUncheckedUpdateWithoutWastageLogsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -37254,6 +40810,40 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumMovementTypeFilter<$PrismaModel>
     _max?: NestedEnumMovementTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAlertTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertType | EnumAlertTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertTypeFilter<$PrismaModel> | $Enums.AlertType
+  }
+
+  export type NestedEnumAlertStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertStatus | EnumAlertStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertStatusFilter<$PrismaModel> | $Enums.AlertStatus
+  }
+
+  export type NestedEnumAlertTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertType | EnumAlertTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertType[] | ListEnumAlertTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertTypeWithAggregatesFilter<$PrismaModel> | $Enums.AlertType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAlertTypeFilter<$PrismaModel>
+    _max?: NestedEnumAlertTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAlertStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AlertStatus | EnumAlertStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AlertStatus[] | ListEnumAlertStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAlertStatusWithAggregatesFilter<$PrismaModel> | $Enums.AlertStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAlertStatusFilter<$PrismaModel>
+    _max?: NestedEnumAlertStatusFilter<$PrismaModel>
   }
 
   export type ClientCreateWithoutPriceTierInput = {
@@ -37678,6 +41268,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutProductInput
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSalesOrderItemsInput = {
@@ -37703,6 +41294,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutProductInput
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSalesOrderItemsInput = {
@@ -37783,6 +41375,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUpdateManyWithoutProductNestedInput
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSalesOrderItemsInput = {
@@ -37808,6 +41401,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutProductNestedInput
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type CategoryCreateWithoutProductsInput = {
@@ -38048,6 +41642,40 @@ export namespace Prisma {
 
   export type SalesOrderItemCreateManyProductInputEnvelope = {
     data: SalesOrderItemCreateManyProductInput | SalesOrderItemCreateManyProductInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WastageLogCreateWithoutProductInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assembler?: AssemblerCreateNestedOneWithoutWastageLogsInput
+    externalProductionOrder?: ExternalProductionOrderCreateNestedOneWithoutWastageLogsInput
+    user: UserCreateNestedOneWithoutWastageLogsInput
+  }
+
+  export type WastageLogUncheckedCreateWithoutProductInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
+  export type WastageLogCreateOrConnectWithoutProductInput = {
+    where: WastageLogWhereUniqueInput
+    create: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput>
+  }
+
+  export type WastageLogCreateManyProductInputEnvelope = {
+    data: WastageLogCreateManyProductInput | WastageLogCreateManyProductInput[]
     skipDuplicates?: boolean
   }
 
@@ -38311,6 +41939,38 @@ export namespace Prisma {
     data: XOR<SalesOrderItemUpdateManyMutationInput, SalesOrderItemUncheckedUpdateManyWithoutProductInput>
   }
 
+  export type WastageLogUpsertWithWhereUniqueWithoutProductInput = {
+    where: WastageLogWhereUniqueInput
+    update: XOR<WastageLogUpdateWithoutProductInput, WastageLogUncheckedUpdateWithoutProductInput>
+    create: XOR<WastageLogCreateWithoutProductInput, WastageLogUncheckedCreateWithoutProductInput>
+  }
+
+  export type WastageLogUpdateWithWhereUniqueWithoutProductInput = {
+    where: WastageLogWhereUniqueInput
+    data: XOR<WastageLogUpdateWithoutProductInput, WastageLogUncheckedUpdateWithoutProductInput>
+  }
+
+  export type WastageLogUpdateManyWithWhereWithoutProductInput = {
+    where: WastageLogScalarWhereInput
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyWithoutProductInput>
+  }
+
+  export type WastageLogScalarWhereInput = {
+    AND?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+    OR?: WastageLogScalarWhereInput[]
+    NOT?: WastageLogScalarWhereInput | WastageLogScalarWhereInput[]
+    id?: StringFilter<"WastageLog"> | string
+    quantity?: DecimalFilter<"WastageLog"> | Decimal | DecimalJsLike | number | string
+    reason?: StringFilter<"WastageLog"> | string
+    costDeducted?: BoolFilter<"WastageLog"> | boolean
+    createdAt?: DateTimeFilter<"WastageLog"> | Date | string
+    updatedAt?: DateTimeFilter<"WastageLog"> | Date | string
+    productId?: StringFilter<"WastageLog"> | string
+    assemblerId?: StringNullableFilter<"WastageLog"> | string | null
+    externalProductionOrderId?: StringNullableFilter<"WastageLog"> | string | null
+    userId?: IntFilter<"WastageLog"> | number
+  }
+
   export type ProductCreateWithoutComponentsInput = {
     id?: string
     internalCode: string
@@ -38334,6 +41994,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutComponentsInput = {
@@ -38359,6 +42020,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutComponentsInput = {
@@ -38389,6 +42051,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutComponentOfInput = {
@@ -38414,6 +42077,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutComponentOfInput = {
@@ -38455,6 +42119,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutComponentsInput = {
@@ -38480,6 +42145,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUpsertWithoutComponentOfInput = {
@@ -38516,6 +42182,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutComponentOfInput = {
@@ -38541,6 +42208,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductCreateWithoutCategoryInput = {
@@ -38566,6 +42234,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutCategoryInput = {
@@ -38591,6 +42260,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutCategoryInput = {
@@ -38662,6 +42332,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSupplierInput = {
@@ -38687,6 +42358,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSupplierInput = {
@@ -38774,6 +42446,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutProductInput
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOverheadCostsInput = {
@@ -38799,6 +42472,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutProductInput
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutOverheadCostsInput = {
@@ -38867,6 +42541,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUpdateManyWithoutProductNestedInput
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutOverheadCostsInput = {
@@ -38892,6 +42567,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutProductNestedInput
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type OverheadCostUpsertWithoutProductsInput = {
@@ -39035,6 +42711,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutAssemblyJobsInput = {
@@ -39060,6 +42737,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutAssemblyJobsInput = {
@@ -39126,6 +42804,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutAssemblyJobsInput = {
@@ -39151,6 +42830,7 @@ export namespace Prisma {
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type AssemblyJobUpsertWithoutProductsInput = {
@@ -39194,6 +42874,7 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutUserInput
     assignedPickups?: ExternalProductionOrderCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedDeliveriesInput = {
@@ -39207,6 +42888,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutUserInput
     assignedPickups?: ExternalProductionOrderUncheckedCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedDeliveriesInput = {
@@ -39224,6 +42906,7 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutUserInput
     assignedDeliveries?: ExternalProductionOrderCreateNestedManyWithoutDeliveryUserInput
     orderNotes?: OrderNoteCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAssignedPickupsInput = {
@@ -39237,6 +42920,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutUserInput
     assignedDeliveries?: ExternalProductionOrderUncheckedCreateNestedManyWithoutDeliveryUserInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAssignedPickupsInput = {
@@ -39255,6 +42939,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assemblerPayments?: AssemblerPaymentCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerUncheckedCreateWithoutExternalProductionOrdersInput = {
@@ -39268,6 +42953,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     assemblerPayments?: AssemblerPaymentUncheckedCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerCreateOrConnectWithoutExternalProductionOrdersInput = {
@@ -39453,6 +43139,68 @@ export namespace Prisma {
     create: XOR<AssemblerPaymentCreateWithoutOrdersInput, AssemblerPaymentUncheckedCreateWithoutOrdersInput>
   }
 
+  export type AlertCreateWithoutExternalProductionOrderInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AlertUncheckedCreateWithoutExternalProductionOrderInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AlertCreateOrConnectWithoutExternalProductionOrderInput = {
+    where: AlertWhereUniqueInput
+    create: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput>
+  }
+
+  export type AlertCreateManyExternalProductionOrderInputEnvelope = {
+    data: AlertCreateManyExternalProductionOrderInput | AlertCreateManyExternalProductionOrderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WastageLogCreateWithoutExternalProductionOrderInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutWastageLogsInput
+    assembler?: AssemblerCreateNestedOneWithoutWastageLogsInput
+    user: UserCreateNestedOneWithoutWastageLogsInput
+  }
+
+  export type WastageLogUncheckedCreateWithoutExternalProductionOrderInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    userId: number
+  }
+
+  export type WastageLogCreateOrConnectWithoutExternalProductionOrderInput = {
+    where: WastageLogWhereUniqueInput
+    create: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput>
+  }
+
+  export type WastageLogCreateManyExternalProductionOrderInputEnvelope = {
+    data: WastageLogCreateManyExternalProductionOrderInput | WastageLogCreateManyExternalProductionOrderInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutAssignedDeliveriesInput = {
     update: XOR<UserUpdateWithoutAssignedDeliveriesInput, UserUncheckedUpdateWithoutAssignedDeliveriesInput>
     create: XOR<UserCreateWithoutAssignedDeliveriesInput, UserUncheckedCreateWithoutAssignedDeliveriesInput>
@@ -39474,6 +43222,7 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutUserNestedInput
     assignedPickups?: ExternalProductionOrderUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedDeliveriesInput = {
@@ -39487,6 +43236,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutUserNestedInput
     assignedPickups?: ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutAssignedPickupsInput = {
@@ -39510,6 +43260,7 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutUserNestedInput
     assignedDeliveries?: ExternalProductionOrderUpdateManyWithoutDeliveryUserNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedPickupsInput = {
@@ -39523,6 +43274,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutUserNestedInput
     assignedDeliveries?: ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AssemblerUpsertWithoutExternalProductionOrdersInput = {
@@ -39547,6 +43299,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assemblerPayments?: AssemblerPaymentUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutAssemblerNestedInput
   }
 
   export type AssemblerUncheckedUpdateWithoutExternalProductionOrdersInput = {
@@ -39560,6 +43313,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assemblerPayments?: AssemblerPaymentUncheckedUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutAssemblerNestedInput
   }
 
   export type ExternalProductionOrderItemUpsertWithWhereUniqueWithoutOrderInput = {
@@ -39702,6 +43456,51 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AlertUpsertWithWhereUniqueWithoutExternalProductionOrderInput = {
+    where: AlertWhereUniqueInput
+    update: XOR<AlertUpdateWithoutExternalProductionOrderInput, AlertUncheckedUpdateWithoutExternalProductionOrderInput>
+    create: XOR<AlertCreateWithoutExternalProductionOrderInput, AlertUncheckedCreateWithoutExternalProductionOrderInput>
+  }
+
+  export type AlertUpdateWithWhereUniqueWithoutExternalProductionOrderInput = {
+    where: AlertWhereUniqueInput
+    data: XOR<AlertUpdateWithoutExternalProductionOrderInput, AlertUncheckedUpdateWithoutExternalProductionOrderInput>
+  }
+
+  export type AlertUpdateManyWithWhereWithoutExternalProductionOrderInput = {
+    where: AlertScalarWhereInput
+    data: XOR<AlertUpdateManyMutationInput, AlertUncheckedUpdateManyWithoutExternalProductionOrderInput>
+  }
+
+  export type AlertScalarWhereInput = {
+    AND?: AlertScalarWhereInput | AlertScalarWhereInput[]
+    OR?: AlertScalarWhereInput[]
+    NOT?: AlertScalarWhereInput | AlertScalarWhereInput[]
+    id?: StringFilter<"Alert"> | string
+    type?: EnumAlertTypeFilter<"Alert"> | $Enums.AlertType
+    message?: StringFilter<"Alert"> | string
+    status?: EnumAlertStatusFilter<"Alert"> | $Enums.AlertStatus
+    createdAt?: DateTimeFilter<"Alert"> | Date | string
+    updatedAt?: DateTimeFilter<"Alert"> | Date | string
+    externalProductionOrderId?: StringNullableFilter<"Alert"> | string | null
+  }
+
+  export type WastageLogUpsertWithWhereUniqueWithoutExternalProductionOrderInput = {
+    where: WastageLogWhereUniqueInput
+    update: XOR<WastageLogUpdateWithoutExternalProductionOrderInput, WastageLogUncheckedUpdateWithoutExternalProductionOrderInput>
+    create: XOR<WastageLogCreateWithoutExternalProductionOrderInput, WastageLogUncheckedCreateWithoutExternalProductionOrderInput>
+  }
+
+  export type WastageLogUpdateWithWhereUniqueWithoutExternalProductionOrderInput = {
+    where: WastageLogWhereUniqueInput
+    data: XOR<WastageLogUpdateWithoutExternalProductionOrderInput, WastageLogUncheckedUpdateWithoutExternalProductionOrderInput>
+  }
+
+  export type WastageLogUpdateManyWithWhereWithoutExternalProductionOrderInput = {
+    where: WastageLogScalarWhereInput
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyWithoutExternalProductionOrderInput>
+  }
+
   export type ExternalProductionOrderCreateWithoutItemsInput = {
     id?: string
     orderNumber: string
@@ -39720,6 +43519,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutItemsInput = {
@@ -39740,6 +43541,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutItemsInput = {
@@ -39770,6 +43573,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutExternalProductionItemsInput = {
@@ -39795,6 +43599,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutExternalProductionItemsInput = {
@@ -39831,6 +43636,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutItemsInput = {
@@ -39851,6 +43658,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ProductUpsertWithoutExternalProductionItemsInput = {
@@ -39887,6 +43696,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutExternalProductionItemsInput = {
@@ -39912,6 +43722,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ExternalProductionOrderCreateWithoutExpectedOutputsInput = {
@@ -39932,6 +43743,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutExpectedOutputsInput = {
@@ -39952,6 +43765,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutExpectedOutputsInput = {
@@ -39982,6 +43797,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutExpectedInOrdersInput = {
@@ -40007,6 +43823,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutExpectedInOrdersInput = {
@@ -40043,6 +43860,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutExpectedOutputsInput = {
@@ -40063,6 +43882,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ProductUpsertWithoutExpectedInOrdersInput = {
@@ -40099,6 +43920,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutExpectedInOrdersInput = {
@@ -40124,6 +43946,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ExternalProductionOrderCreateWithoutAssemblyStepsInput = {
@@ -40144,6 +43967,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutAssemblyStepsInput = {
@@ -40164,6 +43989,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutAssemblyStepsInput = {
@@ -40225,6 +44052,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutAssemblyStepsInput = {
@@ -40245,6 +44074,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type AssemblyJobUpsertWithoutOrderAssemblyStepsInput = {
@@ -40296,6 +44127,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutOrderSentComponentsInput = {
@@ -40316,6 +44149,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutOrderSentComponentsInput = {
@@ -40346,6 +44181,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOrderSentComponentsInput = {
@@ -40371,6 +44207,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutOrderSentComponentsInput = {
@@ -40407,6 +44244,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutOrderSentComponentsInput = {
@@ -40427,6 +44266,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ProductUpsertWithoutOrderSentComponentsInput = {
@@ -40463,6 +44304,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutOrderSentComponentsInput = {
@@ -40488,6 +44330,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type UserCreateWithoutOrderNotesInput = {
@@ -40500,6 +44343,7 @@ export namespace Prisma {
     movements?: InventoryMovementCreateNestedManyWithoutUserInput
     assignedDeliveries?: ExternalProductionOrderCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderCreateNestedManyWithoutPickupUserInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOrderNotesInput = {
@@ -40513,6 +44357,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedCreateNestedManyWithoutUserInput
     assignedDeliveries?: ExternalProductionOrderUncheckedCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderUncheckedCreateNestedManyWithoutPickupUserInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOrderNotesInput = {
@@ -40538,6 +44383,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutOrderNotesInput = {
@@ -40558,6 +44405,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutOrderNotesInput = {
@@ -40586,6 +44435,7 @@ export namespace Prisma {
     movements?: InventoryMovementUpdateManyWithoutUserNestedInput
     assignedDeliveries?: ExternalProductionOrderUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUpdateManyWithoutPickupUserNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrderNotesInput = {
@@ -40599,6 +44449,7 @@ export namespace Prisma {
     movements?: InventoryMovementUncheckedUpdateManyWithoutUserNestedInput
     assignedDeliveries?: ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ExternalProductionOrderUpsertWithoutOrderNotesInput = {
@@ -40630,6 +44481,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutOrderNotesInput = {
@@ -40650,6 +44503,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type AssemblerCreateWithoutAssemblerPaymentsInput = {
@@ -40663,6 +44518,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerUncheckedCreateWithoutAssemblerPaymentsInput = {
@@ -40676,6 +44532,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutAssemblerInput
   }
 
   export type AssemblerCreateOrConnectWithoutAssemblerPaymentsInput = {
@@ -40701,6 +44558,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutAssemblerPaymentInput = {
@@ -40721,6 +44580,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutAssemblerPaymentInput = {
@@ -40755,6 +44616,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutAssemblerNestedInput
   }
 
   export type AssemblerUncheckedUpdateWithoutAssemblerPaymentsInput = {
@@ -40768,6 +44630,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutAssemblerNestedInput
   }
 
   export type ExternalProductionOrderUpsertWithWhereUniqueWithoutAssemblerPaymentInput = {
@@ -40822,6 +44685,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutAssemblerInput = {
@@ -40842,6 +44707,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutAssemblerInput = {
@@ -40883,6 +44750,40 @@ export namespace Prisma {
 
   export type AssemblerPaymentCreateManyAssemblerInputEnvelope = {
     data: AssemblerPaymentCreateManyAssemblerInput | AssemblerPaymentCreateManyAssemblerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WastageLogCreateWithoutAssemblerInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutWastageLogsInput
+    externalProductionOrder?: ExternalProductionOrderCreateNestedOneWithoutWastageLogsInput
+    user: UserCreateNestedOneWithoutWastageLogsInput
+  }
+
+  export type WastageLogUncheckedCreateWithoutAssemblerInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
+  export type WastageLogCreateOrConnectWithoutAssemblerInput = {
+    where: WastageLogWhereUniqueInput
+    create: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput>
+  }
+
+  export type WastageLogCreateManyAssemblerInputEnvelope = {
+    data: WastageLogCreateManyAssemblerInput | WastageLogCreateManyAssemblerInput[]
     skipDuplicates?: boolean
   }
 
@@ -40930,6 +44831,22 @@ export namespace Prisma {
     periodEnd?: DateTimeFilter<"AssemblerPayment"> | Date | string
     notes?: StringNullableFilter<"AssemblerPayment"> | string | null
     createdAt?: DateTimeFilter<"AssemblerPayment"> | Date | string
+  }
+
+  export type WastageLogUpsertWithWhereUniqueWithoutAssemblerInput = {
+    where: WastageLogWhereUniqueInput
+    update: XOR<WastageLogUpdateWithoutAssemblerInput, WastageLogUncheckedUpdateWithoutAssemblerInput>
+    create: XOR<WastageLogCreateWithoutAssemblerInput, WastageLogUncheckedCreateWithoutAssemblerInput>
+  }
+
+  export type WastageLogUpdateWithWhereUniqueWithoutAssemblerInput = {
+    where: WastageLogWhereUniqueInput
+    data: XOR<WastageLogUpdateWithoutAssemblerInput, WastageLogUncheckedUpdateWithoutAssemblerInput>
+  }
+
+  export type WastageLogUpdateManyWithWhereWithoutAssemblerInput = {
+    where: WastageLogScalarWhereInput
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyWithoutAssemblerInput>
   }
 
   export type InventoryMovementCreateWithoutUserInput = {
@@ -40983,6 +44900,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutDeliveryUserInput = {
@@ -41003,6 +44922,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutDeliveryUserInput = {
@@ -41033,6 +44954,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutPickupUserInput = {
@@ -41053,6 +44976,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutPickupUserInput = {
@@ -41086,6 +45011,40 @@ export namespace Prisma {
 
   export type OrderNoteCreateManyAuthorInputEnvelope = {
     data: OrderNoteCreateManyAuthorInput | OrderNoteCreateManyAuthorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WastageLogCreateWithoutUserInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutWastageLogsInput
+    assembler?: AssemblerCreateNestedOneWithoutWastageLogsInput
+    externalProductionOrder?: ExternalProductionOrderCreateNestedOneWithoutWastageLogsInput
+  }
+
+  export type WastageLogUncheckedCreateWithoutUserInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
+  }
+
+  export type WastageLogCreateOrConnectWithoutUserInput = {
+    where: WastageLogWhereUniqueInput
+    create: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type WastageLogCreateManyUserInputEnvelope = {
+    data: WastageLogCreateManyUserInput | WastageLogCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -41153,6 +45112,22 @@ export namespace Prisma {
     data: XOR<OrderNoteUpdateManyMutationInput, OrderNoteUncheckedUpdateManyWithoutAuthorInput>
   }
 
+  export type WastageLogUpsertWithWhereUniqueWithoutUserInput = {
+    where: WastageLogWhereUniqueInput
+    update: XOR<WastageLogUpdateWithoutUserInput, WastageLogUncheckedUpdateWithoutUserInput>
+    create: XOR<WastageLogCreateWithoutUserInput, WastageLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type WastageLogUpdateWithWhereUniqueWithoutUserInput = {
+    where: WastageLogWhereUniqueInput
+    data: XOR<WastageLogUpdateWithoutUserInput, WastageLogUncheckedUpdateWithoutUserInput>
+  }
+
+  export type WastageLogUpdateManyWithWhereWithoutUserInput = {
+    where: WastageLogScalarWhereInput
+    data: XOR<WastageLogUpdateManyMutationInput, WastageLogUncheckedUpdateManyWithoutUserInput>
+  }
+
   export type ProductCreateWithoutMovementsInput = {
     id?: string
     internalCode: string
@@ -41176,6 +45151,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutMovementsInput = {
@@ -41201,6 +45177,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
     overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
     salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutMovementsInput = {
@@ -41218,6 +45195,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMovementsInput = {
@@ -41231,6 +45209,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUncheckedCreateNestedManyWithoutDeliveryUserInput
     assignedPickups?: ExternalProductionOrderUncheckedCreateNestedManyWithoutPickupUserInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutAuthorInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMovementsInput = {
@@ -41256,6 +45235,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
     assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderUncheckedCreateWithoutInventoryMovementsInput = {
@@ -41276,6 +45257,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
     orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
   }
 
   export type ExternalProductionOrderCreateOrConnectWithoutInventoryMovementsInput = {
@@ -41350,6 +45333,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutMovementsInput = {
@@ -41375,6 +45359,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type UserUpsertWithoutMovementsInput = {
@@ -41398,6 +45383,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMovementsInput = {
@@ -41411,6 +45397,7 @@ export namespace Prisma {
     assignedDeliveries?: ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserNestedInput
     assignedPickups?: ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutAuthorNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ExternalProductionOrderUpsertWithoutInventoryMovementsInput = {
@@ -41442,6 +45429,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutInventoryMovementsInput = {
@@ -41462,6 +45451,8 @@ export namespace Prisma {
     assemblySteps?: OrderAssemblyStepUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type SalesOrderUpsertWithoutInventoryMovementInput = {
@@ -41501,6 +45492,476 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     items?: SalesOrderItemUncheckedUpdateManyWithoutSalesOrderNestedInput
+  }
+
+  export type ExternalProductionOrderCreateWithoutAlertsInput = {
+    id?: string
+    orderNumber: string
+    dateSent: Date | string
+    expectedCompletionDate?: Date | string | null
+    status?: $Enums.ExternalProductionOrderStatus
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deliveryUser?: UserCreateNestedOneWithoutAssignedDeliveriesInput
+    pickupUser?: UserCreateNestedOneWithoutAssignedPickupsInput
+    assembler: AssemblerCreateNestedOneWithoutExternalProductionOrdersInput
+    items?: ExternalProductionOrderItemCreateNestedManyWithoutOrderInput
+    expectedOutputs?: ExpectedProductionCreateNestedManyWithoutOrderInput
+    assemblySteps?: OrderAssemblyStepCreateNestedManyWithoutExternalProductionOrderInput
+    inventoryMovements?: InventoryMovementCreateNestedManyWithoutExternalProductionOrderInput
+    orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
+    orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
+    assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    wastageLogs?: WastageLogCreateNestedManyWithoutExternalProductionOrderInput
+  }
+
+  export type ExternalProductionOrderUncheckedCreateWithoutAlertsInput = {
+    id?: string
+    orderNumber: string
+    assemblerId: string
+    dateSent: Date | string
+    expectedCompletionDate?: Date | string | null
+    status?: $Enums.ExternalProductionOrderStatus
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deliveryUserId?: number | null
+    pickupUserId?: number | null
+    assemblerPaymentId?: string | null
+    items?: ExternalProductionOrderItemUncheckedCreateNestedManyWithoutOrderInput
+    expectedOutputs?: ExpectedProductionUncheckedCreateNestedManyWithoutOrderInput
+    assemblySteps?: OrderAssemblyStepUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    wastageLogs?: WastageLogUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+  }
+
+  export type ExternalProductionOrderCreateOrConnectWithoutAlertsInput = {
+    where: ExternalProductionOrderWhereUniqueInput
+    create: XOR<ExternalProductionOrderCreateWithoutAlertsInput, ExternalProductionOrderUncheckedCreateWithoutAlertsInput>
+  }
+
+  export type ExternalProductionOrderUpsertWithoutAlertsInput = {
+    update: XOR<ExternalProductionOrderUpdateWithoutAlertsInput, ExternalProductionOrderUncheckedUpdateWithoutAlertsInput>
+    create: XOR<ExternalProductionOrderCreateWithoutAlertsInput, ExternalProductionOrderUncheckedCreateWithoutAlertsInput>
+    where?: ExternalProductionOrderWhereInput
+  }
+
+  export type ExternalProductionOrderUpdateToOneWithWhereWithoutAlertsInput = {
+    where?: ExternalProductionOrderWhereInput
+    data: XOR<ExternalProductionOrderUpdateWithoutAlertsInput, ExternalProductionOrderUncheckedUpdateWithoutAlertsInput>
+  }
+
+  export type ExternalProductionOrderUpdateWithoutAlertsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    dateSent?: DateTimeFieldUpdateOperationsInput | Date | string
+    expectedCompletionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumExternalProductionOrderStatusFieldUpdateOperationsInput | $Enums.ExternalProductionOrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryUser?: UserUpdateOneWithoutAssignedDeliveriesNestedInput
+    pickupUser?: UserUpdateOneWithoutAssignedPickupsNestedInput
+    assembler?: AssemblerUpdateOneRequiredWithoutExternalProductionOrdersNestedInput
+    items?: ExternalProductionOrderItemUpdateManyWithoutOrderNestedInput
+    expectedOutputs?: ExpectedProductionUpdateManyWithoutOrderNestedInput
+    assemblySteps?: OrderAssemblyStepUpdateManyWithoutExternalProductionOrderNestedInput
+    inventoryMovements?: InventoryMovementUpdateManyWithoutExternalProductionOrderNestedInput
+    orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
+    orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
+    assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
+  }
+
+  export type ExternalProductionOrderUncheckedUpdateWithoutAlertsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    assemblerId?: StringFieldUpdateOperationsInput | string
+    dateSent?: DateTimeFieldUpdateOperationsInput | Date | string
+    expectedCompletionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumExternalProductionOrderStatusFieldUpdateOperationsInput | $Enums.ExternalProductionOrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryUserId?: NullableIntFieldUpdateOperationsInput | number | null
+    pickupUserId?: NullableIntFieldUpdateOperationsInput | number | null
+    assemblerPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    items?: ExternalProductionOrderItemUncheckedUpdateManyWithoutOrderNestedInput
+    expectedOutputs?: ExpectedProductionUncheckedUpdateManyWithoutOrderNestedInput
+    assemblySteps?: OrderAssemblyStepUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+  }
+
+  export type ProductCreateWithoutWastageLogsInput = {
+    id?: string
+    internalCode: string
+    description: string
+    unit: string
+    priceUSD?: Decimal | DecimalJsLike | number | string | null
+    priceARS?: Decimal | DecimalJsLike | number | string | null
+    stock?: Decimal | DecimalJsLike | number | string
+    lowStockThreshold?: Decimal | DecimalJsLike | number | string
+    isClassified?: boolean
+    type?: $Enums.ProductType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    category?: CategoryCreateNestedOneWithoutProductsInput
+    supplier?: SupplierCreateNestedOneWithoutProductsInput
+    movements?: InventoryMovementCreateNestedManyWithoutProductInput
+    components?: ProductComponentCreateNestedManyWithoutProductInput
+    componentOf?: ProductComponentCreateNestedManyWithoutComponentInput
+    externalProductionItems?: ExternalProductionOrderItemCreateNestedManyWithoutProductInput
+    expectedInOrders?: ExpectedProductionCreateNestedManyWithoutProductInput
+    orderSentComponents?: OrderSentComponentCreateNestedManyWithoutProductInput
+    assemblyJobs?: ProductAssemblyJobCreateNestedManyWithoutProductInput
+    overheadCosts?: ProductOverheadCreateNestedManyWithoutProductInput
+    salesOrderItems?: SalesOrderItemCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutWastageLogsInput = {
+    id?: string
+    internalCode: string
+    description: string
+    unit: string
+    priceUSD?: Decimal | DecimalJsLike | number | string | null
+    priceARS?: Decimal | DecimalJsLike | number | string | null
+    stock?: Decimal | DecimalJsLike | number | string
+    lowStockThreshold?: Decimal | DecimalJsLike | number | string
+    isClassified?: boolean
+    type?: $Enums.ProductType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    categoryId?: number | null
+    supplierId?: number | null
+    movements?: InventoryMovementUncheckedCreateNestedManyWithoutProductInput
+    components?: ProductComponentUncheckedCreateNestedManyWithoutProductInput
+    componentOf?: ProductComponentUncheckedCreateNestedManyWithoutComponentInput
+    externalProductionItems?: ExternalProductionOrderItemUncheckedCreateNestedManyWithoutProductInput
+    expectedInOrders?: ExpectedProductionUncheckedCreateNestedManyWithoutProductInput
+    orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutProductInput
+    assemblyJobs?: ProductAssemblyJobUncheckedCreateNestedManyWithoutProductInput
+    overheadCosts?: ProductOverheadUncheckedCreateNestedManyWithoutProductInput
+    salesOrderItems?: SalesOrderItemUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutWastageLogsInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutWastageLogsInput, ProductUncheckedCreateWithoutWastageLogsInput>
+  }
+
+  export type AssemblerCreateWithoutWastageLogsInput = {
+    id?: string
+    name: string
+    contactInfo?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    paymentTerms: $Enums.PaymentTerms
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
+    assemblerPayments?: AssemblerPaymentCreateNestedManyWithoutAssemblerInput
+  }
+
+  export type AssemblerUncheckedCreateWithoutWastageLogsInput = {
+    id?: string
+    name: string
+    contactInfo?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    paymentTerms: $Enums.PaymentTerms
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
+    assemblerPayments?: AssemblerPaymentUncheckedCreateNestedManyWithoutAssemblerInput
+  }
+
+  export type AssemblerCreateOrConnectWithoutWastageLogsInput = {
+    where: AssemblerWhereUniqueInput
+    create: XOR<AssemblerCreateWithoutWastageLogsInput, AssemblerUncheckedCreateWithoutWastageLogsInput>
+  }
+
+  export type ExternalProductionOrderCreateWithoutWastageLogsInput = {
+    id?: string
+    orderNumber: string
+    dateSent: Date | string
+    expectedCompletionDate?: Date | string | null
+    status?: $Enums.ExternalProductionOrderStatus
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deliveryUser?: UserCreateNestedOneWithoutAssignedDeliveriesInput
+    pickupUser?: UserCreateNestedOneWithoutAssignedPickupsInput
+    assembler: AssemblerCreateNestedOneWithoutExternalProductionOrdersInput
+    items?: ExternalProductionOrderItemCreateNestedManyWithoutOrderInput
+    expectedOutputs?: ExpectedProductionCreateNestedManyWithoutOrderInput
+    assemblySteps?: OrderAssemblyStepCreateNestedManyWithoutExternalProductionOrderInput
+    inventoryMovements?: InventoryMovementCreateNestedManyWithoutExternalProductionOrderInput
+    orderNotes?: OrderNoteCreateNestedManyWithoutExternalProductionOrderInput
+    orderSentComponents?: OrderSentComponentCreateNestedManyWithoutExternalProductionOrderInput
+    assemblerPayment?: AssemblerPaymentCreateNestedOneWithoutOrdersInput
+    alerts?: AlertCreateNestedManyWithoutExternalProductionOrderInput
+  }
+
+  export type ExternalProductionOrderUncheckedCreateWithoutWastageLogsInput = {
+    id?: string
+    orderNumber: string
+    assemblerId: string
+    dateSent: Date | string
+    expectedCompletionDate?: Date | string | null
+    status?: $Enums.ExternalProductionOrderStatus
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deliveryUserId?: number | null
+    pickupUserId?: number | null
+    assemblerPaymentId?: string | null
+    items?: ExternalProductionOrderItemUncheckedCreateNestedManyWithoutOrderInput
+    expectedOutputs?: ExpectedProductionUncheckedCreateNestedManyWithoutOrderInput
+    assemblySteps?: OrderAssemblyStepUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    inventoryMovements?: InventoryMovementUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    orderSentComponents?: OrderSentComponentUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+    alerts?: AlertUncheckedCreateNestedManyWithoutExternalProductionOrderInput
+  }
+
+  export type ExternalProductionOrderCreateOrConnectWithoutWastageLogsInput = {
+    where: ExternalProductionOrderWhereUniqueInput
+    create: XOR<ExternalProductionOrderCreateWithoutWastageLogsInput, ExternalProductionOrderUncheckedCreateWithoutWastageLogsInput>
+  }
+
+  export type UserCreateWithoutWastageLogsInput = {
+    email: string
+    name?: string | null
+    password: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    movements?: InventoryMovementCreateNestedManyWithoutUserInput
+    assignedDeliveries?: ExternalProductionOrderCreateNestedManyWithoutDeliveryUserInput
+    assignedPickups?: ExternalProductionOrderCreateNestedManyWithoutPickupUserInput
+    orderNotes?: OrderNoteCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserUncheckedCreateWithoutWastageLogsInput = {
+    id?: number
+    email: string
+    name?: string | null
+    password: string
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    movements?: InventoryMovementUncheckedCreateNestedManyWithoutUserInput
+    assignedDeliveries?: ExternalProductionOrderUncheckedCreateNestedManyWithoutDeliveryUserInput
+    assignedPickups?: ExternalProductionOrderUncheckedCreateNestedManyWithoutPickupUserInput
+    orderNotes?: OrderNoteUncheckedCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserCreateOrConnectWithoutWastageLogsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutWastageLogsInput, UserUncheckedCreateWithoutWastageLogsInput>
+  }
+
+  export type ProductUpsertWithoutWastageLogsInput = {
+    update: XOR<ProductUpdateWithoutWastageLogsInput, ProductUncheckedUpdateWithoutWastageLogsInput>
+    create: XOR<ProductCreateWithoutWastageLogsInput, ProductUncheckedCreateWithoutWastageLogsInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutWastageLogsInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutWastageLogsInput, ProductUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type ProductUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    internalCode?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    unit?: StringFieldUpdateOperationsInput | string
+    priceUSD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    priceARS?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    stock?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lowStockThreshold?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    isClassified?: BoolFieldUpdateOperationsInput | boolean
+    type?: EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    category?: CategoryUpdateOneWithoutProductsNestedInput
+    supplier?: SupplierUpdateOneWithoutProductsNestedInput
+    movements?: InventoryMovementUpdateManyWithoutProductNestedInput
+    components?: ProductComponentUpdateManyWithoutProductNestedInput
+    componentOf?: ProductComponentUpdateManyWithoutComponentNestedInput
+    externalProductionItems?: ExternalProductionOrderItemUpdateManyWithoutProductNestedInput
+    expectedInOrders?: ExpectedProductionUpdateManyWithoutProductNestedInput
+    orderSentComponents?: OrderSentComponentUpdateManyWithoutProductNestedInput
+    assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
+    overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
+    salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    internalCode?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    unit?: StringFieldUpdateOperationsInput | string
+    priceUSD?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    priceARS?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    stock?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    lowStockThreshold?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    isClassified?: BoolFieldUpdateOperationsInput | boolean
+    type?: EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    categoryId?: NullableIntFieldUpdateOperationsInput | number | null
+    supplierId?: NullableIntFieldUpdateOperationsInput | number | null
+    movements?: InventoryMovementUncheckedUpdateManyWithoutProductNestedInput
+    components?: ProductComponentUncheckedUpdateManyWithoutProductNestedInput
+    componentOf?: ProductComponentUncheckedUpdateManyWithoutComponentNestedInput
+    externalProductionItems?: ExternalProductionOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    expectedInOrders?: ExpectedProductionUncheckedUpdateManyWithoutProductNestedInput
+    orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutProductNestedInput
+    assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
+    overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
+    salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+  }
+
+  export type AssemblerUpsertWithoutWastageLogsInput = {
+    update: XOR<AssemblerUpdateWithoutWastageLogsInput, AssemblerUncheckedUpdateWithoutWastageLogsInput>
+    create: XOR<AssemblerCreateWithoutWastageLogsInput, AssemblerUncheckedCreateWithoutWastageLogsInput>
+    where?: AssemblerWhereInput
+  }
+
+  export type AssemblerUpdateToOneWithWhereWithoutWastageLogsInput = {
+    where?: AssemblerWhereInput
+    data: XOR<AssemblerUpdateWithoutWastageLogsInput, AssemblerUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type AssemblerUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
+    assemblerPayments?: AssemblerPaymentUpdateManyWithoutAssemblerNestedInput
+  }
+
+  export type AssemblerUncheckedUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    contactInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
+    assemblerPayments?: AssemblerPaymentUncheckedUpdateManyWithoutAssemblerNestedInput
+  }
+
+  export type ExternalProductionOrderUpsertWithoutWastageLogsInput = {
+    update: XOR<ExternalProductionOrderUpdateWithoutWastageLogsInput, ExternalProductionOrderUncheckedUpdateWithoutWastageLogsInput>
+    create: XOR<ExternalProductionOrderCreateWithoutWastageLogsInput, ExternalProductionOrderUncheckedCreateWithoutWastageLogsInput>
+    where?: ExternalProductionOrderWhereInput
+  }
+
+  export type ExternalProductionOrderUpdateToOneWithWhereWithoutWastageLogsInput = {
+    where?: ExternalProductionOrderWhereInput
+    data: XOR<ExternalProductionOrderUpdateWithoutWastageLogsInput, ExternalProductionOrderUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type ExternalProductionOrderUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    dateSent?: DateTimeFieldUpdateOperationsInput | Date | string
+    expectedCompletionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumExternalProductionOrderStatusFieldUpdateOperationsInput | $Enums.ExternalProductionOrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryUser?: UserUpdateOneWithoutAssignedDeliveriesNestedInput
+    pickupUser?: UserUpdateOneWithoutAssignedPickupsNestedInput
+    assembler?: AssemblerUpdateOneRequiredWithoutExternalProductionOrdersNestedInput
+    items?: ExternalProductionOrderItemUpdateManyWithoutOrderNestedInput
+    expectedOutputs?: ExpectedProductionUpdateManyWithoutOrderNestedInput
+    assemblySteps?: OrderAssemblyStepUpdateManyWithoutExternalProductionOrderNestedInput
+    inventoryMovements?: InventoryMovementUpdateManyWithoutExternalProductionOrderNestedInput
+    orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
+    orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
+    assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+  }
+
+  export type ExternalProductionOrderUncheckedUpdateWithoutWastageLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    assemblerId?: StringFieldUpdateOperationsInput | string
+    dateSent?: DateTimeFieldUpdateOperationsInput | Date | string
+    expectedCompletionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumExternalProductionOrderStatusFieldUpdateOperationsInput | $Enums.ExternalProductionOrderStatus
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryUserId?: NullableIntFieldUpdateOperationsInput | number | null
+    pickupUserId?: NullableIntFieldUpdateOperationsInput | number | null
+    assemblerPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    items?: ExternalProductionOrderItemUncheckedUpdateManyWithoutOrderNestedInput
+    expectedOutputs?: ExpectedProductionUncheckedUpdateManyWithoutOrderNestedInput
+    assemblySteps?: OrderAssemblyStepUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+  }
+
+  export type UserUpsertWithoutWastageLogsInput = {
+    update: XOR<UserUpdateWithoutWastageLogsInput, UserUncheckedUpdateWithoutWastageLogsInput>
+    create: XOR<UserCreateWithoutWastageLogsInput, UserUncheckedCreateWithoutWastageLogsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutWastageLogsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutWastageLogsInput, UserUncheckedUpdateWithoutWastageLogsInput>
+  }
+
+  export type UserUpdateWithoutWastageLogsInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: InventoryMovementUpdateManyWithoutUserNestedInput
+    assignedDeliveries?: ExternalProductionOrderUpdateManyWithoutDeliveryUserNestedInput
+    assignedPickups?: ExternalProductionOrderUpdateManyWithoutPickupUserNestedInput
+    orderNotes?: OrderNoteUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutWastageLogsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: InventoryMovementUncheckedUpdateManyWithoutUserNestedInput
+    assignedDeliveries?: ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserNestedInput
+    assignedPickups?: ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserNestedInput
+    orderNotes?: OrderNoteUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
   export type ClientCreateManyPriceTierInput = {
@@ -41698,6 +46159,18 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type WastageLogCreateManyProductInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
   export type InventoryMovementUpdateWithoutProductInput = {
     type?: EnumMovementTypeFieldUpdateOperationsInput | $Enums.MovementType
     quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -41880,6 +46353,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WastageLogUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assembler?: AssemblerUpdateOneWithoutWastageLogsNestedInput
+    externalProductionOrder?: ExternalProductionOrderUpdateOneWithoutWastageLogsNestedInput
+    user?: UserUpdateOneRequiredWithoutWastageLogsNestedInput
+  }
+
+  export type WastageLogUncheckedUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
   export type ProductCreateManyCategoryInput = {
     id?: string
     internalCode: string
@@ -41919,6 +46428,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutCategoryInput = {
@@ -41944,6 +46454,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutCategoryInput = {
@@ -42001,6 +46512,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSupplierInput = {
@@ -42026,6 +46538,7 @@ export namespace Prisma {
     assemblyJobs?: ProductAssemblyJobUncheckedUpdateManyWithoutProductNestedInput
     overheadCosts?: ProductOverheadUncheckedUpdateManyWithoutProductNestedInput
     salesOrderItems?: SalesOrderItemUncheckedUpdateManyWithoutProductNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutSupplierInput = {
@@ -42152,6 +46665,27 @@ export namespace Prisma {
     id?: string
     productId: string
     quantitySent: number
+  }
+
+  export type AlertCreateManyExternalProductionOrderInput = {
+    id?: string
+    type?: $Enums.AlertType
+    message: string
+    status?: $Enums.AlertStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WastageLogCreateManyExternalProductionOrderInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    userId: number
   }
 
   export type ExternalProductionOrderItemUpdateWithoutOrderInput = {
@@ -42291,6 +46825,69 @@ export namespace Prisma {
     quantitySent?: IntFieldUpdateOperationsInput | number
   }
 
+  export type AlertUpdateWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertUncheckedUpdateWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AlertUncheckedUpdateManyWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumAlertTypeFieldUpdateOperationsInput | $Enums.AlertType
+    message?: StringFieldUpdateOperationsInput | string
+    status?: EnumAlertStatusFieldUpdateOperationsInput | $Enums.AlertStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WastageLogUpdateWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutWastageLogsNestedInput
+    assembler?: AssemblerUpdateOneWithoutWastageLogsNestedInput
+    user?: UserUpdateOneRequiredWithoutWastageLogsNestedInput
+  }
+
+  export type WastageLogUncheckedUpdateWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutExternalProductionOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
   export type ExternalProductionOrderCreateManyAssemblerPaymentInput = {
     id?: string
     orderNumber: string
@@ -42323,6 +46920,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutAssemblerPaymentInput = {
@@ -42343,6 +46942,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerPaymentInput = {
@@ -42383,6 +46984,18 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type WastageLogCreateManyAssemblerInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    externalProductionOrderId?: string | null
+    userId: number
+  }
+
   export type ExternalProductionOrderUpdateWithoutAssemblerInput = {
     id?: StringFieldUpdateOperationsInput | string
     orderNumber?: StringFieldUpdateOperationsInput | string
@@ -42401,6 +47014,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutAssemblerInput = {
@@ -42421,6 +47036,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerInput = {
@@ -42469,6 +47086,42 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WastageLogUpdateWithoutAssemblerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutWastageLogsNestedInput
+    externalProductionOrder?: ExternalProductionOrderUpdateOneWithoutWastageLogsNestedInput
+    user?: UserUpdateOneRequiredWithoutWastageLogsNestedInput
+  }
+
+  export type WastageLogUncheckedUpdateWithoutAssemblerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutAssemblerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: IntFieldUpdateOperationsInput | number
+  }
+
   export type InventoryMovementCreateManyUserInput = {
     id?: number
     productId: string
@@ -42514,6 +47167,18 @@ export namespace Prisma {
     content: string
     externalProductionOrderId: string
     createdAt?: Date | string
+  }
+
+  export type WastageLogCreateManyUserInput = {
+    id?: string
+    quantity: Decimal | DecimalJsLike | number | string
+    reason: string
+    costDeducted?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    productId: string
+    assemblerId?: string | null
+    externalProductionOrderId?: string | null
   }
 
   export type InventoryMovementUpdateWithoutUserInput = {
@@ -42569,6 +47234,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutDeliveryUserInput = {
@@ -42589,6 +47256,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateManyWithoutDeliveryUserInput = {
@@ -42623,6 +47292,8 @@ export namespace Prisma {
     orderNotes?: OrderNoteUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUpdateManyWithoutExternalProductionOrderNestedInput
     assemblerPayment?: AssemblerPaymentUpdateOneWithoutOrdersNestedInput
+    alerts?: AlertUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateWithoutPickupUserInput = {
@@ -42643,6 +47314,8 @@ export namespace Prisma {
     inventoryMovements?: InventoryMovementUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderNotes?: OrderNoteUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
     orderSentComponents?: OrderSentComponentUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    alerts?: AlertUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
+    wastageLogs?: WastageLogUncheckedUpdateManyWithoutExternalProductionOrderNestedInput
   }
 
   export type ExternalProductionOrderUncheckedUpdateManyWithoutPickupUserInput = {
@@ -42678,6 +47351,42 @@ export namespace Prisma {
     content?: StringFieldUpdateOperationsInput | string
     externalProductionOrderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WastageLogUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutWastageLogsNestedInput
+    assembler?: AssemblerUpdateOneWithoutWastageLogsNestedInput
+    externalProductionOrder?: ExternalProductionOrderUpdateOneWithoutWastageLogsNestedInput
+  }
+
+  export type WastageLogUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WastageLogUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quantity?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    reason?: StringFieldUpdateOperationsInput | string
+    costDeducted?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    productId?: StringFieldUpdateOperationsInput | string
+    assemblerId?: NullableStringFieldUpdateOperationsInput | string | null
+    externalProductionOrderId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
 

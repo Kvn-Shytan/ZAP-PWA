@@ -1,5 +1,29 @@
 # Changelog (Registro de Cambios)
 
+## 2026-03-04 (Alertas Inteligentes y Gestión de Rechazos)
+-   **[FEAT] Fase 13.2: Sistema de Alertas Inteligentes:**
+    -   **Backend:** Implementado motor de reglas en `/api/dashboard` que evalúa inactividad de órdenes (>3 días hábiles), fechas límite de pago a armadores, y umbrales de stock en tiempo real.
+    -   **UI/UX:** Rediseño completo del Dashboard (`DashboardPage.jsx`).
+        -   Implementada una "Zona Roja" superior para Alertas Críticas (stock agotado, inactividad severa, pagos en <24hs).
+        -   Implementado un panel lateral de "Precauciones" para advertencias de menor severidad.
+        -   Creados componentes reutilizables `CriticalAlertCard` y `PrecautionCard`.
+-   **[FEAT] Fase 14: Herramienta de Gestión de Rechazos:**
+    -   **Base de Datos:** Añadida tabla `WastageLog` para auditar material arruinado, con soporte para vinculación opcional a armadores y órdenes específicas.
+    -   **Backend:**
+        -   Actualizado endpoint `POST /api/inventory/wastage` para crear el movimiento de merma y el registro oficial de forma atómica.
+        -   **Lógica Financiera:** Integrados los rechazos en la Liquidación de Pagos. Las mermas vinculadas a un armador se descuentan automáticamente de su pago quincenal y se marcan como deducidas.
+        -   Añadida lógica en el Dashboard para generar "Precauciones" ante nuevos rechazos y "Alertas Críticas" por bajo rendimiento si un armador acumula 3 o más en 15 días.
+    -   **Frontend:**
+        -   Desarrollada nueva interfaz "Gestión de Rechazos" (`/wastage-management`) accesible para Administradores y Supervisores, con formulario de registro y tabla de historial.
+-   **[FEAT] Traducción de Interfaz (Localización):**
+    -   Implementado utilitario `statusTranslator.js` para traducir los estados internos de las órdenes (ej. `PENDING_DELIVERY`) a español amigable ("Pendiente de Envío").
+    -   Traducción aplicada globalmente en el Panel de Logística, Detalle de Órdenes, Liquidación y Registro Histórico de pagos.
+-   **[TEST] Ampliación de la Cobertura de Pruebas y Robustez:**
+    -   **Tests Financieros:** Creada suite `wastage.test.js` para asegurar la correcta deducción de mermas en los pagos de armadores.
+    -   **Tests del Motor de Reglas:** Creada suite `dashboard.test.js` para validar la lógica de generación de alertas y precauciones.
+    -   **Tests de Seguridad (RBAC):** Creada suite `security.test.js` para blindar endpoints críticos contra accesos no autorizados.
+    -   **Mantenimiento de Tests:** Refactorizadas todas las suites anteriores para limpiar correctamente la BD de pruebas y evitar colisiones de Foreign Keys con las nuevas tablas (`WastageLog`, `Alert`). El proyecto cuenta ahora con 59 tests de integración (100% exitosos).
+
 ## 2026-03-03 (Finalización de Despliegue y Estabilización Cloud)
 -   **[FIX] Backend: Resolución de Errores de Inicio y Conectividad:**
     -   Corregido un error crítico en `index.js` que causaba el cierre del contenedor en entornos con Express 5 al utilizar rutas con asterisco (`*`).

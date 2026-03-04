@@ -241,7 +241,7 @@ const AssemblerPaymentBatchPage = () => {
                           <td>{detail.quantityReceived}</td>
                           <td>{detail.quantityToPayFor}</td>
                           <td>${(Number(detail.itemPayment) ?? 0).toFixed(2)}</td>
-                          <td>{detail.orderStatus}</td>
+                          <td>{translateOrderStatus(detail.orderStatus)}</td>
                         </tr>
                       ))}
                     </React.Fragment>

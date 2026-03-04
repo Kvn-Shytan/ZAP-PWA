@@ -57,10 +57,24 @@ Este documento detalla la estrategia de testeo para el backend de ZAP PWA, los t
         *   Tests para transiciones de estado inválidas (ej. confirmar ensamblaje si la orden no está `IN_ASSEMBLY`).
         *   Tests para cancelación de órdenes en diferentes estados, con reversión de stock.
 
-### 5.3. Módulo 3: Funcionalidad Offline (PWA)
+### 5.3. Módulo 3: Lógica Financiera (Mermas y Liquidación)
+*   **Objetivo:** Asegurar que los descuentos por materiales arruinados impacten exactamente como deben en la liquidación de pagos.
+*   **Gaps y Nuevos Tests Propuestos:**
+    *   **Tests de Integración (Mermas):** Verificar el endpoint `POST /api/inventory/wastage` confirmando el descuento de inventario, registro de `WastageLog` y retención del flag `costDeducted: false`.
+    *   **Tests de Integración (Pagos):** Verificar que `POST /api/assemblers/close-fortnight-batch` calcule correctamente el total a pagar *restando* el costo del producto fallado a la suma de trabajos realizados, y cambie el estado de la merma a `costDeducted: true`.
 
-*   **Objetivo:** Fiabilidad offline y sincronización.
-*   **Gaps y Nuevos Tests Propuestos (Principalmente Frontend):**
-    *   **Tests Unitarios (Frontend):** IndexedDB, lógica de sincronización (cliente), serialización/deserialización.
-    *   **Tests de Integración (Frontend):** Ciclo de vida del Service Worker, estrategias de cacheo (`StaleWhileRevalidate`, `NetworkFirst`), manejo de eventos de sincronización en segundo plano.
-    *   **Tests E2E:** Flujos de usuario completos offline/online (Playwright/Cypress).
+### 5.4. Módulo 4: Motor de Reglas (Dashboard)
+*   **Objetivo:** Confirmar que los algoritmos de detección de inactividad, bajo stock y bajo rendimiento son precisos.
+*   **Gaps y Nuevos Tests Propuestos:**
+    *   **Tests de Integración (Dashboard):** Simular en BD órdenes creadas hace más de 3 días hábiles y armadores con 3 mermas recientes, y afirmar que `GET /api/dashboard` retorna las Alertas Críticas y Precauciones correctamente.
+
+### 5.5. Módulo 5: Seguridad y Autorización
+*   **Objetivo:** Asegurar que el Role-Based Access Control (RBAC) no tenga brechas.
+*   **Gaps y Nuevos Tests Propuestos:**
+    *   **Tests de Endpoints Restringidos:** Lanzar peticiones a rutas exclusivas de ADMIN (ej. Liquidación) con tokens simulados de EMPLOYEE y validar la respuesta `403 Forbidden`.
+
+### 5.6. Módulo 6: Funcionalidad Offline (PWA Frontend)
+*   **Objetivo:** Fiabilidad offline y sincronización en cliente.
+*   **Gaps y Nuevos Tests Propuestos (Frontend):**
+    *   **Tests Unitarios (Frontend):** Probar que `SyncService` escriba correctamente en IndexedDB (`dexie`) cuando simula la pérdida de conectividad (`navigator.onLine = false`).
+    *   **Tests de Integración (Frontend):** Ciclo de vida del Service Worker y estrategias de cacheo.

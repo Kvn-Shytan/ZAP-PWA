@@ -7,8 +7,9 @@ import { apiFetch } from '../services/api';
 import { assemblerService } from '../services/assemblerService';
 import { useAuth } from '../contexts/AuthContext';
 import './LogisticsDashboardPage.css';
-import Modal from '../components/Modal';
+import db from '../services/db';
 import { useSyncStatus } from '../contexts/SyncContext'; // Importar hook de sincronización
+import { translateOrderStatus } from '../utils/statusTranslator';
 
 const LogisticsDashboardPage = () => {
   const { user: currentUser } = useAuth();
@@ -569,9 +570,9 @@ const LogisticsDashboardPage = () => {
     if (order.status === 'PARTIALLY_RECEIVED' && order.expectedOutputs?.length > 0) {
       const totalExpected = order.expectedOutputs.reduce((acc, item) => acc + Number(item.quantityExpected), 0);
       const totalReceived = order.expectedOutputs.reduce((acc, item) => acc + Number(item.quantityReceived), 0);
-      return `PARCIALMENTE RECIBIDO (${totalReceived}/${totalExpected})`;
+      return `${translateOrderStatus(order.status)} (${totalReceived}/${totalExpected})`;
     }
-    return order.status;
+    return translateOrderStatus(order.status);
   };
 
     return (

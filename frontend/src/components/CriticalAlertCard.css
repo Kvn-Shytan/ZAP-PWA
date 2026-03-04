@@ -1,0 +1,66 @@
+.critical-alert-card {
+  display: flex;
+  align-items: flex-start;
+  background-color: #fee2e2; /* light red */
+  border-left: 6px solid #ef4444; /* bold red */
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease-in-out;
+}
+
+.critical-alert-card:hover {
+  transform: translateY(-2px);
+}
+
+.critical-alert-icon {
+  flex-shrink: 0;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.critical-alert-icon .icon-svg {
+  width: 32px;
+  height: 32px;
+  color: #dc2626; /* darker red */
+}
+
+.critical-alert-content {
+  flex: 1;
+}
+
+.critical-alert-title {
+  margin: 0 0 4px 0;
+  color: #991b1b;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.critical-alert-message {
+  margin: 0 0 8px 0;
+  color: #7f1d1d;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.critical-alert-link {
+  display: inline-block;
+  color: #b91c1c;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.critical-alert-link:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  text-decoration: underline;
+}

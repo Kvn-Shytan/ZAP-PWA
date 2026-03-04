@@ -210,7 +210,7 @@ const AssemblerPaymentsHistoryPage = () => {
                             <ul>
                               {payment.orders.map(order => (
                                 <li key={order.id}>
-                                  <strong>Nro:</strong> <Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link> - <strong>Estado:</strong> {order.status}
+                                  <strong>Nro:</strong> <Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link> - <strong>Estado:</strong> {translateOrderStatus(order.status)}
                                 </li>
                               ))}
                             </ul>
