@@ -18,16 +18,43 @@ const WastageManagementPage = () => {
   const [externalProductionOrderId, setExternalProductionOrderId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Dynamic stock inquiry state
+  const [selectedProductStock, setSelectedProductStock] = useState(null);
+  const [loadingStock, setLoadingStock] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Effect to query stock dynamically once a product is selected
+  useEffect(() => {
+    if (!productId) {
+      setSelectedProductStock(null);
+      return;
+    }
+
+    const fetchSelectedProductStock = async () => {
+      setLoadingStock(true);
+      try {
+        const productDetails = await apiFetch(`/products/${productId}`);
+        setSelectedProductStock(productDetails.stock);
+      } catch (err) {
+        console.error('Error fetching selected product stock:', err);
+        setSelectedProductStock(0);
+      } finally {
+        setLoadingStock(false);
+      }
+    };
+
+    fetchSelectedProductStock();
+  }, [productId]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [logsData, productsData, assemblersData, ordersData] = await Promise.all([
         apiFetch('/inventory/wastage'),
-        apiFetch('/products'), // Fetch all products to select from
+        apiFetch('/products?all=true'), // Fetch all products to select from (unpaginated)
         apiFetch('/assemblers'),
         apiFetch('/external-production-orders/active'), // Active orders for linking
       ]);
@@ -71,6 +98,7 @@ const WastageManagementPage = () => {
       setReason('');
       setAssemblerId('');
       setExternalProductionOrderId('');
+      setSelectedProductStock(null);
       
       // Refresh table
       fetchData();
@@ -99,10 +127,23 @@ const WastageManagementPage = () => {
                 <option value="">-- Seleccionar --</option>
                 {products.map(p => (
                   <option key={p.id} value={p.id}>
-                    {p.internalCode} - {p.description} (Stock: {p.stock})
+                    {p.internalCode} - {p.description}
                   </option>
                 ))}
               </select>
+              
+              {/* Dynamic Stock Indicator */}
+              {productId && (
+                <div className="product-stock-indicator" style={{ marginTop: '0.6rem', fontSize: '12px', color: '#555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {loadingStock ? (
+                    <span style={{ color: '#888', fontStyle: 'italic' }}>🔍 Consultando stock disponible...</span>
+                  ) : (
+                    <span>
+                      📦 Stock actual en depósito: <strong style={{ color: '#007bff', fontSize: '13px' }}>{Number(selectedProductStock || 0).toFixed(0)} {products.find(p => p.id === productId)?.unit || 'un'}</strong>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label>Cantidad a descontar *</label>
@@ -143,7 +184,7 @@ const WastageManagementPage = () => {
             <label>Motivo del Rechazo *</label>
             <textarea 
               rows="3" 
-              placeholder="Ej. Mal cosido, manchado, falla de máquina..."
+              placeholder="Ej. Mal armado, manchado, falla de máquina..."
               value={reason} 
               onChange={e => setReason(e.target.value)} 
               required 
