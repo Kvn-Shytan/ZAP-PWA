@@ -303,6 +303,7 @@ exports.Prisma.AssemblerScalarFieldEnum = {
   phone: 'phone',
   email: 'email',
   paymentTerms: 'paymentTerms',
+  tracerCode: 'tracerCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

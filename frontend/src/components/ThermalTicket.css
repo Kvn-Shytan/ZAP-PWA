@@ -194,4 +194,8 @@
   .thermal-notes {
     background-color: transparent;
   }
+
+  .thermal-tracer-box {
+    background-color: transparent !important;
+  }
 }

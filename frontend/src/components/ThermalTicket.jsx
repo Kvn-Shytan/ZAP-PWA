@@ -19,6 +19,13 @@ const ThermalTicket = ({ order }) => {
   // Get expected finished products (expectedOutputs)
   const expectedOutputs = order.expectedOutputs || [];
 
+  // Compute today's tracer label (DDMM + assembler's tracerCode)
+  const today = new Date();
+  const todayDay = String(today.getDate()).padStart(2, '0');
+  const todayMonth = String(today.getMonth() + 1).padStart(2, '0');
+  const datePrefix = `${todayDay}${todayMonth}`;
+  const tracerLabel = order.assembler?.tracerCode ? `${datePrefix}${order.assembler.tracerCode}` : null;
+
   return (
     <div className="thermal-ticket-container">
       <div className="thermal-ticket">
@@ -49,12 +56,22 @@ const ThermalTicket = ({ order }) => {
         {/* Assembler Info */}
         <div className="thermal-section">
           <h2 className="thermal-sec-title">ARMADOR ASIGNADO</h2>
-          <p className="thermal-assembler-name">{order.assembler?.name}</p>
+          <p className="thermal-assembler-name">
+            {order.assembler?.name} {order.assembler?.tracerCode && `(${order.assembler.tracerCode})`}
+          </p>
           {order.assembler?.phone && (
             <p className="thermal-assembler-detail">Tel: {order.assembler.phone}</p>
           )}
           {order.assembler?.address && (
             <p className="thermal-assembler-detail">Dir: {order.assembler.address}</p>
+          )}
+          
+          {tracerLabel && (
+            <div style={{ marginTop: '2mm', padding: '1.5mm', border: '1px dashed #000', textAlign: 'center', backgroundColor: '#fafafa' }} className="thermal-tracer-box">
+              <span style={{ fontSize: '13px', fontWeight: 'bold', letterSpacing: '0.5px' }}>
+                ETIQUETA: {tracerLabel}
+              </span>
+            </div>
           )}
           <div className="thermal-divider">--------------------------------</div>
         </div>

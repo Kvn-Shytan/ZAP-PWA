@@ -11,7 +11,7 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOY
   const { role } = req.user;
   const selectFields = (role === 'ADMIN' || role === 'SUPERVISOR')
     ? undefined
-    : { id: true, name: true, phone: true, address: true };
+    : { id: true, name: true, phone: true, address: true, tracerCode: true };
 
   try {
     const assemblersFromDb = await prisma.assembler.findMany({
@@ -29,12 +29,12 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR', 'EMPLOY
 // Create a new assembler
 router.post('/', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   try {
-    const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
+    const { name, contactInfo, address, phone, email, paymentTerms, tracerCode } = req.body;
     if (!name || !paymentTerms) {
       return res.status(400).json({ error: 'Name and paymentTerms are required' });
     }
     const newAssembler = await prisma.assembler.create({
-      data: { name, contactInfo, address, phone, email, paymentTerms },
+      data: { name, contactInfo, address, phone, email, paymentTerms, tracerCode },
     });
     res.status(201).json(newAssembler);
   } catch (error) {
@@ -519,11 +519,11 @@ router.get('/:assemblerId/payment-summary', authenticateToken, authorizeRole(['A
 // Update an assembler by ID
 router.put('/:id', authenticateToken, authorizeRole(['ADMIN', 'SUPERVISOR']), async (req, res) => {
   const { id } = req.params;
-  const { name, contactInfo, address, phone, email, paymentTerms } = req.body;
+  const { name, contactInfo, address, phone, email, paymentTerms, tracerCode } = req.body;
   try {
     const updatedAssembler = await prisma.assembler.update({
       where: { id },
-      data: { name, contactInfo, address, phone, email, paymentTerms },
+      data: { name, contactInfo, address, phone, email, paymentTerms, tracerCode },
     });
     res.json(updatedAssembler);
   } catch (error) {

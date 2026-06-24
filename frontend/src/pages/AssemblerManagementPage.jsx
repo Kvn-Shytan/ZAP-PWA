@@ -11,6 +11,7 @@ const INITIAL_FORM_STATE = {
   phone: '',
   email: '',
   paymentTerms: 'BI_WEEKLY',
+  tracerCode: '',
 };
 
 // Sub-component for Pending Inventory Modal
@@ -48,39 +49,42 @@ function PendingInventoryModal({ assembler, onClose }) {
             {pendingInventory.pendingFinishedProducts.length > 0 ? (
               <ul className="pending-list">
                 {pendingInventory.pendingFinishedProducts.map((item, index) => (
-                  <li key={index} className="pending-item">
-                    <span>{item.product.description} ({item.product.internalCode}):</span>
-                    <span className="quantity">{item.quantity} {item.product.unit}</span>
-                  </li>
+                  <tr key={`expected-prod-${index}`} className="pending-list-item">
+                    <td>{Number(item.quantity).toFixed(0)} {item.product?.unit || 'un'}</td>
+                    <td>{item.product?.internalCode} - {item.product?.description}</td>
+                  </tr>
                 ))}
               </ul>
             ) : (
-              <p>No hay productos finales pendientes.</p>
+              <p>No tiene productos pendientes de entrega.</p>
             )}
           </div>
-
+          
           <div className="pending-materials-section">
-            <button 
-              onClick={() => setIsMaterialsVisible(!isMaterialsVisible)}
-              className="btn btn-secondary toggle-materials-btn"
-            >
-              {isMaterialsVisible ? 'Ocultar' : 'Ver'} Materiales Enviados
-            </button>
+            <div className="section-header-toggle" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>
+              <h4 style={{ margin: 0 }}>Materiales en su Poder</h4>
+              <button 
+                onClick={() => setIsMaterialsVisible(!isMaterialsVisible)} 
+                className="btn btn-secondary" 
+                style={{ padding: '2px 8px', fontSize: '11px' }}
+              >
+                {isMaterialsVisible ? 'Ocultar' : 'Ver Detalle'}
+              </button>
+            </div>
             
             {isMaterialsVisible && (
-              <div className="pending-materials">
-                <h4>Materiales Enviados (en poder del armador)</h4>
+              <div className="pending-materials-detail" style={{ marginTop: '10px' }}>
                 {pendingInventory.pendingMaterials.length > 0 ? (
                   <ul className="pending-list">
                     {pendingInventory.pendingMaterials.map((item, index) => (
-                      <li key={index} className="pending-item">
-                        <span>{item.product.description} ({item.product.internalCode}):</span>
-                        <span className="quantity">{item.quantity} {item.product.unit}</span>
-                      </li>
+                      <tr key={`material-hold-${index}`} className="pending-list-item">
+                        <td>{Number(item.quantity).toFixed(0)} {item.product?.unit || 'un'}</td>
+                        <td>{item.product?.internalCode} - {item.product?.description}</td>
+                      </tr>
                     ))}
                   </ul>
                 ) : (
-                  <p>No hay materiales enviados pendientes.</p>
+                  <p>No tiene materiales registrados en su poder.</p>
                 )}
               </div>
             )}
@@ -93,7 +97,10 @@ function PendingInventoryModal({ assembler, onClose }) {
 
 // Edit Form Sub-Component
 function EditForm({ assembler, onSave, onCancel }) {
-  const [editedAssembler, setEditedAssembler] = useState(assembler);
+  const [editedAssembler, setEditedAssembler] = useState({
+    tracerCode: '',
+    ...assembler
+  });
 
   const handleChange = (e) => {
     setEditedAssembler({ ...editedAssembler, [e.target.name]: e.target.value });
@@ -110,6 +117,7 @@ function EditForm({ assembler, onSave, onCancel }) {
     <form onSubmit={handleSubmit} className="edit-form">
       <h3>Editando a {assembler.name}</h3>
       <input type="text" name="name" placeholder="Nombre Completo" value={editedAssembler.name} onChange={handleChange} required />
+      <input type="text" name="tracerCode" placeholder="Código Trazabilidad (ej. .002)" value={editedAssembler.tracerCode || ''} onChange={handleChange} maxLength="4" />
       <input type="text" name="contactInfo" placeholder="Persona de Contacto" value={editedAssembler.contactInfo} onChange={handleChange} />
       <input type="text" name="address" placeholder="Dirección" value={editedAssembler.address} onChange={handleChange} />
       <input type="text" name="phone" placeholder="Teléfono" value={editedAssembler.phone} onChange={handleChange} />
@@ -139,6 +147,8 @@ function AssemblerManagementPage() {
   const [showPendingInventoryModal, setShowPendingInventoryModal] = useState(false);
   const [selectedAssemblerForPending, setSelectedAssemblerForPending] = useState(null);
 
+  // Search filter state
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchAssemblers = useCallback(async () => {
     setLoading(true);
@@ -203,6 +213,13 @@ function AssemblerManagementPage() {
   const isPrivilegedUser = user && (user.role === 'ADMIN' || user.role === 'SUPERVISOR');
   const paymentTermOptions = ['BI_WEEKLY', 'MONTHLY', 'PER_UNIT'];
 
+  // Apply name and tracerCode filters
+  const filteredAssemblers = assemblers.filter(assembler => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesName = assembler.name.toLowerCase().includes(searchLower);
+    const matchesCode = assembler.tracerCode ? assembler.tracerCode.toLowerCase().includes(searchLower) : false;
+    return matchesName || matchesCode;
+  });
 
   if (editingAssembler) {
     return (
@@ -221,7 +238,7 @@ function AssemblerManagementPage() {
       <h2>Gestión de Ensambladores</h2>
       
       {isPrivilegedUser && (
-        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary">
+        <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary" style={{ marginBottom: '1.5rem' }}>
           {showCreateForm ? 'Cancelar' : 'Crear Nuevo Ensamblador'}
         </button>
       )}
@@ -230,6 +247,7 @@ function AssemblerManagementPage() {
         <form onSubmit={handleCreateAssembler} className="create-form">
           <h3>Crear Nuevo Ensamblador</h3>
           <input type="text" name="name" placeholder="Nombre Completo" value={newAssembler.name} onChange={handleNewAssemblerChange} required />
+          <input type="text" name="tracerCode" placeholder="Código Trazabilidad (ej. .002)" value={newAssembler.tracerCode || ''} onChange={handleNewAssemblerChange} maxLength="4" />
           <input type="text" name="contactInfo" placeholder="Persona de Contacto" value={newAssembler.contactInfo} onChange={handleNewAssemblerChange} />
           <input type="text" name="address" placeholder="Dirección" value={newAssembler.address} onChange={handleNewAssemblerChange} />
           <input type="text" name="phone" placeholder="Teléfono" value={newAssembler.phone} onChange={handleNewAssemblerChange} />
@@ -242,10 +260,28 @@ function AssemblerManagementPage() {
       )}
 
       <h3>Lista de Ensambladores</h3>
+
+      {/* Name and TracerCode Filter Search Bar */}
+      <div className="search-filter-container" style={{ marginBottom: '1rem', display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <input
+          type="text"
+          placeholder="🔍 Buscar por nombre o código de armador (ej: .002)..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: '10px 14px', width: '320px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+        />
+        {searchTerm && (
+          <button onClick={() => setSearchTerm('')} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '12px' }}>
+            Limpiar
+          </button>
+        )}
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
             <th>Nombre</th>
+            <th>Cód. Trazabilidad</th>
             <th>Teléfono</th>
             <th>Dirección</th>
             {isPrivilegedUser && (
@@ -258,8 +294,10 @@ function AssemblerManagementPage() {
           </tr>
         </thead>
         <tbody>
-          {assemblers.map((assembler) => (
-            <tr key={assembler.id}><td data-label="Nombre"><span>{assembler.name}</span></td>
+          {filteredAssemblers.map((assembler) => (
+            <tr key={assembler.id}>
+              <td data-label="Nombre"><span>{assembler.name}</span></td>
+              <td data-label="Cód. Trazabilidad"><strong style={{ color: '#007bff' }}>{assembler.tracerCode || '-'}</strong></td>
               <td data-label="Teléfono"><span>{assembler.phone || '-'}</span></td>
               <td data-label="Dirección"><span>{assembler.address || '-'}</span></td>
               {isPrivilegedUser && (
@@ -268,16 +306,17 @@ function AssemblerManagementPage() {
                   <td data-label="Condiciones de Pago"><span>{assembler.paymentTerms}</span></td>
                   <td data-label="Acciones">
                     <div className="action-buttons">
-                                            <button
-                                              className="btn btn-pending-inventory"
-                                              onClick={(e) => {
-                                                e.stopPropagation(); // Prevent row click if it were enabled
-                                                setSelectedAssemblerForPending(assembler);
-                                                setShowPendingInventoryModal(true);
-                                              }}
-                                            >
-                                              Pendientes
-                                            </button>                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setEditingAssembler(assembler); }}>Editar</button>
+                      <button
+                        className="btn btn-pending-inventory"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click if it were enabled
+                          setSelectedAssemblerForPending(assembler);
+                          setShowPendingInventoryModal(true);
+                        }}
+                      >
+                        Pendientes
+                      </button>
+                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setEditingAssembler(assembler); }}>Editar</button>
                       {user.role === 'ADMIN' && <button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDeleteAssembler(assembler.id); }}>Eliminar</button>}
                     </div>
                   </td>
@@ -289,9 +328,12 @@ function AssemblerManagementPage() {
       </table>
 
       {showPendingInventoryModal && selectedAssemblerForPending && (
-        <PendingInventoryModal 
-          assembler={selectedAssemblerForPending} 
-          onClose={() => setShowPendingInventoryModal(false)} 
+        <PendingInventoryModal
+          assembler={selectedAssemblerForPending}
+          onClose={() => {
+            setShowPendingInventoryModal(false);
+            setSelectedAssemblerForPending(null);
+          }}
         />
       )}
     </div>

@@ -25726,6 +25726,7 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     paymentTerms: $Enums.PaymentTerms | null
+    tracerCode: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -25738,6 +25739,7 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     paymentTerms: $Enums.PaymentTerms | null
+    tracerCode: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -25750,6 +25752,7 @@ export namespace Prisma {
     phone: number
     email: number
     paymentTerms: number
+    tracerCode: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -25764,6 +25767,7 @@ export namespace Prisma {
     phone?: true
     email?: true
     paymentTerms?: true
+    tracerCode?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -25776,6 +25780,7 @@ export namespace Prisma {
     phone?: true
     email?: true
     paymentTerms?: true
+    tracerCode?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -25788,6 +25793,7 @@ export namespace Prisma {
     phone?: true
     email?: true
     paymentTerms?: true
+    tracerCode?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -25873,6 +25879,7 @@ export namespace Prisma {
     phone: string | null
     email: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode: string | null
     createdAt: Date
     updatedAt: Date
     _count: AssemblerCountAggregateOutputType | null
@@ -25902,6 +25909,7 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     paymentTerms?: boolean
+    tracerCode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     externalProductionOrders?: boolean | Assembler$externalProductionOrdersArgs<ExtArgs>
@@ -25918,6 +25926,7 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     paymentTerms?: boolean
+    tracerCode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["assembler"]>
@@ -25930,6 +25939,7 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     paymentTerms?: boolean
+    tracerCode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["assembler"]>
@@ -25942,11 +25952,12 @@ export namespace Prisma {
     phone?: boolean
     email?: boolean
     paymentTerms?: boolean
+    tracerCode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type AssemblerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "contactInfo" | "address" | "phone" | "email" | "paymentTerms" | "createdAt" | "updatedAt", ExtArgs["result"]["assembler"]>
+  export type AssemblerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "contactInfo" | "address" | "phone" | "email" | "paymentTerms" | "tracerCode" | "createdAt" | "updatedAt", ExtArgs["result"]["assembler"]>
   export type AssemblerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     externalProductionOrders?: boolean | Assembler$externalProductionOrdersArgs<ExtArgs>
     assemblerPayments?: boolean | Assembler$assemblerPaymentsArgs<ExtArgs>
@@ -25971,6 +25982,7 @@ export namespace Prisma {
       phone: string | null
       email: string | null
       paymentTerms: $Enums.PaymentTerms
+      tracerCode: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["assembler"]>
@@ -26406,6 +26418,7 @@ export namespace Prisma {
     readonly phone: FieldRef<"Assembler", 'String'>
     readonly email: FieldRef<"Assembler", 'String'>
     readonly paymentTerms: FieldRef<"Assembler", 'PaymentTerms'>
+    readonly tracerCode: FieldRef<"Assembler", 'String'>
     readonly createdAt: FieldRef<"Assembler", 'DateTime'>
     readonly updatedAt: FieldRef<"Assembler", 'DateTime'>
   }
@@ -32924,6 +32937,7 @@ export namespace Prisma {
     phone: 'phone',
     email: 'email',
     paymentTerms: 'paymentTerms',
+    tracerCode: 'tracerCode',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -34546,6 +34560,7 @@ export namespace Prisma {
     phone?: StringNullableFilter<"Assembler"> | string | null
     email?: StringNullableFilter<"Assembler"> | string | null
     paymentTerms?: EnumPaymentTermsFilter<"Assembler"> | $Enums.PaymentTerms
+    tracerCode?: StringNullableFilter<"Assembler"> | string | null
     createdAt?: DateTimeFilter<"Assembler"> | Date | string
     updatedAt?: DateTimeFilter<"Assembler"> | Date | string
     externalProductionOrders?: ExternalProductionOrderListRelationFilter
@@ -34561,6 +34576,7 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     paymentTerms?: SortOrder
+    tracerCode?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     externalProductionOrders?: ExternalProductionOrderOrderByRelationAggregateInput
@@ -34579,6 +34595,7 @@ export namespace Prisma {
     phone?: StringNullableFilter<"Assembler"> | string | null
     email?: StringNullableFilter<"Assembler"> | string | null
     paymentTerms?: EnumPaymentTermsFilter<"Assembler"> | $Enums.PaymentTerms
+    tracerCode?: StringNullableFilter<"Assembler"> | string | null
     createdAt?: DateTimeFilter<"Assembler"> | Date | string
     updatedAt?: DateTimeFilter<"Assembler"> | Date | string
     externalProductionOrders?: ExternalProductionOrderListRelationFilter
@@ -34594,6 +34611,7 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     paymentTerms?: SortOrder
+    tracerCode?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: AssemblerCountOrderByAggregateInput
@@ -34612,6 +34630,7 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"Assembler"> | string | null
     email?: StringNullableWithAggregatesFilter<"Assembler"> | string | null
     paymentTerms?: EnumPaymentTermsWithAggregatesFilter<"Assembler"> | $Enums.PaymentTerms
+    tracerCode?: StringNullableWithAggregatesFilter<"Assembler"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Assembler"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Assembler"> | Date | string
   }
@@ -36287,6 +36306,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
@@ -36302,6 +36322,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
@@ -36317,6 +36338,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
@@ -36332,6 +36354,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
@@ -36347,6 +36370,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -36359,6 +36383,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -36371,6 +36396,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38010,6 +38036,7 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     paymentTerms?: SortOrder
+    tracerCode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -38022,6 +38049,7 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     paymentTerms?: SortOrder
+    tracerCode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -38034,6 +38062,7 @@ export namespace Prisma {
     phone?: SortOrder
     email?: SortOrder
     paymentTerms?: SortOrder
+    tracerCode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -42936,6 +42965,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     assemblerPayments?: AssemblerPaymentCreateNestedManyWithoutAssemblerInput
@@ -42950,6 +42980,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     assemblerPayments?: AssemblerPaymentUncheckedCreateNestedManyWithoutAssemblerInput
@@ -43296,6 +43327,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assemblerPayments?: AssemblerPaymentUpdateManyWithoutAssemblerNestedInput
@@ -43310,6 +43342,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assemblerPayments?: AssemblerPaymentUncheckedUpdateManyWithoutAssemblerNestedInput
@@ -44515,6 +44548,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
@@ -44529,6 +44563,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
@@ -44613,6 +44648,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
@@ -44627,6 +44663,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
@@ -45663,6 +45700,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderCreateNestedManyWithoutAssemblerInput
@@ -45677,6 +45715,7 @@ export namespace Prisma {
     phone?: string | null
     email?: string | null
     paymentTerms: $Enums.PaymentTerms
+    tracerCode?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedCreateNestedManyWithoutAssemblerInput
@@ -45851,6 +45890,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUpdateManyWithoutAssemblerNestedInput
@@ -45865,6 +45905,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     paymentTerms?: EnumPaymentTermsFieldUpdateOperationsInput | $Enums.PaymentTerms
+    tracerCode?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     externalProductionOrders?: ExternalProductionOrderUncheckedUpdateManyWithoutAssemblerNestedInput
