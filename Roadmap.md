@@ -183,9 +183,23 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
         *   `[ ]` **(Poda de Datos):** Implementar una rutina que elimine de la base de datos local las órdenes y otros datos que ya no son relevantes (ej. órdenes en estado `COMPLETED` o `CANCELLED` con más de 7 días de antigüedad) para optimizar el rendimiento y el uso de almacenamiento.
         *   `[ ]` **(Feedback de Sincronización):** Implementar un indicador visual global en la UI que informe al usuario del estado de la sincronización (ej. "Sincronizado", "Sincronizando...", "Sin conexión").
 
-    
+-   **Fase 20: Optimización de Impresión (Comandas Térmicas) (Nueva)**
+    > **Objetivo:** Acelerar el flujo de despacho y recepción mediante el uso de impresoras térmicas de 80mm, reemplazando el formato A4 por tickets autoadhesivos o de fácil manejo.
 
-    -   **Fase 7: Despliegue y Pruebas (Pendiente)**
+    *   **20.1: Investigación y Selección de Hardware (Completado)**
+        *   `[x]` Analizar opciones precio/calidad en el mercado argentino.
+        *   `[x]` Recomendación técnica: **Xprinter 80mm (USB + LAN)** con corte automático por legibilidad y durabilidad.
+    *   **20.2: Diseño de Plantilla de Ticket (Pendiente)**
+        *   `[ ]` Crear componente `ThermalTicket.jsx` con CSS específico para ancho de 80mm.
+        *   `[ ]` Definir campos críticos: Nro Orden (legible), Fecha, Armador, Lista de Entrega (Materia Prima) y Lista de Recibo (Producto Terminado).
+    *   **20.3: Implementación Técnica (Pendiente)**
+        *   `[ ]` Implementar lógica de impresión vía `window.print()` con `@media print` especializado.
+        *   `[ ]` (Opcional) Investigar integración directa vía WebUSB para eliminar diálogos de confirmación del sistema operativo.
+    *   **20.4: Pruebas de Campo (Pendiente)**
+        *   `[ ]` Validar legibilidad con los colaboradores mayores.
+        *   `[ ]` Probar resistencia del papel térmico en el entorno de trabajo (bolsas de pedidos).
+
+-   **Fase 7: Despliegue y Pruebas (Pendiente)**
 
         -   `[ ]` **(NUEVO - Auditoría)** Reescribir `backend/Dockerfile` y `frontend/Dockerfile` usando builds multi-etapa para producción.
 
