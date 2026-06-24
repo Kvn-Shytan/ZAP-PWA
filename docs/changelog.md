@@ -1,5 +1,39 @@
 # Changelog (Registro de Cambios)
 
+## 2026-06-24 (Optimización de Comandas Térmicas, Trazabilidad .00X, ERP-Layout y Suite Verde)
+-   **[FEAT] Fase 20: Sistema de Comandas Térmicas (80mm):**
+    -   **Frontend:**
+        -   Diseñado el componente `ThermalTicket.jsx` y su hoja de estilos `ThermalTicket.css` con formato optimizado de 72mm para bobinas térmicas de 80mm.
+        -   Creada la página contenedora `/external-orders/:id/ticket` libre de Navbar y optimizada mediante estilos de impresión `@media print` para emitir comandas limpias.
+        -   Integrado el botón directo `🖨️` en cada fila del Panel de Logística y un botón verde destacado en el detalle de la orden para abrir el ticket térmico en una pestaña limpia.
+-   **[FEAT] Trazabilidad y Filtros de Armadores (.00X):**
+    -   **Base de Datos:** Añadido campo `tracerCode` de tipo String opcional al modelo `Assembler` en `schema.prisma` y ejecutada la migración de base de datos.
+    -   **Backend:** Actualizados los endpoints (GET, POST, PUT) de armadores para soportar y exponer el código de trazabilidad de forma segura según el rol del usuario.
+    -   **Frontend:**
+        -   Añadido el campo de entrada "Código de Trazabilidad" en los formularios de creación/edición y la columna "Cód. Trazabilidad" en la tabla de Gestión de Armadores.
+        -   Implementado filtro interactivo por **Nombre** o **Código de Armador** (ej. `.002`) en la barra de búsqueda de Gestión de Armadores.
+        -   **Cálculo Automático Dinámico:** El ticket térmico calcula dinámicamente la fecha actual y la combina con el código del armador para estampar la etiqueta del día con el formato `ETIQUETA: DDMM.00X` (ej. `2406.002`).
+-   **[REFACTOR] Refactorización Estructural ERP/POS (Opción B):**
+    -   **Formularios Independientes:** Desacopladas las interfaces de Ventas y Mermas (Rechazos). Las rutas `/inventory-adjustments` y `/wastage-management` pasan a actuar exclusivamente como historiales de auditoría rápidos.
+    -   **Carga a Pantalla Completa:** Desarrolladas las nuevas vistas `/sales/new` y `/wastage-management/new` con diseño enfocado, libre de modales y optimizado para pantallas táctiles/celulares.
+    -   **Control y Resiliencia en Nueva Venta:**
+        -   **Bloqueo de Cliente:** El buscador de clientes se bloquea automáticamente (`isDisabled={items.length > 0}`) en cuanto se añade el primer producto a la tabla, con un mensaje y candado de advertencia (`🔒`) para evitar inconsistencias en las categorías de precios.
+        -   **Advertencia de Sobreescritura:** Se destaca el "Precio de Lista" y se despliega una advertencia visual parpadeante en tiempo real (`⚠️ PRECIO SOBREESCRITO`) si el supervisor edita manualmente el precio de un ítem ignorando el descuento automático de su categoría.
+        -   **Cliente Ocasional Compartido:** Implementada la creación/búsqueda automática de un único registro `"Cliente Ocasional"` permanente para evitar duplicados y cluttering. El nombre real se guarda codificado en las notas (`[OCASIONAL: Nombre]`) y se muestra en las tablas del historial con un asterisco y letra cursiva azul (`* Lucas Rossi (Ocasional)`), decodificándose perfectamente al imprimir el remito físico.
+    -   **Optimización de Carga:** El selector de productos de Rechazos ahora consulta el stock de forma asíncrona y bajo demanda (`/products/:id`) únicamente al ser seleccionado, acelerando la transacción y reduciendo la carga en base de datos.
+-   **[REFACTOR] Rediseño ERP de Doble Columna (Producción Interna y Externa):**
+    -   Rediseñadas por completo las pantallas `ExternalProductionOrderPage.jsx` and `ProductionOrderPage.jsx` en un diseño ergonómico de doble columna (Requisitos, catálogos y formularios a la izquierda; costos de mano de obra, pasos y botones principales a la derecha), eliminando el scroleo vertical.
+    -   Creado un panel simulador explicativo (Placeholder) cuando no hay producto cargado.
+    -   Los requisitos de ingredientes de producción interna ahora muestran un indicador visual interactivo de colores (Verde si hay stock suficiente, Rojo con alerta si es insuficiente).
+-   **[FIX] Resolución de Bugs Críticos:**
+    -   Importado el componente `Modal` en `LogisticsDashboardPage.jsx` para reparar el colapso de pantalla en blanco.
+    -   Importada la función `translateOrderStatus` en `AssemblerPaymentBatchPage.jsx` y `AssemblerPaymentsHistoryPage.jsx` para solucionar el colapso al liquidar e inspeccionar el historial.
+    -   Corregido el error de filtrado en Gestión de Rechazos mediante la consulta del array sin paginar `/products?all=true`.
+-   **[TEST] Suite de Pruebas de Inventario y Cobertura Verde (Paso A):**
+    -   **Tests de Productos:** Incorporados tests de integración CRUD para productos y sus validaciones correspondientes en `products.test.js`.
+    -   **Tests de Inventario Avanzado:** Creada una nueva suite `inventory.test.js` para testear compras, producción con consumo de receta ("Resta 0") y anulación estricta con prevención de stock negativo.
+    -   **Estabilización de Tests:** Modificados los bloques de limpieza `beforeEach` en cascada (ProductComponent, ProductAssemblyJob, ProductOverhead) para evitar violaciones de FK. **La suite completa de tests de backend cuenta ahora con 69 tests exitosos (100% verde)**.
+
 ## 2026-03-04 (Alertas Inteligentes y Gestión de Rechazos)
 -   **[FEAT] Fase 13.2: Sistema de Alertas Inteligentes:**
     -   **Backend:** Implementado motor de reglas en `/api/dashboard` que evalúa inactividad de órdenes (>3 días hábiles), fechas límite de pago a armadores, y umbrales de stock en tiempo real.

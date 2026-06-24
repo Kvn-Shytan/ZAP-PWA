@@ -189,11 +189,11 @@ Este documento traza el plan de desarrollo para la PWA interna de ZAP y registra
     *   **20.1: Investigación y Selección de Hardware (Completado)**
         *   `[x]` Analizar opciones precio/calidad en el mercado argentino.
         *   `[x]` Recomendación técnica: **Xprinter 80mm (USB + LAN)** con corte automático por legibilidad y durabilidad.
-    *   **20.2: Diseño de Plantilla de Ticket (Pendiente)**
-        *   `[ ]` Crear componente `ThermalTicket.jsx` con CSS específico para ancho de 80mm.
-        *   `[ ]` Definir campos críticos: Nro Orden (legible), Fecha, Armador, Lista de Entrega (Materia Prima) y Lista de Recibo (Producto Terminado).
-    *   **20.3: Implementación Técnica (Pendiente)**
-        *   `[ ]` Implementar lógica de impresión vía `window.print()` con `@media print` especializado.
+    *   **20.2: Diseño de Plantilla de Ticket (Completado)**
+        *   `[x]` Crear componente `ThermalTicket.jsx` con CSS específico para ancho de 80mm.
+        *   `[x]` Definir campos críticos: Nro Orden (legible), Fecha, Armador, Lista de Entrega (Materia Prima) y Lista de Recibo (Producto Terminado).
+    *   **20.3: Implementación Técnica (Completado)**
+        *   `[x]` Implementar lógica de impresión vía `window.print()` con `@media print` especializado.
         *   `[ ]` (Opcional) Investigar integración directa vía WebUSB para eliminar diálogos de confirmación del sistema operativo.
     *   **20.4: Pruebas de Campo (Pendiente)**
         *   `[ ]` Validar legibilidad con los colaboradores mayores.
