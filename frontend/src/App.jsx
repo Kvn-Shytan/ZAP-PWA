@@ -28,6 +28,8 @@ import DashboardPage from './pages/DashboardPage';
 import Navbar from './components/Navbar';
 import InventoryAdjustmentPage from './pages/InventoryAdjustmentPage';
 import WastageManagementPage from './pages/WastageManagementPage'; // NEW
+import WastageCreatePage from './pages/WastageCreatePage';
+import SalesCreatePage from './pages/SalesCreatePage';
 import ReceiptPage from './pages/ReceiptPage';
 import ExternalOrderTicketPage from './pages/ExternalOrderTicketPage';
 import './App.css';
@@ -118,8 +120,16 @@ function App() {
           element={<ProtectedRoute element={<InventoryAdjustmentPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
+          path="/sales/new"
+          element={<ProtectedRoute element={<SalesCreatePage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
           path="/wastage-management" // New Route
           element={<ProtectedRoute element={<WastageManagementPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
+        />
+        <Route
+          path="/wastage-management/new"
+          element={<ProtectedRoute element={<WastageCreatePage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}
         />
         <Route
           path="/production-orders"

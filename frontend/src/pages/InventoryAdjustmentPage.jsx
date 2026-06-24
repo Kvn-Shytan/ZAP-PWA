@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiFetch } from '../services/api'; 
 import { salesService } from '../services/salesService';
-import SaleMovementModal from '../components/SaleMovementModal';
 import PrintableReceipt from '../components/PrintableReceipt';
+import { parseClientName } from '../utils/clientParser';
 import './InventoryAdjustmentPage.css';
 
 const InventoryAdjustmentPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +36,6 @@ const InventoryAdjustmentPage = () => {
     };
   }, [searchInput]);
 
-  const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
-  
   const pageSize = 15;
 
   const handlePrintReceipt = (salesOrderId) => {
@@ -102,7 +102,7 @@ const InventoryAdjustmentPage = () => {
       <div className="header-actions">
         <h1 className="page-title">Venta / Rechazo</h1>
         <div className="action-buttons">
-          <button className="btn btn-primary" onClick={() => setIsSaleModalOpen(true)}>
+          <button className="btn btn-primary" onClick={() => navigate('/sales/new')}>
             + Nueva Venta
           </button>
           {/* Próximamente: Botón para Rechazo general */}
@@ -146,52 +146,61 @@ const InventoryAdjustmentPage = () => {
           {/* Vista Móvil (Tarjetas) */}
           <div className="movements-cards-container">
             {movements.length > 0 ? (
-              movements.map((movement) => (
-                <div key={movement.id} className={`movement-card ${movement.type.toLowerCase()}`}>
-                  <div className="card-header-row">
-                    <span className={`type-badge ${movement.type.toLowerCase()}`}>
-                      {movement.type === 'SALE' ? 'Venta' : 'Rechazo'}
-                    </span>
-                    <span className="card-date">{formatDate(movement.createdAt)}</span>
-                  </div>
-                  
-                  <div className="card-product-info">
-                    {movement.product?.internalCode} - {movement.product?.description}
-                  </div>
-
-                  <div className="card-details-grid">
-                    <div><strong>Cant:</strong> {Number(movement.quantity)}</div>
-                    <div><strong>Usuario:</strong> {movement.user?.name || 'N/A'}</div>
-                    <div style={{gridColumn: 'span 2'}}>
-                      <strong>Cliente:</strong> {movement.salesOrder?.client?.name || '-'}
+              movements.map((movement) => {
+                const clientParsed = parseClientName(movement.salesOrder);
+                return (
+                  <div key={movement.id} className={`movement-card ${movement.type.toLowerCase()}`}>
+                    <div className="card-header-row">
+                      <span className={`type-badge ${movement.type.toLowerCase()}`}>
+                        {movement.type === 'SALE' ? 'Venta' : 'Rechazo'}
+                      </span>
+                      <span className="card-date">{formatDate(movement.createdAt)}</span>
                     </div>
-                  </div>
+                    
+                    <div className="card-product-info">
+                      {movement.product?.internalCode} - {movement.product?.description}
+                    </div>
 
-                  <div className="card-total-row">
-                    {movement.salesOrder ? (
-                      <>
-                        <span className="card-total-amount">
-                          ${Number(movement.salesOrder.totalAmount).toLocaleString('es-AR')}
-                        </span>
-                        <button 
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => handlePrintReceipt(movement.salesOrderId)}
-                        >
-                          🖨️ Ver Recibo
-                        </button>
-                      </>
-                    ) : (
-                      <span style={{fontSize: '0.8rem', color: '#666'}}>No monetario</span>
+                    <div className="card-details-grid">
+                      <div><strong>Cant:</strong> {Number(movement.quantity)}</div>
+                      <div><strong>Usuario:</strong> {movement.user?.name || 'N/A'}</div>
+                      <div style={{gridColumn: 'span 2'}}>
+                        <strong>Cliente:</strong> {clientParsed.isOccasional ? (
+                          <span style={{ fontStyle: 'italic', color: '#0056b3', fontWeight: 'bold' }}>
+                            * {clientParsed.name} (Ocasional)
+                          </span>
+                        ) : (
+                          <span>{clientParsed.name}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="card-total-row">
+                      {movement.salesOrder ? (
+                        <>
+                          <span className="card-total-amount">
+                            ${Number(movement.salesOrder.totalAmount).toLocaleString('es-AR')}
+                          </span>
+                          <button 
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handlePrintReceipt(movement.salesOrderId)}
+                          >
+                            🖨️ Ver Recibo
+                          </button>
+                        </>
+                      ) : (
+                        <span style={{fontSize: '0.8rem', color: '#666'}}>No monetario</span>
+                      )}
+                    </div>
+                    
+                    {(movement.notes || clientParsed.cleanNotes) && (
+                      <div style={{fontSize: '0.8rem', color: '#666', marginTop: '0.25rem', fontStyle: 'italic'}}>
+                        Note: {clientParsed.isOccasional ? clientParsed.cleanNotes : (movement.notes || movement.salesOrder?.notes)}
+                      </div>
                     )}
                   </div>
-                  
-                  {movement.notes && (
-                    <div style={{fontSize: '0.8rem', color: '#666', marginTop: '0.25rem', fontStyle: 'italic'}}>
-                      Note: {movement.notes}
-                    </div>
-                  )}
-                </div>
-              ))
+                );
+              })
             ) : (
               <p>No se encontraron movimientos.</p>
             )}
@@ -215,40 +224,51 @@ const InventoryAdjustmentPage = () => {
               </thead>
               <tbody>
                 {movements.length > 0 ? (
-                  movements.map((movement) => (
-                    <tr key={movement.id}>
-                      <td>
-                        <span className={`type-badge ${movement.type.toLowerCase()}`}>
-                          {movement.type === 'SALE' ? 'Venta' : 'Rechazo'}
-                        </span>
-                      </td>
-                      <td>{formatDate(movement.createdAt)}</td>
-                      <td>
-                        <strong>{movement.product?.internalCode}</strong>
-                        <div style={{fontSize: '0.8rem', color: '#666'}}>{movement.product?.description}</div>
-                      </td>
-                      <td>{Number(movement.quantity)}</td>
-                      <td>{movement.salesOrder?.client?.name || '-'}</td>
-                      <td>
-                        {movement.salesOrder ? 
-                          `$${Number(movement.salesOrder.totalAmount).toLocaleString('es-AR')}` : 
-                          '-'}
-                      </td>
-                      <td>{movement.user?.name || 'N/A'}</td>
-                      <td>{movement.notes || 'N/A'}</td>
-                      <td>
-                        {movement.type === 'SALE' && movement.salesOrderId && (
-                          <button 
-                            className="btn btn-sm btn-outline-secondary" 
-                            title="Imprimir Recibo"
-                            onClick={() => handlePrintReceipt(movement.salesOrderId)}
-                          >
-                            🖨️
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+                  movements.map((movement) => {
+                    const clientParsed = parseClientName(movement.salesOrder);
+                    return (
+                      <tr key={movement.id}>
+                        <td>
+                          <span className={`type-badge ${movement.type.toLowerCase()}`}>
+                            {movement.type === 'SALE' ? 'Venta' : 'Rechazo'}
+                          </span>
+                        </td>
+                        <td>{formatDate(movement.createdAt)}</td>
+                        <td>
+                          <strong>{movement.product?.internalCode}</strong>
+                          <div style={{fontSize: '0.8rem', color: '#666'}}>{movement.product?.description}</div>
+                        </td>
+                        <td>{Number(movement.quantity)}</td>
+                        <td>
+                          {clientParsed.isOccasional ? (
+                            <span style={{ fontStyle: 'italic', color: '#0056b3', fontWeight: 'bold' }} title="Cliente Ocasional">
+                              * {clientParsed.name} (Ocasional)
+                            </span>
+                          ) : (
+                            <span>{clientParsed.name}</span>
+                          )}
+                        </td>
+                        <td>
+                          {movement.salesOrder ? 
+                            `$${Number(movement.salesOrder.totalAmount).toLocaleString('es-AR')}` : 
+                            '-'}
+                        </td>
+                        <td>{movement.user?.name || 'N/A'}</td>
+                        <td>{clientParsed.isOccasional ? (clientParsed.cleanNotes || 'N/A') : (movement.notes || 'N/A')}</td>
+                        <td>
+                          {movement.type === 'SALE' && movement.salesOrderId && (
+                            <button 
+                              className="btn btn-sm btn-outline-secondary" 
+                              title="Imprimir Recibo"
+                              onClick={() => handlePrintReceipt(movement.salesOrderId)}
+                            >
+                              🖨️
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="9">No se encontraron movimientos.</td>
@@ -269,12 +289,6 @@ const InventoryAdjustmentPage = () => {
           </div>
         </>
       )}
-
-      <SaleMovementModal 
-        isOpen={isSaleModalOpen} 
-        onClose={() => setIsSaleModalOpen(false)} 
-        onRefresh={fetchMovements}
-      />
     </div>
   );
 };

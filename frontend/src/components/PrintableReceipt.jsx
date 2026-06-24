@@ -1,12 +1,15 @@
 import React from 'react';
 import './PrintableReceipt.css';
 import logo from '../assets/ZAP-LogoRemito.jpg'; // Asegúrate de que la extensión sea correcta (.jpg o .png)
+import { parseClientName } from '../utils/clientParser';
 
 const PrintableReceipt = ({ data }) => {
   if (!data) return null;
 
+  const parsedClient = parseClientName(data);
+
   // Formatear fecha
-  const dateObj = new Date(data.createdAt || Date.now());
+  const dateObj = new Date(data.date || Date.now());
   const day = String(dateObj.getDate()).padStart(2, '0');
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
   const year = String(dateObj.getFullYear()).slice(-2); // YY
@@ -60,7 +63,7 @@ const PrintableReceipt = ({ data }) => {
           <div className="client-info-box">
             <div className="client-row">
               <span className="client-label">SEÑOR(ES):</span>
-              <span className="client-value">{data.client?.name || 'Consumidor Final'}</span>
+              <span className="client-value">{parsedClient.name}</span>
             </div>
             <div className="client-row">
               <span className="client-label">TELEFONO:</span>
@@ -108,7 +111,7 @@ const PrintableReceipt = ({ data }) => {
         <div className="footer-section">
           <div className="observations-box">
             <div className="observations-title">OBSERVACIONES</div>
-            <div>{data.notes || ''}</div>
+            <div>{parsedClient.cleanNotes || ''}</div>
           </div>
           <div className="total-container">
             <div className="total-label-box">TOTAL</div>

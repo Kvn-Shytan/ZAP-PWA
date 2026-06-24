@@ -6,7 +6,7 @@ import { productService } from '../services/productService';
 import { externalProductionOrderService } from '../services/externalProductionOrderService';
 import './ExternalProductionOrderPage.css';
 
-// ... (PlanItem component remains the same)
+// Component for PlanItem rendering
 const PlanItem = ({ item, level = 0, onAddSubAssembly, addedSubAssemblies }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isPreAssembled = item.product.type === 'PRE_ASSEMBLED';
@@ -42,8 +42,8 @@ const PlanItem = ({ item, level = 0, onAddSubAssembly, addedSubAssemblies }) => 
       <div onClick={toggleExpand} className={`plan-item level-${level} ${isPreAssembled && hasComponents ? 'clickable' : ''}`}>
         <span className={`plan-item-content ${!item.hasStock ? 'insufficient-stock' : ''}`}>
           {item.quantity} {item.product.unit} - {item.product.description} ({item.product.internalCode})
-          {!item.hasStock && <strong> (Stock Insuficiente)</strong>}
-          {isAdded && <strong style={{ color: 'green' }}> (Agregado a la orden)</strong>}
+          {!item.hasStock && <strong className="insufficient-text"> (Stock Insuficiente)</strong>}
+          {isAdded && <strong className="added-text"> (Agregado a la orden)</strong>}
         </span>
         {(isPreAssembled && hasComponents) && <span className="toggle-icon"> {isExpanded ? '▼' : '▶'}</span>}
         {(!item.hasStock && isExpanded && hasComponents) && (
@@ -78,19 +78,6 @@ const ExternalProductionOrderPage = () => {
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
   const [planError, setPlanError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Styles for React-Select
-  const selectStyles = {
-    control: (base) => ({ ...base, backgroundColor: '#252525', borderColor: '#555' }),
-    singleValue: (base) => ({ ...base, color: '#ffffff' }),
-    input: (base) => ({ ...base, color: '#ffffff' }),
-    menu: (base) => ({ ...base, backgroundColor: '#252525', zIndex: 5 }),
-    option: (base, { isFocused }) => ({
-      ...base,
-      backgroundColor: isFocused ? '#00bcd4' : '#252525',
-      color: '#ffffff',
-    }),
-  };
 
   const handleToggleSubAssembly = (subAssembly) => {
     setAddedSubAssemblies(prev => {
@@ -168,7 +155,7 @@ const ExternalProductionOrderPage = () => {
   const loadProductOptions = async (inputValue) => {
     try {
       const data = await productService.getProducts({ 
-        search: inputValue, // Changed from searchTerm to search
+        search: inputValue,
         pageSize: 20,
         type: 'PRE_ASSEMBLED,FINISHED'
       });
@@ -218,66 +205,135 @@ const ExternalProductionOrderPage = () => {
 
   return (
     <div className="external-order-page-container">
-      <h2>Crear Orden de Producción Externa</h2>
+      <h2>Planificar y Crear Orden de Producción Externa</h2>
+      
+      {planError && <div className="error-message">⚠️ Error: {planError}</div>}
+      
       <form onSubmit={handleSubmit}>
-        <div className="order-form-section">
-          <h3>Detalles de la Orden</h3>
-          <div className="form-group">
-            <label>Armador:</label>
-            <select value={selectedAssembler} onChange={e => setSelectedAssembler(e.target.value)} required>
-              <option value="">Seleccione un armador...</option>
-              {assemblers.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
+        <div className="order-grid-layout">
+          {/* Left Column: Form & Component Tree Plan */}
+          <div className="grid-left-column">
+            {/* Form Box */}
+            <div className="order-form-section card-box">
+              <h3>👤 Detalles de la Orden</h3>
+              <div className="form-group-row-custom">
+                <div className="form-group-custom" style={{ flex: 1.5 }}>
+                  <label>Armador:</label>
+                  <select value={selectedAssembler} onChange={e => setSelectedAssembler(e.target.value)} required>
+                    <option value="">Seleccione un armador...</option>
+                    {assemblers.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
+                </div>
+                
+                <div className="form-group-custom" style={{ flex: 3 }}>
+                  <label>Producto a Fabricar:</label>
+                  <AsyncSelect
+                    cacheOptions
+                    loadOptions={loadProductOptions}
+                    value={selectedProduct}
+                    onChange={setSelectedProduct}
+                    placeholder="Escribe para buscar un producto..."
+                    required
+                  />
+                </div>
+                
+                <div className="form-group-custom" style={{ flex: 0.8, minWidth: '90px' }}>
+                  <label>Cantidad:</label>
+                  <input 
+                    type="number" 
+                    value={quantity} 
+                    onChange={e => setQuantity(e.target.value)} 
+                    min="1" 
+                    required 
+                    placeholder="Cant." 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {isLoadingPlan && <div className="loading-message">🔍 Calculando plan de componentes y requisitos...</div>}
+
+            {/* Component Tree Plan */}
+            {planResponse && (
+              <div className="plan-summary-section card-box">
+                <h3>📦 Plan de Componentes (Materia Prima)</h3>
+                {planResponse.insufficientStockItems && planResponse.insufficientStockItems.length > 0 && (
+                  <div className="plan-response-warning">
+                    ⚠️ Advertencia: No hay stock suficiente de algunos materiales para fabricar la cantidad deseada.
+                  </div>
+                )}
+                
+                {planResponse.productionPlan.length > 0 ? (
+                  <div className="production-plan-list">
+                    {planResponse.productionPlan.map(item => (
+                      <PlanItem 
+                        key={item.product.id} 
+                        item={item} 
+                        onAddSubAssembly={handleToggleSubAssembly} 
+                        addedSubAssemblies={addedSubAssemblies} 
+                      />
+                    ))}
+                  </div>
+                ) : <p className="empty-text">No se requieren materiales para este producto.</p>}
+              </div>
+            )}
           </div>
-          <div className="form-group">
-            <label>Producto a Fabricar:</label>
-            <AsyncSelect
-              cacheOptions
-              // defaultOptions  <--- Removed this prop
-              loadOptions={loadProductOptions}
-              value={selectedProduct}
-              onChange={setSelectedProduct}
-              placeholder="Escriba para buscar un producto..."
-              styles={selectStyles}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Cantidad:</label>
-            <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} min="1" required placeholder="Escriba una cantidad" />
+
+          {/* Right Column: Costs & Assembly Steps Summary */}
+          <div className="grid-right-column">
+            {planResponse ? (
+              <>
+                {/* Cost Summary Card */}
+                <div className="checkout-summary-card">
+                  <h3>🧾 Resumen del Lote</h3>
+                  <div className="summary-row-custom">
+                    <span>Costo total estimado de mano de obra:</span>
+                    <strong className="assembly-cost-total">
+                      ${Number(planResponse.totalAssemblyCost ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Assembly Steps */}
+                <div className="plan-summary-section card-box" style={{ marginTop: '1.5rem' }}>
+                  <h3>🛠️ Pasos de Ensamblaje</h3>
+                  {planResponse.assemblySteps.length > 0 ? (
+                    <ul className="assembly-steps-list">
+                      {planResponse.assemblySteps.map(item => (
+                        <li key={item.id} className="assembly-step-item">
+                          <span>{item.quantity} x {item.name}</span>
+                          <strong>${(item.quantity * Number(item.price)).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="empty-text">Este producto no tiene pasos de ensamblaje definidos.</p>}
+                </div>
+              </>
+            ) : (
+              /* Informative Placeholder when no plan is generated */
+              <div className="no-plan-placeholder card-box" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: '#666' }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: '1.2rem' }}>📋</div>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#333' }}>Simulador de Planificación</h4>
+                <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4' }}>
+                  Selecciona un armador, producto y cantidad a fabricar en el panel izquierdo. 
+                  El sistema calculará automáticamente los componentes necesarios, stock disponible y costos estimativos al instante.
+                </p>
+              </div>
+            )}
+
+            {/* Confirm Submit Action */}
+            <div className="checkout-actions" style={{ marginTop: '1.5rem' }}>
+              <button 
+                type="submit" 
+                className="btn-submit-order" 
+                disabled={!canSubmit}
+                style={{ width: '100%' }}
+              >
+                🚀 Crear Orden de Producción
+              </button>
+            </div>
           </div>
         </div>
-        <hr />
-        {isLoadingPlan && <p className="loading-message">Calculando plan de producción...</p>}
-        {planError && <p className="error-message">Error: {planError}</p>}
-        {planResponse && (
-          <div className="plan-summary-section">
-            <h3>Resumen del Plan de Producción</h3>
-            {planResponse.insufficientStockItems && planResponse.insufficientStockItems.length > 0 && (
-              <p className="plan-response-warning">
-                Advertencia: No hay stock suficiente de algunos materiales para crear la cantidad deseada.
-              </p>
-            )}
-            <h4>Plan de Componentes</h4>
-            {planResponse.productionPlan.length > 0 ? (
-              <div className="production-plan-list">
-                {planResponse.productionPlan.map(item => <PlanItem key={item.product.id} item={item} onAddSubAssembly={handleToggleSubAssembly} addedSubAssemblies={addedSubAssemblies} />)}
-              </div>
-            ) : <p>No se requieren materiales para este producto.</p>}
-            <h4>Pasos de Ensamblaje a Realizar</h4>
-            {planResponse.assemblySteps.length > 0 ? (
-              <ul>
-                {planResponse.assemblySteps.map(item => (
-                  <li key={item.id}>
-                    {item.quantity} x {item.name} @ ${Number(item.price).toFixed(2)} = ${ (item.quantity * Number(item.price)).toFixed(2) }
-                  </li>
-                ))}
-              </ul>
-            ) : <p>Este producto no tiene pasos de ensamblaje definidos.</p>}
-            <p className="plan-summary-total"><strong>Costo Total de Ensamblaje Estimado: ${(planResponse.totalAssemblyCost ?? 0).toFixed(2)}</strong></p>
-          </div>
-        )}
-        <button type="submit" className="btn btn-primary" disabled={!canSubmit}>Crear Orden</button>
       </form>
     </div>
   );
