@@ -29,14 +29,15 @@ import Navbar from './components/Navbar';
 import InventoryAdjustmentPage from './pages/InventoryAdjustmentPage';
 import WastageManagementPage from './pages/WastageManagementPage'; // NEW
 import ReceiptPage from './pages/ReceiptPage';
+import ExternalOrderTicketPage from './pages/ExternalOrderTicketPage';
 import './App.css';
 
 function App() {
   const { user } = useAuth();
   const location = useLocation();
   
-  // Hide navbar on login and receipt pages
-  const showNavbar = user && location.pathname !== '/login' && !location.pathname.startsWith('/receipt/');
+  // Hide navbar on login, receipt and ticket pages
+  const showNavbar = user && location.pathname !== '/login' && !location.pathname.startsWith('/receipt/') && !location.pathname.endsWith('/ticket');
 
   return (
     <> 
@@ -137,6 +138,7 @@ function App() {
           element={<ProtectedRoute element={<LogisticsDashboardPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />}
         />
           <Route path="/external-orders/:id" element={<ProtectedRoute element={<ExternalProductionOrderDetailPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
+          <Route path="/external-orders/:id/ticket" element={<ProtectedRoute element={<ExternalOrderTicketPage />} allowedRoles={['ADMIN', 'SUPERVISOR', 'EMPLOYEE']} />} />
         <Route
           path="/assembler-payment-batch"
           element={<ProtectedRoute element={<AssemblerPaymentBatchPage />} allowedRoles={['ADMIN', 'SUPERVISOR']} />}

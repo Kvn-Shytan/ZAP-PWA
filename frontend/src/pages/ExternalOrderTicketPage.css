@@ -1,0 +1,102 @@
+/* ExternalOrderTicketPage.css */
+
+.ticket-page-bg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #525659; /* Fondo gris oscuro estilo visor de PDF */
+  min-height: 100vh;
+  padding: 60px 10px 40px 10px;
+  box-sizing: border-box;
+}
+
+/* Floating Control Bar */
+.ticket-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: #323639;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.ticket-controls button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-print {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-print:hover {
+  background-color: #218838;
+}
+
+.btn-close {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-close:hover {
+  background-color: #bd2130;
+}
+
+/* Realistic Ticket roll preview on screen */
+.ticket-paper-wrapper {
+  background-color: #fff;
+  width: 80mm; /* El ancho de la bobina real */
+  padding: 6mm 4mm;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  border-radius: 2px;
+  margin-top: 15px;
+  box-sizing: border-box;
+  border-bottom: 3px dashed #ccc; /* Efecto de corte de papel al final */
+}
+
+/* Loading & Errors */
+.ticket-loading, .ticket-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: sans-serif;
+  height: 100vh;
+  gap: 15px;
+}
+
+.ticket-loading p {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Print Overrides */
+@media print {
+  .ticket-page-bg {
+    background-color: white !important;
+    padding: 0 !important;
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  .ticket-paper-wrapper {
+    width: 72mm !important;
+    box-shadow: none !important;
+    padding: 2mm 0 !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+  }
+}

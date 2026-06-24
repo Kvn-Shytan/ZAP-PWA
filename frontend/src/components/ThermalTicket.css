@@ -1,0 +1,197 @@
+/* ThermalTicket.css */
+
+.thermal-ticket-container {
+  display: block;
+  background-color: #fff;
+  color: #000;
+  width: 100%;
+}
+
+.thermal-ticket {
+  width: 72mm; /* Ancho imprimible óptimo para bobinas de 80mm */
+  margin: 0 auto;
+  padding: 2mm 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+/* Header Styles */
+.thermal-header {
+  text-align: center;
+  margin-bottom: 3mm;
+}
+
+.thermal-logo {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 1mm 0;
+  letter-spacing: 1px;
+}
+
+.thermal-sub {
+  font-size: 9px;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.thermal-divider {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 2mm 0;
+  letter-spacing: -0.5px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Metadata and Sections */
+.thermal-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1mm;
+}
+
+.large-text {
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px dashed #000;
+  padding-bottom: 1mm;
+  margin-bottom: 2mm;
+}
+
+.thermal-sec-title {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 0 0 1.5mm 0;
+  text-decoration: underline;
+}
+
+.thermal-assembler-name {
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0 0 1mm 0;
+}
+
+.thermal-assembler-detail {
+  font-size: 9px;
+  margin: 0 0 0.5mm 0;
+}
+
+/* Table Styles */
+.thermal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2mm;
+}
+
+.thermal-table th {
+  font-size: 9px;
+  font-weight: bold;
+  text-align: left;
+  border-bottom: 1px solid #000;
+  padding-bottom: 1mm;
+}
+
+.thermal-table td {
+  padding: 1.5mm 0;
+  vertical-align: top;
+  font-size: 10px;
+  border-bottom: 1px dotted #ccc;
+}
+
+.th-cant, .td-cant {
+  width: 25%;
+  font-weight: bold;
+}
+
+.th-desc, .td-desc {
+  width: 75%;
+}
+
+.thermal-empty {
+  font-size: 9px;
+  font-style: italic;
+  margin: 1mm 0;
+}
+
+.thermal-notes {
+  font-size: 10px;
+  white-space: pre-wrap;
+  margin: 1mm 0;
+  padding: 1mm;
+  border: 1px dashed #000;
+  background-color: #fafafa;
+}
+
+/* Signature blocks */
+.thermal-signatures {
+  margin-top: 8mm;
+  margin-bottom: 6mm;
+  display: flex;
+  flex-direction: column;
+  gap: 6mm;
+}
+
+.thermal-signature-line {
+  text-align: center;
+}
+
+.thermal-signature-line p {
+  margin: 0;
+  font-size: 8px;
+}
+
+.thermal-signature-line p:first-child {
+  font-size: 12px;
+  margin-bottom: 1mm;
+}
+
+/* Footer elements */
+.thermal-footer {
+  text-align: center;
+  font-size: 8px;
+  margin-top: 4mm;
+}
+
+.thermal-footer p {
+  margin: 0 0 0.5mm 0;
+}
+
+.thermal-timestamp {
+  font-size: 7px;
+  color: #555;
+  margin-top: 1.5mm !important;
+}
+
+/* Print Overrides */
+@media print {
+  body, html, #root, .thermal-ticket-container {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Ocultar elementos que no sean el ticket al imprimir */
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: 80mm auto; /* Ajusta el alto automáticamente de acuerdo al largo del ticket */
+    margin: 0; /* Sin márgenes del sistema de impresión del OS */
+  }
+
+  .thermal-ticket {
+    width: 72mm;
+    margin: 0;
+    padding: 2mm;
+  }
+
+  .thermal-notes {
+    background-color: transparent;
+  }
+}

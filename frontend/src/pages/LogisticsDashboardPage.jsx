@@ -7,7 +7,6 @@ import { apiFetch } from '../services/api';
 import { assemblerService } from '../services/assemblerService';
 import { useAuth } from '../contexts/AuthContext';
 import './LogisticsDashboardPage.css';
-import db from '../services/db';
 import { useSyncStatus } from '../contexts/SyncContext'; // Importar hook de sincronización
 import { translateOrderStatus } from '../utils/statusTranslator';
 
@@ -643,7 +642,31 @@ const LogisticsDashboardPage = () => {
 
                   return (
                     <tr key={order.id}>
-                      <td data-label="ID Orden"><Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link></td>
+                      <td data-label="ID Orden">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Link to={`/external-orders/${order.id}`}>{order.orderNumber}</Link>
+                          <button 
+                            onClick={() => window.open(`/external-orders/${order.id}/ticket`, '_blank')} 
+                            title="Imprimir Comanda Térmica (80mm)" 
+                            style={{ 
+                              background: 'none', 
+                              border: 'none', 
+                              cursor: 'pointer', 
+                              fontSize: '14px', 
+                              padding: '2px',
+                              borderRadius: '4px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'opacity 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
+                            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                          >
+                            🖨️
+                          </button>
+                        </div>
+                      </td>
                       <td data-label="Armador">{assemblerName}</td>
                       <td data-label="Estado">{renderStatus(order)}</td>
                       <td data-label="Asignado a">{assignedUserName}</td>

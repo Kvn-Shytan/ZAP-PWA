@@ -98,9 +98,14 @@ const ExternalProductionOrderDetailPage = () => {
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2>Detalle de Orden de Producción Externa #{order.orderNumber}</h2>
-        <button onClick={() => window.print()} style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-          Imprimir
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => window.print()} style={{ padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+            Imprimir Detalle
+          </button>
+          <button onClick={() => window.open(`/external-orders/${order.id}/ticket`, '_blank')} style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+            🖨️ Imprimir Comanda (80mm)
+          </button>
+        </div>
       </div>
 
       <div style={{ border: '1px solid #eee', padding: '1.5rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
