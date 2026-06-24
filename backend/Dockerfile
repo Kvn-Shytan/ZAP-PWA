@@ -34,6 +34,7 @@ COPY --from=builder /usr/src/app/prisma ./prisma
 COPY --from=builder /usr/src/app/generated ./generated
 COPY --from=builder /usr/src/app/index.js ./index.js
 COPY --from=builder /usr/src/app/routes ./routes
+COPY --from=builder /usr/src/app/services ./services
 COPY --from=builder /usr/src/app/middleware ./middleware
 COPY --from=builder /usr/src/app/utils ./utils
 COPY --from=builder /usr/src/app/validators ./validators
