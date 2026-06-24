@@ -3,6 +3,7 @@ import { assemblerService } from '../services/assemblerService';
 import { useAuth } from '../contexts/AuthContext';
 import './AssemblerPaymentsHistoryPage.css';
 import { Link } from 'react-router-dom'; // Import Link
+import { translateOrderStatus } from '../utils/statusTranslator';
 
 // Helper to get first and last day of the current month in YYYY-MM-DD format
 const getInitialDateRange = () => {

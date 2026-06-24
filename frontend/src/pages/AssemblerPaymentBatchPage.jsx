@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { apiFetch } from '../services/api';
-
+import { translateOrderStatus } from '../utils/statusTranslator';
 
 import { useAuth } from '../contexts/AuthContext';
 
