@@ -24,7 +24,7 @@ const ThermalTicket = ({ order }) => {
       <div className="thermal-ticket">
         {/* Header */}
         <div className="thermal-header">
-          <h1 className="thermal-logo">*** ZAP4 ***</h1>
+          <h1 className="thermal-logo">*** ZAP ***</h1>
           <p className="thermal-sub">CONTROL DE PRODUCCIÓN EXTERNA</p>
           <div className="thermal-divider">--------------------------------</div>
         </div>
@@ -59,35 +59,9 @@ const ThermalTicket = ({ order }) => {
           <div className="thermal-divider">--------------------------------</div>
         </div>
 
-        {/* Materials Sent */}
+        {/* Section 1: Expected Finished Products */}
         <div className="thermal-section">
-          <h2 className="thermal-sec-title">1. MATERIA PRIMA ENTREGADA</h2>
-          {items.length > 0 ? (
-            <table className="thermal-table">
-              <thead>
-                <tr>
-                  <th className="th-cant">CANT</th>
-                  <th className="th-desc">DESCRIPCIÓN</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, index) => (
-                  <tr key={`item-${index}`}>
-                    <td className="td-cant">{Number(item.quantitySent).toFixed(0)} {item.product?.unit || 'un'}</td>
-                    <td className="td-desc">{item.product?.internalCode} - {item.product?.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="thermal-empty">No hay materiales cargados.</p>
-          )}
-          <div className="thermal-divider">--------------------------------</div>
-        </div>
-
-        {/* Expected Finished Products */}
-        <div className="thermal-section">
-          <h2 className="thermal-sec-title">2. PRODUCTO TERMINADO ESPERADO</h2>
+          <h2 className="thermal-sec-title">1. PRODUCTO TERMINADO ESPERADO</h2>
           {expectedOutputs.length > 0 ? (
             <table className="thermal-table">
               <thead>
@@ -111,6 +85,32 @@ const ThermalTicket = ({ order }) => {
           <div className="thermal-divider">--------------------------------</div>
         </div>
 
+        {/* Section 2: Materials Sent (delivered) */}
+        <div className="thermal-section">
+          <h2 className="thermal-sec-title">2. MATERIALES ENTREGADOS</h2>
+          {items.length > 0 ? (
+            <table className="thermal-table">
+              <thead>
+                <tr>
+                  <th className="th-cant">CANT</th>
+                  <th className="th-desc">DESCRIPCIÓN</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={`item-${index}`}>
+                    <td className="td-cant">{Number(item.quantitySent).toFixed(0)} {item.product?.unit || 'un'}</td>
+                    <td className="td-desc">{item.product?.internalCode} - {item.product?.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="thermal-empty">No hay materiales cargados.</p>
+          )}
+          <div className="thermal-divider">--------------------------------</div>
+        </div>
+
         {/* Notes/Observaciones */}
         {order.notes && (
           <div className="thermal-section">
@@ -120,22 +120,10 @@ const ThermalTicket = ({ order }) => {
           </div>
         )}
 
-        {/* Signatures */}
-        <div className="thermal-signatures">
-          <div className="thermal-signature-line">
-            <p>................................</p>
-            <p>FIRMA DEL ARMADOR</p>
-          </div>
-          <div className="thermal-signature-line">
-            <p>................................</p>
-            <p>FIRMA CONTROL / SUPERVISOR</p>
-          </div>
-        </div>
-
         {/* Footer info */}
         <div className="thermal-footer">
-          <p>SISTEMA DE GESTIÓN ZAP PWA</p>
-          <p>¡Trazabilidad y Calidad en cada costura!</p>
+          <p>SISTEMA DE GESTIÓN ZAP</p>
+          <p>Trazabilidad y calidad asegurada</p>
           <p className="thermal-timestamp">Impreso: {new Date().toLocaleString()}</p>
         </div>
       </div>

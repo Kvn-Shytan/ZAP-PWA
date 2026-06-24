@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './LogisticsDashboardPage.css';
 import { useSyncStatus } from '../contexts/SyncContext'; // Importar hook de sincronización
 import { translateOrderStatus } from '../utils/statusTranslator';
+import Modal from '../components/Modal';
 
 const LogisticsDashboardPage = () => {
   const { user: currentUser } = useAuth();
