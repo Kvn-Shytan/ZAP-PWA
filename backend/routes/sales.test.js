@@ -35,6 +35,9 @@ describe('Sales API', () => {
     await prisma.orderSentComponent.deleteMany({}); // Added
     await prisma.client.deleteMany({});
     await prisma.priceTier.deleteMany({});
+    await prisma.productOverhead.deleteMany({});
+    await prisma.productAssemblyJob.deleteMany({});
+    await prisma.productComponent.deleteMany({});
     await prisma.product.deleteMany({});
     await prisma.user.deleteMany({});
 

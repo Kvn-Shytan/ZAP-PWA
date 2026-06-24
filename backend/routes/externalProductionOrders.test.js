@@ -47,6 +47,9 @@ describe('External Production Orders API', () => {
         await prisma.inventoryMovement.deleteMany({});
         await prisma.orderNote.deleteMany({});
         await prisma.externalProductionOrder.deleteMany({});
+        await prisma.productOverhead.deleteMany({});
+        await prisma.productAssemblyJob.deleteMany({});
+        await prisma.productComponent.deleteMany({});
         await prisma.product.deleteMany({});
         await prisma.assemblerPayment.deleteMany({});
         await prisma.assembler.deleteMany({});
