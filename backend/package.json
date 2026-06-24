@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node index.js",
+    "start": "cross-env NODE_ENV=production npx prisma migrate deploy && cross-env NODE_ENV=production node index.js",
     "dev": "cross-env NODE_ENV=development npx prisma generate && nodemon -L --env-file ./.env.development index.js",
     "test": "cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" npx prisma generate && cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" npx prisma migrate deploy && cross-env NODE_ENV=test DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/zappwa_test\" jest --detectOpenHandles --forceExit",
     "check-env": "echo %DATABASE_URL%",
