@@ -2,9 +2,6 @@
 # Construcción de la aplicación estática PWA
 FROM node:20-alpine AS builder
 
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-
 WORKDIR /usr/src/app
 
 # Copiar configuración de dependencias
@@ -15,6 +12,9 @@ RUN npm install
 
 # Copiar el código fuente
 COPY . .
+
+# Forzar la creación de .env.production para asegurar que Vite compile con la URL del backend real en la nube
+RUN echo "VITE_API_URL=https://backend-961698387859.southamerica-east1.run.app/api" > .env.production
 
 # Construir la aplicación para producción (genera la carpeta /dist)
 RUN npm run build
